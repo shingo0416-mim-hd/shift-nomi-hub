@@ -55,7 +55,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 ])]
 class Member extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
+    use SoftDeletes;
 
     /**
      * @return array<string, string>

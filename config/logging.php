@@ -56,6 +56,7 @@ return [
             'driver' => 'stack',
             'channels' => explode(',', (string) env('LOG_STACK', 'single')),
             'ignore_exceptions' => false,
+            'permission' => 0666,
         ],
 
         'single' => [
@@ -63,6 +64,7 @@ return [
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
+            'permission' => 0666,
         ],
 
         'daily' => [
@@ -71,15 +73,17 @@ return [
             'level' => env('LOG_LEVEL', 'debug'),
             'days' => env('LOG_DAILY_DAYS', 14),
             'replace_placeholders' => true,
+            'permission' => 0666,
         ],
 
         'slack' => [
             'driver' => 'slack',
             'url' => env('LOG_SLACK_WEBHOOK_URL'),
-            'username' => env('LOG_SLACK_USERNAME', env('APP_NAME', 'Laravel')),
+            'username' => env('LOG_SLACK_USERNAME', 'Laravel Log'),
             'emoji' => env('LOG_SLACK_EMOJI', ':boom:'),
             'level' => env('LOG_LEVEL', 'critical'),
             'replace_placeholders' => true,
+            'permission' => 0666,
         ],
 
         'papertrail' => [
@@ -125,6 +129,56 @@ return [
 
         'emergency' => [
             'path' => storage_path('logs/laravel.log'),
+        ],
+
+        'deploy' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/deploy.log'),
+            'level' => env('LOG_LEVEL', 'info'),
+            'days' => 14,
+            'replace_placeholders' => true,
+            'permission' => 0666,
+        ],
+
+        'cline-api' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/cline-api.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'days' => 14,
+            'replace_placeholders' => true,
+            'permission' => 0666,
+        ],
+        'line-empty-api' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/line-empty-api.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'days' => 14,
+            'replace_placeholders' => true,
+            'permission' => 0666,
+        ],
+        'line-auth-api' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/line-auth-api.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'days' => 14,
+            'replace_placeholders' => true,
+            'permission' => 0666,
+        ],
+        'reminder' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/reminder.log'),
+            'level' => env('LOG_LEVEL', 'info'),
+            'days' => 14,
+            'replace_placeholders' => true,
+            'permission' => 0666,
+        ],
+        'liff-id-get' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/liff-id-get.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'days' => 14,
+            'replace_placeholders' => true,
+            'permission' => 0666,
         ],
 
     ],

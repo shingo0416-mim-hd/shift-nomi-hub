@@ -38,7 +38,9 @@ use Illuminate\Notifications\Notifiable;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory;
+    use Notifiable;
+    use SoftDeletes;
 
     public const ROLE_MEMBER = 0;
 
@@ -66,14 +68,14 @@ class User extends Authenticatable
     {
         $this->attributes['last_name'] = $value;
         $firstName = trim((string) ($this->attributes['first_name'] ?? $this->first_name ?? ''));
-        $this->attributes['name'] = trim((string) $value.' '.$firstName);
+        $this->attributes['name'] = trim((string) $value . ' ' . $firstName);
     }
 
     public function setFirstNameAttribute(?string $value): void
     {
         $this->attributes['first_name'] = $value;
         $lastName = trim((string) ($this->attributes['last_name'] ?? $this->last_name ?? ''));
-        $this->attributes['name'] = trim($lastName.' '.(string) $value);
+        $this->attributes['name'] = trim($lastName . ' ' . (string) $value);
     }
 
     public function tenant(): BelongsTo

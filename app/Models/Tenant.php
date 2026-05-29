@@ -11,7 +11,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[Fillable(['name', 'data'])]
 class Tenant extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
+    use SoftDeletes;
 
     /**
      * Get the attributes that should be cast.

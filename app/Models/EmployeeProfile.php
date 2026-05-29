@@ -24,7 +24,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 ])]
 class EmployeeProfile extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
+    use SoftDeletes;
 
     /**
      * @return array<string, string>
