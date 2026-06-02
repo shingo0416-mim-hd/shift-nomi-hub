@@ -1,68 +1,73 @@
 <x-guest-layout>
-    <div class="w-full max-w-sm">
-        <div class="mb-8 lg:hidden">
-            <div class="mb-4 grid size-10 place-items-center rounded-lg bg-teal-500 text-sm font-bold text-white">SH</div>
-            <p class="text-sm font-semibold text-zinc-950">ShiftHub</p>
-            <p class="text-xs text-zinc-500">nomihub.jp</p>
+    <!-- Session Status -->
+    <x-auth-session-status class="mb-4" :status="session('status')" />
+
+    <form method="POST" action="{{ route('login') }}" class="space-y-6 text-left">
+        @csrf
+
+        <div class="text-center space-y-2">
+            <h2 class="text-3xl font-bold text-blue-900">ログイン</h2>
+            <p class="text-sm text-slate-500">アカウント情報を入力し、シフト管理をはじめましょう。</p>
         </div>
 
-        <div class="mb-8">
-            <h1 class="text-2xl font-semibold text-zinc-950">管理画面ログイン</h1>
-            <p class="mt-2 text-sm leading-6 text-zinc-500">店舗管理者アカウントでログインしてください。</p>
+        <!-- Email Address -->
+        <div class="space-y-2">
+            <x-input-label for="email" :value="__('メールアドレス')" />
+            <x-text-input
+                id="email"
+                class="block w-full"
+                type="email"
+                name="email"
+                :value="old('email')"
+                required
+                autofocus
+                autocomplete="username"
+                placeholder="メールアドレスを入力"
+            />
+            <x-input-error :messages="$errors->get('email')" class="mt-2" />
         </div>
 
-        @if ($errors->any())
-            <div class="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                {{ $errors->first() }}
+        <!-- Password -->
+        <div class="space-y-2">
+            <x-input-label for="password" :value="__('パスワード')" />
+
+            <x-text-input
+                id="password"
+                class="block mt-1 w-full"
+                type="password"
+                name="password"
+                required
+                autocomplete="current-password"
+                placeholder="パスワードを入力"
+            />
+
+            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        </div>
+
+        <!-- Remember Me -->
+        <div class="block">
+            <label for="remember_me" class="inline-flex items-center">
+                <input id="remember_me" type="checkbox" class="rounded border-slate-300 bg-white text-blue-600 shadow-sm focus:ring-blue-400 focus:ring-offset-1 focus:ring-offset-white accent-blue-500 transition" name="remember">
+                <span class="ms-2 text-sm text-slate-600">{{ __('ログイン状態を保持する') }}</span>
+            </label>
+        </div>
+
+        <div class="flex items-center justify-between pt-2">
+            @if (Route::has('password.request'))
+                <a class="text-sm font-medium text-blue-600 hover:text-blue-500 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 focus:ring-offset-white rounded-md px-1 py-0.5" href="{{ route('password.request') }}">
+                    {{ __('パスワードをお忘れですか？') }}
+                </a>
+            @endif
+
+            <div class="relative inline-flex items-center gap-3">
+                <button type="submit" class="btn-gradient-primary" data-loading-text="{{ __('ログイン中...') }}" data-show-success="false">
+                    <svg class="hidden h-4 w-4 animate-spin" aria-hidden="true" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                    </svg>
+                    <span class="button-label">{{ __('ログイン') }}</span>
+                </button>
             </div>
-        @endif
-
-        <form method="POST" action="{{ route('login') }}" class="space-y-5">
-            @csrf
-
-            <div>
-                <label for="email" class="block text-sm font-medium text-zinc-800">メールアドレス</label>
-                <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    value="{{ old('email') }}"
-                    autocomplete="username"
-                    required
-                    autofocus
-                    class="mt-2 block w-full rounded-lg border border-zinc-300 bg-white px-3 py-3 text-sm text-zinc-950 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-100"
-                >
-            </div>
-
-            <div>
-                <label for="password" class="block text-sm font-medium text-zinc-800">パスワード</label>
-                <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    autocomplete="current-password"
-                    required
-                    class="mt-2 block w-full rounded-lg border border-zinc-300 bg-white px-3 py-3 text-sm text-zinc-950 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-100"
-                >
-            </div>
-
-            <div class="flex items-center justify-between">
-                <label class="inline-flex items-center gap-2 text-sm text-zinc-600">
-                    <input
-                        name="remember"
-                        type="checkbox"
-                        class="size-4 rounded border-zinc-300 text-teal-600 focus:ring-teal-500"
-                    >
-                    ログイン状態を保持
-                </label>
-            </div>
-
-            <button
-                type="submit"
-                class="inline-flex w-full items-center justify-center rounded-lg bg-teal-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-teal-700 focus:outline-none focus:ring-4 focus:ring-teal-100"
-            >
-                ログイン
-            </button>
-        </form>
-    </div>
+        </div>
+    </form>
 </x-guest-layout>
