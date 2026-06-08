@@ -52,22 +52,28 @@
             </label>
         </div>
 
-        <div class="flex items-center justify-between pt-2">
-            @if (Route::has('password.request'))
-                <a class="text-sm font-medium text-blue-600 hover:text-blue-500 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 focus:ring-offset-white rounded-md px-1 py-0.5" href="{{ route('password.request') }}">
-                    {{ __('パスワードをお忘れですか？') }}
-                </a>
-            @endif
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+            <div class="flex flex-col gap-1">
+                @if (Route::has('password.request'))
+                    <a class="text-sm font-medium text-blue-600 transition-colors hover:text-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 focus:ring-offset-white" href="{{ route('password.request') }}">
+                        {{ __('パスワードをお忘れですか？') }}
+                    </a>
+                @endif
 
-            <div class="relative inline-flex items-center gap-3">
-                <button type="submit" class="btn-gradient-primary" data-loading-text="{{ __('ログイン中...') }}" data-show-success="false">
-                    <svg class="hidden h-4 w-4 animate-spin" aria-hidden="true" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-                    </svg>
-                    <span class="button-label">{{ __('ログイン') }}</span>
-                </button>
+                @if (Route::has('register'))
+                    <a class="text-sm font-medium text-blue-600 transition-colors hover:text-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 focus:ring-offset-white" href="{{ route('register') }}">
+                        {{ __('新規登録') }}
+                    </a>
+                @endif
             </div>
+
+            <button type="submit" class="btn-gradient-primary" data-loading-text="{{ __('ログイン中...') }}" data-show-success="false">
+                <svg class="hidden h-4 w-4 animate-spin" aria-hidden="true" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                </svg>
+                <span class="button-label">{{ __('ログイン') }}</span>
+            </button>
         </div>
     </form>
 </x-guest-layout>

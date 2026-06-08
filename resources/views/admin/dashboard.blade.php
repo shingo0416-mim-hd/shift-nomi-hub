@@ -1,3 +1,48 @@
+@php
+    $menuSections = [
+        [
+            'label' => '業務',
+            'items' => [
+                [
+                    'label' => 'ダッシュボード',
+                    'href' => '#overview',
+                    'active' => true,
+                    'icon' => 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6',
+                ],
+                [
+                    'label' => 'シフト管理',
+                    'href' => '#schedules',
+                    'active' => false,
+                    'icon' => 'M8 7V3m8 4V3M5 11h14M6 5h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2z',
+                ],
+                [
+                    'label' => 'キャスト管理',
+                    'href' => '#members',
+                    'active' => false,
+                    'icon' => 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
+                ],
+            ],
+        ],
+        [
+            'label' => '管理',
+            'items' => [
+                [
+                    'label' => '店舗管理',
+                    'href' => '#stores',
+                    'active' => false,
+                    'icon' => 'M3 21h18M5 21V7l8-4v18M19 21V11l-6-4M9 9h1M9 13h1M9 17h1M14 13h1M14 17h1',
+                ],
+                [
+                    'label' => 'アカウント',
+                    'href' => '#overview',
+                    'active' => false,
+                    'icon' => 'M5.121 17.804A8.966 8.966 0 0112 15c2.21 0 4.235.8 5.879 2.128M15 11a3 3 0 11-6 0 3 3 0 016 0zm6 1a9 9 0 11-18 0 9 9 0 0118 0z',
+                ],
+            ],
+        ],
+    ];
+@endphp
+
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
@@ -17,9 +62,9 @@
             <header class="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
                 <div class="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
                     <div class="flex items-center gap-3">
-                        <button type="button" class="grid size-10 place-items-center rounded-lg bg-teal-600 text-sm font-bold text-white lg:hidden" data-action="toggle-sidebar" aria-label="管理メニュー">
+                        <div class="grid size-10 place-items-center rounded-lg bg-teal-600 text-sm font-bold text-white lg:hidden">
                             SH
-                        </button>
+                        </div>
                         <div class="hidden size-10 place-items-center rounded-lg bg-teal-600 text-sm font-bold text-white lg:grid">SH</div>
                         <div>
                             <p class="text-sm font-semibold text-slate-950">ShiftHub</p>
@@ -27,56 +72,217 @@
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-3">
-                        <div class="hidden text-right sm:block">
-                            <p class="text-sm font-semibold text-slate-800">{{ Auth::user()->name }}</p>
-                            <p class="text-xs text-slate-500">{{ Auth::user()->email }}</p>
+                    <div class="flex min-w-0 items-center gap-3">
+                        <div class="hidden min-w-0 items-center sm:flex">
+                            <p class="truncate text-base text-gray-800">
+                                {{ Auth::user()->name }}
+                            </p>
+
+                            <svg width="30" height="30" viewBox="0 0 29.5 29.5" class="ml-2.5 mr-1 shrink-0" aria-hidden="true">
+                                <path d="M14.749,0A14.75,14.75,0,1,0,29.5,14.75,14.755,14.755,0,0,0,14.749,0Zm0,4.425A4.425,4.425,0,1,1,10.324,8.85a4.419,4.419,0,0,1,4.424-4.425Zm0,20.945A10.621,10.621,0,0,1,5.9,20.62c.044-2.936,5.9-4.543,8.849-4.543s8.805,1.607,8.849,4.543a10.62,10.62,0,0,1-8.849,4.75Z" style="fill: #2997e7; fill-rule: evenodd;"/>
+                            </svg>
                         </div>
                         <button type="button" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50" data-action="reload">
                             更新
                         </button>
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button class="rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white transition hover:bg-slate-700">
-                                ログアウト
+                        <div class="relative">
+                            <button
+                                type="button"
+                                class="inline-flex items-center rounded-md p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                data-action="toggle-account-menu"
+                                aria-expanded="false"
+                                aria-haspopup="true"
+                            >
+                                <svg class="h-5 w-5" viewBox="0 0 19.454 20" aria-hidden="true">
+                                    <path d="M19.43,12.98A7.793,7.793,0,0,0,19.5,12a7.793,7.793,0,0,0-.07-.98l2.11-1.65a.5.5,0,0,0,.12-.64l-2-3.46a.5.5,0,0,0-.61-.22l-2.49,1a7.306,7.306,0,0,0-1.69-.98l-.38-2.65A.488.488,0,0,0,14,2H10a.488.488,0,0,0-.49.42L9.13,5.07a7.683,7.683,0,0,0-1.69.98l-2.49-1a.488.488,0,0,0-.61.22l-2,3.46a.493.493,0,0,0,.12.64l2.11,1.65A7.931,7.931,0,0,0,4.5,12a7.931,7.931,0,0,0,.07.98L2.46,14.63a.5.5,0,0,0-.12.64l2,3.46a.5.5,0,0,0,.61.22l2.49-1a7.306,7.306,0,0,0,1.69.98l.38,2.65A.488.488,0,0,0,10,22h4a.488.488,0,0,0,.49-.42l.38-2.65a7.683,7.683,0,0,0,1.69-.98l2.49,1a.488.488,0,0,0,.61-.22l2-3.46a.5.5,0,0,0-.12-.64ZM12,15.5A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z" transform="translate(-2.271 -2)" fill="currentColor"/>
+                                </svg>
+                                <span class="sr-only">アカウントメニュー</span>
                             </button>
-                        </form>
+
+                            <div
+                                class="absolute right-0 z-50 mt-2 hidden w-48 rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5"
+                                data-account-menu
+                            >
+                                <div class="px-4 py-3 sm:hidden">
+                                    <p class="truncate text-sm font-semibold text-slate-900">{{ Auth::user()->name }}</p>
+                                    <p class="truncate text-xs text-slate-500">{{ Auth::user()->email }}</p>
+                                </div>
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button type="submit" class="block w-full px-4 py-2 text-start text-sm leading-5 text-gray-700 transition duration-150 ease-in-out hover:bg-gray-100 focus:bg-gray-100 focus:outline-none">
+                                        ログアウト
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </header>
 
-            <div class="lg:flex">
-                <aside class="fixed inset-y-0 left-0 z-40 hidden w-72 border-r border-slate-200 bg-white pt-16 shadow-xl lg:sticky lg:top-16 lg:z-20 lg:block lg:h-[calc(100vh-4rem)] lg:pt-0 lg:shadow-none" data-sidebar>
-                    <div class="flex h-full flex-col overflow-y-auto px-4 py-5">
-                        <nav class="space-y-7" aria-label="管理メニュー">
+            <div class="sticky top-16 z-20 border-b border-gray-200 bg-white px-4 py-3 shadow-sm lg:hidden">
+                <button
+                    type="button"
+                    class="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                    data-action="open-mobile-sidebar"
+                    aria-controls="app-sidebar-drawer"
+                    aria-expanded="false"
+                >
+                    <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                    <span>管理メニュー</span>
+                </button>
+            </div>
+
+            <div
+                class="pointer-events-none fixed inset-0 z-40 hidden lg:hidden"
+                data-sidebar-drawer
+                role="dialog"
+                aria-modal="true"
+                aria-label="管理メニュー"
+            >
+                <button
+                    type="button"
+                    class="absolute inset-0 bg-gray-900/40 opacity-0 transition-opacity"
+                    data-sidebar-backdrop
+                    data-action="close-mobile-sidebar"
+                    aria-label="メニューを閉じる"
+                ></button>
+
+                <aside
+                    id="app-sidebar-drawer"
+                    class="relative h-full w-80 max-w-[86vw] -translate-x-full overflow-y-auto border-r border-gray-200 bg-white shadow-2xl transition-transform duration-200 ease-out"
+                    data-sidebar-panel
+                >
+                    <div class="flex items-center justify-between border-b border-gray-200 px-5 py-4">
+                        <p class="text-sm font-semibold text-gray-700">管理メニュー</p>
+                        <button
+                            type="button"
+                            class="rounded-md p-2 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                            data-action="close-mobile-sidebar"
+                            aria-label="メニューを閉じる"
+                            title="閉じる"
+                        >
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <nav class="space-y-6 px-4 py-5 sm:px-6" aria-label="管理メニュー">
+                        @foreach ($menuSections as $section)
                             <div>
-                                <p class="px-3 pb-2 text-xs font-bold text-slate-400">業務</p>
-                                <div class="space-y-1">
-                                    <a href="#overview" class="flex items-center gap-3 rounded-lg bg-teal-50 px-3 py-3 text-sm font-semibold text-teal-700">
-                                        <span class="grid size-8 place-items-center rounded-md bg-teal-100">概</span>
-                                        ダッシュボード
-                                    </a>
-                                    <a href="#stores" class="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
-                                        <span class="grid size-8 place-items-center rounded-md bg-slate-100">店</span>
-                                        店舗管理
-                                    </a>
-                                    <a href="#members" class="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
-                                        <span class="grid size-8 place-items-center rounded-md bg-slate-100">人</span>
-                                        キャスト管理
-                                    </a>
-                                    <a href="#schedules" class="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
-                                        <span class="grid size-8 place-items-center rounded-md bg-slate-100">表</span>
-                                        シフト管理
-                                    </a>
+                                <p class="px-4 pb-2 text-xs font-bold uppercase tracking-wider text-gray-400">{{ $section['label'] }}</p>
+                                <div class="space-y-2">
+                                    @foreach ($section['items'] as $item)
+                                        <a
+                                            href="{{ $item['href'] }}"
+                                            class="flex items-center gap-4 rounded-lg px-4 py-4 text-base font-semibold transition {{ $item['active'] ? 'bg-green-50 text-green-700' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900' }}"
+                                            @if ($item['active']) aria-current="page" @endif
+                                            data-sidebar-link
+                                            data-action="close-mobile-sidebar"
+                                        >
+                                            <svg class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}" />
+                                            </svg>
+                                            <span>{{ $item['label'] }}</span>
+                                        </a>
+                                    @endforeach
                                 </div>
                             </div>
+                        @endforeach
+                    </nav>
+                </aside>
+            </div>
 
-                            <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
-                                <p class="text-xs font-bold text-slate-500">運用メモ</p>
-                                <p class="mt-2 text-sm leading-6 text-slate-600">店舗とキャストを登録後、対象期間のシフト表を作成して公開できます。</p>
-                            </div>
-                        </nav>
+            <div class="lg:flex">
+                <aside
+                    id="app-sidebar-desktop-collapsed"
+                    class="admin-desktop-sidebar-collapsed is-hidden bg-white lg:sticky lg:top-16 lg:z-20 lg:h-[calc(100vh-4rem)] lg:w-12 lg:shrink-0 lg:flex-col lg:items-center lg:overflow-y-auto lg:border-r lg:border-gray-300 lg:shadow-[6px_0_18px_rgba(31,41,55,0.04)]"
+                    data-desktop-sidebar-collapsed
+                    aria-label="管理メニュー"
+                >
+                    <div class="flex w-full justify-center px-1 pt-2">
+                        <button
+                            type="button"
+                            class="inline-flex h-7 w-7 items-center justify-center rounded-md text-gray-500 transition hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                            data-action="expand-desktop-sidebar"
+                            aria-controls="app-sidebar-desktop"
+                            aria-expanded="false"
+                            aria-label="サイドメニューを開く"
+                            title="開く"
+                        >
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
                     </div>
+
+                    <nav class="mt-8 flex w-full flex-col items-center gap-3 px-1" aria-label="管理メニュー">
+                        @foreach ($menuSections as $sectionIndex => $section)
+                            @if ($sectionIndex > 0)
+                                <span class="my-1 h-px w-8 bg-gray-200" aria-hidden="true"></span>
+                            @endif
+                            @foreach ($section['items'] as $item)
+                                <a
+                                    href="{{ $item['href'] }}"
+                                    class="flex h-10 w-10 items-center justify-center rounded-lg transition {{ $item['active'] ? 'bg-green-50 text-green-700' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900' }}"
+                                    @if ($item['active']) aria-current="page" @endif
+                                    aria-label="{{ $item['label'] }}"
+                                    title="{{ $section['label'] }}: {{ $item['label'] }}"
+                                    data-sidebar-link
+                                >
+                                    <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}" />
+                                    </svg>
+                                </a>
+                            @endforeach
+                        @endforeach
+                    </nav>
+                </aside>
+
+                <aside
+                    id="app-sidebar-desktop"
+                    class="admin-desktop-sidebar-expanded bg-white lg:sticky lg:top-16 lg:z-20 lg:h-[calc(100vh-4rem)] lg:w-60 lg:shrink-0 lg:overflow-y-auto lg:border-r lg:border-gray-300 lg:shadow-[6px_0_18px_rgba(31,41,55,0.04)]"
+                    data-desktop-sidebar
+                    aria-label="管理メニュー"
+                >
+                    <div class="flex justify-end px-3 pt-2">
+                        <button
+                            type="button"
+                            class="inline-flex h-7 w-7 items-center justify-center rounded-md text-gray-500 transition hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                            data-action="collapse-desktop-sidebar"
+                            aria-label="サイドメニューを閉じる"
+                            title="閉じる"
+                        >
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <nav class="space-y-6 px-6 pb-8 pt-3" aria-label="管理メニュー">
+                        @foreach ($menuSections as $section)
+                            <div>
+                                <p class="px-3 pb-2 text-xs font-bold uppercase tracking-wider text-gray-400">{{ $section['label'] }}</p>
+                                <div class="space-y-2">
+                                    @foreach ($section['items'] as $item)
+                                        <a
+                                            href="{{ $item['href'] }}"
+                                            class="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold leading-tight transition {{ $item['active'] ? 'bg-green-50 text-green-700' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900' }}"
+                                            @if ($item['active']) aria-current="page" @endif
+                                            data-sidebar-link
+                                        >
+                                            <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}" />
+                                            </svg>
+                                            <span class="min-w-0 whitespace-nowrap">{{ $item['label'] }}</span>
+                                        </a>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endforeach
+                    </nav>
                 </aside>
 
                 <main class="min-w-0 flex-1">
@@ -151,12 +357,17 @@
                                                 <h2 class="text-lg font-semibold text-slate-950">キャスト管理</h2>
                                                 <p class="mt-1 text-sm text-slate-500">シフト提出対象者と連絡先を管理します。</p>
                                             </div>
-                                            <label class="flex items-center gap-2 text-sm text-slate-600">
-                                                店舗
-                                                <select class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-100" data-filter="memberStore">
-                                                    <option value="">すべて</option>
-                                                </select>
-                                            </label>
+                                            <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+                                                <label class="flex items-center gap-2 text-sm text-slate-600">
+                                                    店舗
+                                                    <select class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-100" data-filter="memberStore">
+                                                        <option value="">すべて</option>
+                                                    </select>
+                                                </label>
+                                                <button type="button" class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700" data-action="open-member-modal">
+                                                    キャストを追加
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="overflow-x-auto">
@@ -195,37 +406,6 @@
                                 </section>
 
                                 <section class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-                                    <h2 class="text-lg font-semibold text-slate-950">キャスト登録</h2>
-                                    <form class="mt-4 space-y-4" data-form="member">
-                                        <div>
-                                            <label class="block text-sm font-medium text-slate-700">氏名</label>
-                                            <input name="name" required class="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-100">
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-slate-700">店舗</label>
-                                            <select name="store_id" class="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-100">
-                                                <option value="">未割り当て</option>
-                                            </select>
-                                        </div>
-                                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                            <div>
-                                                <label class="block text-sm font-medium text-slate-700">電話</label>
-                                                <input name="phone" class="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-100">
-                                            </div>
-                                            <div>
-                                                <label class="block text-sm font-medium text-slate-700">メール</label>
-                                                <input name="email" type="email" class="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-100">
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-slate-700">備考</label>
-                                            <textarea name="remarks" rows="3" class="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-100"></textarea>
-                                        </div>
-                                        <button class="w-full rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700">キャストを追加</button>
-                                    </form>
-                                </section>
-
-                                <section class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
                                     <h2 class="text-lg font-semibold text-slate-950">シフト表作成</h2>
                                     <form class="mt-4 space-y-4" data-form="schedule">
                                         <div>
@@ -252,6 +432,56 @@
             </div>
         </div>
 
+        <div class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/40 px-4 py-6" data-member-modal role="dialog" aria-modal="true" aria-labelledby="member-modal-title">
+            <div class="w-full max-w-xl rounded-lg bg-white shadow-2xl">
+                <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+                    <div>
+                        <h2 id="member-modal-title" class="text-lg font-semibold text-slate-950">キャスト登録</h2>
+                        <p class="mt-1 text-sm text-slate-500">シフト提出対象者を追加します。</p>
+                    </div>
+                    <button type="button" class="rounded-md p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700" data-action="close-member-modal" aria-label="閉じる">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <form class="space-y-4 px-5 py-5" data-form="member">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700">氏名</label>
+                        <input name="name" required class="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-100">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700">店舗</label>
+                        <select name="store_id" class="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-100">
+                            <option value="">未割り当て</option>
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700">電話</label>
+                            <input name="phone" class="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-100">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700">メール</label>
+                            <input name="email" type="email" class="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-100">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700">備考</label>
+                        <textarea name="remarks" rows="3" class="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-100"></textarea>
+                    </div>
+                    <div class="flex justify-end gap-3 border-t border-slate-200 pt-4">
+                        <button type="button" class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50" data-action="close-member-modal">
+                            キャンセル
+                        </button>
+                        <button class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700">
+                            キャストを追加
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <script>
             (() => {
                 const state = {
@@ -264,6 +494,92 @@
                 const csrf = document.querySelector('meta[name="csrf-token"]').content;
                 const $ = (selector) => document.querySelector(selector);
                 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
+
+                const openMobileSidebar = () => {
+                    const drawer = $('[data-sidebar-drawer]');
+                    const panel = $('[data-sidebar-panel]');
+                    const backdrop = $('[data-sidebar-backdrop]');
+                    const trigger = $('[data-action="open-mobile-sidebar"]');
+
+                    drawer?.classList.remove('hidden', 'pointer-events-none');
+                    drawer?.classList.add('pointer-events-auto');
+                    requestAnimationFrame(() => {
+                        panel?.classList.remove('-translate-x-full');
+                        backdrop?.classList.remove('opacity-0');
+                    });
+                    trigger?.setAttribute('aria-expanded', 'true');
+                };
+
+                const closeMobileSidebar = () => {
+                    const drawer = $('[data-sidebar-drawer]');
+                    const panel = $('[data-sidebar-panel]');
+                    const backdrop = $('[data-sidebar-backdrop]');
+                    const trigger = $('[data-action="open-mobile-sidebar"]');
+
+                    panel?.classList.add('-translate-x-full');
+                    backdrop?.classList.add('opacity-0');
+                    drawer?.classList.remove('pointer-events-auto');
+                    drawer?.classList.add('pointer-events-none');
+                    window.setTimeout(() => drawer?.classList.add('hidden'), 180);
+                    trigger?.setAttribute('aria-expanded', 'false');
+                };
+
+                const collapseDesktopSidebar = () => {
+                    $('[data-desktop-sidebar]')?.classList.add('is-hidden');
+                    $('[data-desktop-sidebar-collapsed]')?.classList.remove('is-hidden');
+                    $('[data-action="expand-desktop-sidebar"]')?.setAttribute('aria-expanded', 'false');
+                };
+
+                const expandDesktopSidebar = () => {
+                    $('[data-desktop-sidebar-collapsed]')?.classList.add('is-hidden');
+                    $('[data-desktop-sidebar]')?.classList.remove('is-hidden');
+                    $('[data-action="expand-desktop-sidebar"]')?.setAttribute('aria-expanded', 'true');
+                };
+
+                const closeAccountMenu = () => {
+                    $('[data-account-menu]')?.classList.add('hidden');
+                    $('[data-action="toggle-account-menu"]')?.setAttribute('aria-expanded', 'false');
+                };
+
+                const toggleAccountMenu = () => {
+                    const menu = $('[data-account-menu]');
+                    const trigger = $('[data-action="toggle-account-menu"]');
+                    const nextOpen = menu?.classList.contains('hidden') ?? false;
+
+                    menu?.classList.toggle('hidden', !nextOpen);
+                    trigger?.setAttribute('aria-expanded', nextOpen ? 'true' : 'false');
+                };
+
+                const openMemberModal = () => {
+                    $('[data-member-modal]')?.classList.remove('hidden');
+                    $('[data-member-modal]')?.classList.add('flex');
+                    $('[data-member-modal] input[name="name"]')?.focus();
+                };
+
+                const closeMemberModal = () => {
+                    $('[data-member-modal]')?.classList.add('hidden');
+                    $('[data-member-modal]')?.classList.remove('flex');
+                };
+
+                const setSidebarActive = (targetHash = window.location.hash || '#overview') => {
+                    const hash = targetHash || '#overview';
+
+                    $$('[data-sidebar-link]').forEach((link) => {
+                        const isActive = link.getAttribute('href') === hash;
+
+                        link.classList.toggle('bg-green-50', isActive);
+                        link.classList.toggle('text-green-700', isActive);
+                        link.classList.toggle('text-gray-700', !isActive);
+                        link.classList.toggle('hover:bg-gray-50', !isActive);
+                        link.classList.toggle('hover:text-gray-900', !isActive);
+
+                        if (isActive) {
+                            link.setAttribute('aria-current', 'page');
+                        } else {
+                            link.removeAttribute('aria-current');
+                        }
+                    });
+                };
 
                 const api = async (path, options = {}) => {
                     const response = await fetch(path, {
@@ -441,6 +757,7 @@
                     try {
                         await api('/api/admin/members', { method: 'POST', body: JSON.stringify({ status: 'active', is_shift_submitter: true, ...formPayload(event.currentTarget) }) });
                         event.currentTarget.reset();
+                        closeMemberModal();
                         await load();
                         setMessage('[data-notice]', 'キャストを追加しました。');
                     } catch (error) {
@@ -477,15 +794,66 @@
                         setMessage('[data-notice]', '最新データに更新しました。');
                     }
 
-                    if (event.target.closest('[data-action="toggle-sidebar"]')) {
-                        $('[data-sidebar]').classList.toggle('hidden');
+                    const sidebarLink = event.target.closest('[data-sidebar-link]');
+                    if (sidebarLink) {
+                        setSidebarActive(sidebarLink.getAttribute('href'));
                     }
+
+                    if (event.target.closest('[data-action="toggle-account-menu"]')) {
+                        toggleAccountMenu();
+                        return;
+                    }
+
+                    if (!event.target.closest('[data-account-menu]')) {
+                        closeAccountMenu();
+                    }
+
+                    if (event.target.closest('[data-action="open-member-modal"]')) {
+                        openMemberModal();
+                    }
+
+                    if (event.target.closest('[data-action="close-member-modal"]')) {
+                        closeMemberModal();
+                    }
+
+                    if (event.target === $('[data-member-modal]')) {
+                        closeMemberModal();
+                    }
+
+                    if (event.target.closest('[data-action="open-mobile-sidebar"]')) {
+                        openMobileSidebar();
+                    }
+
+                    if (event.target.closest('[data-action="close-mobile-sidebar"]')) {
+                        closeMobileSidebar();
+                    }
+
+                    if (event.target.closest('[data-action="collapse-desktop-sidebar"]')) {
+                        collapseDesktopSidebar();
+                    }
+
+                    if (event.target.closest('[data-action="expand-desktop-sidebar"]')) {
+                        expandDesktopSidebar();
+                    }
+                });
+
+                document.addEventListener('keydown', (event) => {
+                    if (event.key === 'Escape') {
+                        closeMobileSidebar();
+                        closeAccountMenu();
+                        closeMemberModal();
+                    }
+                });
+
+                window.addEventListener('hashchange', () => {
+                    setSidebarActive();
                 });
 
                 $$('[data-filter="memberStore"], [data-filter="scheduleStore"]').forEach((select) => {
                     select.addEventListener('change', render);
                 });
 
+                setSidebarActive();
                 load().catch((error) => setMessage('[data-alert]', error.message));
             })();
         </script>

@@ -23,6 +23,9 @@ use Laravel\Sanctum\HasApiTokens;
     'email',
     'email_verified_at',
     'password',
+    'two_factor_secret',
+    'two_factor_recovery_codes',
+    'two_factor_confirmed_at',
     'remember_token',
     'phone',
     'company',
@@ -35,7 +38,7 @@ use Laravel\Sanctum\HasApiTokens;
     'updated_by',
     'deleted_by',
 ])]
-#[Hidden(['password', 'remember_token'])]
+#[Hidden(['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
@@ -64,6 +67,9 @@ class User extends Authenticatable
             'role' => 'integer',
             'ips' => 'array',
             'login_at' => 'datetime',
+            'two_factor_secret' => 'encrypted',
+            'two_factor_recovery_codes' => 'encrypted',
+            'two_factor_confirmed_at' => 'datetime',
         ];
     }
 

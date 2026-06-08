@@ -21,6 +21,9 @@ return new class extends Migration
             $table->string('email')->nullable()->unique()->comment('メールアドレス');
             $table->timestamp('email_verified_at')->nullable()->comment('メールアドレス確認日時');
             $table->string('password')->nullable()->comment('パスワード');
+            $table->text('two_factor_secret')->nullable()->comment('二要素認証シークレット');
+            $table->text('two_factor_recovery_codes')->nullable()->comment('二要素認証リカバリーコード');
+            $table->timestamp('two_factor_confirmed_at')->nullable()->comment('二要素認証確認日時');
             $table->rememberToken()->comment('リメンバートークン');
             $table->string('phone')->nullable()->comment('電話番号');
             $table->string('company')->nullable()->comment('会社名');
