@@ -13,7 +13,7 @@
                 [
                     'label' => 'シフト管理',
                     'href' => route('admin.schedules'),
-                    'active' => $page === 'schedules',
+                    'active' => in_array($page, ['schedules', 'schedule-create'], true),
                     'icon' => 'M8 7V3m8 4V3M5 11h14M6 5h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2z',
                 ],
                 [
@@ -278,21 +278,24 @@
                         @endif
 
                         @if ($page === 'schedules')
-                        <div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_390px]">
-                            <div>
-                                <section class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+                        <section class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
                                     <div class="border-b border-slate-200 px-4 py-3">
                                         <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                                             <div>
                                                 <p class="text-xs font-black text-teal-700">Schedule Control</p>
                                                 <h2 class="mt-1 text-lg font-bold text-slate-950">シフト管理</h2>
                                             </div>
-                                            <label class="flex items-center gap-2 text-sm font-bold text-slate-600">
-                                                店舗
-                                                <select class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500" data-filter="scheduleStore">
-                                                    <option value="">すべて</option>
-                                                </select>
-                                            </label>
+                                            <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+                                                <label class="flex items-center gap-2 text-sm font-bold text-slate-600">
+                                                    店舗
+                                                    <select class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500" data-filter="scheduleStore">
+                                                        <option value="">すべて</option>
+                                                    </select>
+                                                </label>
+                                                <a href="{{ route('admin.schedules.create') }}" class="inline-flex items-center justify-center rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-800">
+                                                    シフト表作成
+                                                </a>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="overflow-x-auto">
@@ -309,34 +312,45 @@
                                             <tbody class="divide-y divide-slate-200" data-list="schedules"></tbody>
                                         </table>
                                     </div>
-                                </section>
+                        </section>
+                        @endif
 
-                            </div>
-
-                            <div>
-                                <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+                        @if ($page === 'schedule-create')
+                        <section class="max-w-xl rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+                            <div class="mb-5 flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-center sm:justify-between">
+                                <div>
                                     <p class="text-xs font-black text-teal-700">Create Schedule</p>
                                     <h2 class="mt-1 text-lg font-bold text-slate-950">シフト表作成</h2>
-                                    <form class="mt-5 space-y-4" data-form="schedule">
-                                        <div>
-                                            <label class="block text-sm font-bold text-slate-700">店舗</label>
-                                            <select name="store_id" required class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white"></select>
-                                        </div>
-                                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                            <div>
-                                                <label class="block text-sm font-bold text-slate-700">開始日</label>
-                                                <input name="starts_on" type="date" required class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
-                                            </div>
-                                            <div>
-                                                <label class="block text-sm font-bold text-slate-700">終了日</label>
-                                                <input name="ends_on" type="date" required class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
-                                            </div>
-                                        </div>
-                                        <button class="w-full rounded-xl border border-teal-200 bg-teal-50 px-4 py-3 text-sm font-black text-teal-800 transition hover:bg-teal-700 hover:text-white">シフト表を作成</button>
-                                    </form>
-                                </section>
+                                </div>
+                                <a href="{{ route('admin.schedules') }}" class="inline-flex items-center justify-center rounded-md border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50">
+                                    一覧へ戻る
+                                </a>
                             </div>
-                        </div>
+                            <form class="space-y-4" data-form="schedule">
+                                <div>
+                                    <label class="block text-sm font-bold text-slate-700">店舗</label>
+                                    <select name="store_id" required class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white"></select>
+                                </div>
+                                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                    <div>
+                                        <label class="block text-sm font-bold text-slate-700">開始日</label>
+                                        <input name="starts_on" type="date" required class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-bold text-slate-700">終了日</label>
+                                        <input name="ends_on" type="date" required class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
+                                    </div>
+                                </div>
+                                <div class="flex justify-end gap-3 border-t border-slate-200 pt-4">
+                                    <a href="{{ route('admin.schedules') }}" class="inline-flex items-center justify-center rounded-md border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50">
+                                        キャンセル
+                                    </a>
+                                    <button class="inline-flex items-center justify-center rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-800">
+                                        シフト表を作成
+                                    </button>
+                                </div>
+                            </form>
+                        </section>
                         @endif
 
                         @if ($page === 'members')
@@ -857,6 +871,7 @@
                         event.currentTarget.reset();
                         await load();
                         setMessage('[data-notice]', 'シフト表を作成しました。');
+                        window.location.href = @json(route('admin.schedules'));
                     } catch (error) {
                         setMessage('[data-alert]', error.message);
                     }
