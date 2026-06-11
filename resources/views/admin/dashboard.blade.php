@@ -30,7 +30,7 @@
                 [
                     'label' => '店舗管理',
                     'href' => route('admin.stores'),
-                    'active' => in_array($page, ['stores', 'store-create'], true),
+                    'active' => in_array($page, ['stores', 'store-create', 'store-edit'], true),
                     'icon' => 'M3 21h18M5 21V7l8-4v18M19 21V11l-6-4M9 9h1M9 13h1M9 17h1M14 13h1M14 17h1',
                 ],
                 [
@@ -266,6 +266,7 @@
                                             <th class="px-5 py-3 text-left">期間</th>
                                             <th class="px-5 py-3 text-right">枠数</th>
                                             <th class="px-5 py-3 text-right">状態</th>
+                                            <th class="px-5 py-3 text-right">操作</th>
                                             <th class="px-5 py-3 text-right">アクション</th>
                                         </tr>
                                     </thead>
@@ -420,32 +421,43 @@
                         </section>
                         @endif
 
-                        @if ($page === 'store-create')
+                        @if (in_array($page, ['store-create', 'store-edit'], true))
                         <section class="max-w-xl rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
                             <div class="mb-5 flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-center sm:justify-between">
                                 <div>
                                     <p class="text-xs font-black text-teal-700">Store Registry</p>
-                                    <h2 class="mt-1 text-lg font-bold text-slate-950">店舗登録</h2>
+                                    <h2 class="mt-1 text-lg font-bold text-slate-950">{{ $page === 'store-edit' ? '店舗編集' : '店舗登録' }}</h2>
                                 </div>
                                 <a href="{{ route('admin.stores') }}" class="inline-flex items-center justify-center rounded-md border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50">
                                     一覧へ戻る
                                 </a>
                             </div>
-                            <form class="space-y-4" data-form="store">
+                            <form class="space-y-4" data-form="{{ $page === 'store-edit' ? 'store-edit' : 'store' }}" @if ($page === 'store-edit') data-store-id="{{ $editingStore->id }}" @endif>
                                 <div>
                                     <label class="block text-sm font-bold text-slate-700">店舗名</label>
-                                    <input name="name" required class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:bg-white">
+                                    <input name="name" required value="{{ old('name', $page === 'store-edit' ? $editingStore->name : '') }}" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:bg-white">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-bold text-slate-700">住所</label>
-                                    <input name="address" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:bg-white">
+                                    <input name="address" value="{{ old('address', $page === 'store-edit' ? $editingStore->address : '') }}" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:bg-white">
                                 </div>
+                                @if ($page === 'store-edit')
+                                    <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                                        <label for="store_is_active" class="flex items-start gap-3">
+                                            <input id="store_is_active" type="checkbox" name="is_active" value="1" @checked(old('is_active', $editingStore->is_active)) class="mt-1 rounded border-slate-300 text-teal-700 accent-teal-700 transition focus:ring-4 focus:ring-teal-100">
+                                            <span>
+                                                <span class="block text-sm font-bold text-slate-800">稼働中</span>
+                                                <span class="mt-1 block text-xs leading-5 text-slate-500">チェックを外すと停止中として扱います。</span>
+                                            </span>
+                                        </label>
+                                    </div>
+                                @endif
                                 <div class="flex justify-end gap-3 border-t border-slate-200 pt-4">
                                     <a href="{{ route('admin.stores') }}" class="inline-flex items-center justify-center rounded-md border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50">
                                         キャンセル
                                     </a>
                                     <button class="inline-flex items-center justify-center rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-800">
-                                        店舗を追加
+                                        {{ $page === 'store-edit' ? '店舗を保存' : '店舗を追加' }}
                                     </button>
                                 </div>
                             </form>
@@ -524,6 +536,9 @@
                     members: @json($initialData['members'] ?? []),
                     schedules: @json($initialData['schedules'] ?? []),
                     user: @json($initialData['user'] ?? Auth::user()->load('tenant')),
+                };
+                const routes = {
+                    storesBase: @json(url('/dashboard/stores')),
                 };
 
                 const csrf = document.querySelector('meta[name="csrf-token"]').content;
@@ -689,9 +704,12 @@
                                         ${store.is_active ? '稼働中' : '停止中'}
                                     </span>
                                 </td>
+                                <td class="px-5 py-4 text-right">
+                                    <a href="${routes.storesBase}/${store.id}/edit" class="inline-flex rounded-md border border-gray-200 px-4 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50">編集</a>
+                                </td>
                             </tr>
                         `).join('')
-                        : '<tr><td colspan="3" class="px-5 py-8 text-center text-sm text-gray-500">店舗がまだ登録されていません。</td></tr>';
+                        : '<tr><td colspan="4" class="px-5 py-8 text-center text-sm text-gray-500">店舗がまだ登録されていません。</td></tr>';
                 };
 
                 const renderMembers = () => {
@@ -880,9 +898,10 @@
 
                 $('[data-form="store"]')?.addEventListener('submit', async (event) => {
                     event.preventDefault();
+                    const form = event.currentTarget;
                     try {
-                        await api('/api/admin/stores', { method: 'POST', body: JSON.stringify({ timezone: 'Asia/Tokyo', is_active: true, ...formPayload(event.currentTarget) }) });
-                        event.currentTarget.reset();
+                        await api('/api/admin/stores', { method: 'POST', body: JSON.stringify({ timezone: 'Asia/Tokyo', is_active: true, ...formPayload(form) }) });
+                        form.reset();
                         await load();
                         setMessage('[data-notice]', '店舗を追加しました。');
                         window.location.href = @json(route('admin.stores'));
@@ -891,11 +910,26 @@
                     }
                 });
 
+                $('[data-form="store-edit"]')?.addEventListener('submit', async (event) => {
+                    event.preventDefault();
+                    const form = event.currentTarget;
+                    const payload = { timezone: 'Asia/Tokyo', is_active: false, ...formPayload(form) };
+                    try {
+                        await api(`/api/admin/stores/${form.dataset.storeId}`, { method: 'PUT', body: JSON.stringify(payload) });
+                        await load();
+                        setMessage('[data-notice]', '店舗を更新しました。');
+                        window.location.href = @json(route('admin.stores'));
+                    } catch (error) {
+                        setMessage('[data-alert]', error.message);
+                    }
+                });
+
                 $('[data-form="member"]')?.addEventListener('submit', async (event) => {
                     event.preventDefault();
+                    const form = event.currentTarget;
                     try {
-                        await api('/api/admin/members', { method: 'POST', body: JSON.stringify({ status: 'active', is_shift_submitter: true, ...formPayload(event.currentTarget) }) });
-                        event.currentTarget.reset();
+                        await api('/api/admin/members', { method: 'POST', body: JSON.stringify({ status: 'active', is_shift_submitter: true, ...formPayload(form) }) });
+                        form.reset();
                         closeMemberModal();
                         await load();
                         setMessage('[data-notice]', 'キャストを追加しました。');
@@ -906,9 +940,10 @@
 
                 $('[data-form="schedule"]')?.addEventListener('submit', async (event) => {
                     event.preventDefault();
+                    const form = event.currentTarget;
                     try {
-                        await api('/api/admin/shift-schedules', { method: 'POST', body: JSON.stringify({ status: 'draft', ...formPayload(event.currentTarget) }) });
-                        event.currentTarget.reset();
+                        await api('/api/admin/shift-schedules', { method: 'POST', body: JSON.stringify({ status: 'draft', ...formPayload(form) }) });
+                        form.reset();
                         await load();
                         setMessage('[data-notice]', 'シフト表を作成しました。');
                         window.location.href = @json(route('admin.schedules'));
