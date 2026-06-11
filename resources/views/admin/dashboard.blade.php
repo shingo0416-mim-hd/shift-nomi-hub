@@ -1,24 +1,25 @@
 @php
+    $page = $page ?? 'overview';
     $menuSections = [
         [
             'label' => 'OPERATIONS',
             'items' => [
                 [
                     'label' => 'ダッシュボード',
-                    'href' => '#overview',
-                    'active' => true,
+                    'href' => route('dashboard'),
+                    'active' => $page === 'overview',
                     'icon' => 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6',
                 ],
                 [
                     'label' => 'シフト管理',
-                    'href' => '#schedules',
-                    'active' => false,
+                    'href' => route('admin.schedules'),
+                    'active' => $page === 'schedules',
                     'icon' => 'M8 7V3m8 4V3M5 11h14M6 5h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2z',
                 ],
                 [
                     'label' => 'キャスト管理',
-                    'href' => '#members',
-                    'active' => false,
+                    'href' => route('admin.members'),
+                    'active' => $page === 'members',
                     'icon' => 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
                 ],
             ],
@@ -28,19 +29,20 @@
             'items' => [
                 [
                     'label' => '店舗管理',
-                    'href' => '#stores',
-                    'active' => false,
+                    'href' => route('admin.stores'),
+                    'active' => $page === 'stores',
                     'icon' => 'M3 21h18M5 21V7l8-4v18M19 21V11l-6-4M9 9h1M9 13h1M9 17h1M14 13h1M14 17h1',
                 ],
                 [
                     'label' => 'アカウント',
-                    'href' => '#account',
-                    'active' => false,
+                    'href' => route('admin.account'),
+                    'active' => $page === 'account',
                     'icon' => 'M5.121 17.804A8.966 8.966 0 0112 15c2.21 0 4.235.8 5.879 2.128M15 11a3 3 0 11-6 0 3 3 0 016 0zm6 1a9 9 0 11-18 0 9 9 0 0118 0z',
                 ],
             ],
         ],
     ];
+    $sidebarItems = array_merge(...array_column($menuSections, 'items'));
 @endphp
 
 <!DOCTYPE html>
@@ -57,298 +59,367 @@
             @vite(['resources/css/app.css', 'resources/js/app.js'])
         @endif
     </head>
-    <body class="min-h-screen bg-slate-950 text-slate-100 antialiased">
-        <div id="adminApp" class="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.18),transparent_28%),linear-gradient(180deg,#020617_0%,#0f172a_48%,#111827_100%)]">
-            <header class="sticky top-0 z-40 border-b border-white/10 bg-slate-950/80 backdrop-blur-xl">
-                <div class="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
-                    <div class="flex items-center gap-4">
-                        <button
-                            type="button"
-                            class="inline-flex size-10 items-center justify-center rounded-xl border border-cyan-300/30 bg-white/10 text-cyan-200 transition hover:bg-cyan-400/10 lg:hidden"
-                            data-action="open-mobile-sidebar"
-                            aria-controls="app-sidebar-drawer"
-                            aria-expanded="false"
-                            aria-label="管理メニューを開く"
-                        >
-                            <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                            </svg>
-                        </button>
-
-                        <div class="flex items-center gap-3">
-                            <div class="grid size-11 place-items-center rounded-2xl bg-cyan-400 text-sm font-black text-slate-950 shadow-[0_0_34px_rgba(34,211,238,0.26)]">
-                                SH
-                            </div>
-                            <div>
-                                <p class="text-base font-black text-white">ShiftHub</p>
-                                <p class="text-xs font-semibold text-cyan-200" data-bind="tenantName">ADMIN PORTAL</p>
-                            </div>
-                        </div>
+    <body class="min-h-screen bg-gray-100 text-gray-900 antialiased">
+        <div id="adminApp" class="min-h-screen bg-gray-100 pt-16">
+            <header class="fixed inset-x-0 top-0 z-40 border-b border-gray-300 bg-white shadow-sm">
+                <div class="mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
+                    <div class="flex items-center">
+                        <a href="{{ route('dashboard') }}" class="flex h-16 items-center gap-3">
+                            <span class="grid size-10 place-items-center rounded-lg bg-teal-700 text-sm font-black text-white">SH</span>
+                            <span>
+                                <span class="block text-base font-black leading-tight text-gray-900">ShiftHub</span>
+                                <span class="block text-xs font-semibold text-gray-500" data-bind="tenantName">{{ Auth::user()->tenant?->name }}</span>
+                            </span>
+                        </a>
                     </div>
 
-                    <div class="flex min-w-0 items-center gap-3">
-                        <button type="button" class="rounded-xl border border-white/10 bg-white/10 px-3 py-2 text-sm font-bold text-slate-100 transition hover:border-cyan-300/50 hover:bg-cyan-400/10 hover:text-cyan-100" data-action="reload">
-                            更新
-                        </button>
+                    <div class="flex items-center">
+                        <div class="hidden items-center gap-2 sm:flex">
+                            <p class="max-w-40 truncate text-base text-gray-800">{{ Auth::user()->name }}</p>
+                            <svg width="30" height="30" viewBox="0 0 29.5 29.5" aria-hidden="true">
+                                <path d="M14.749,0A14.75,14.75,0,1,0,29.5,14.75,14.755,14.755,0,0,0,14.749,0Zm0,4.425A4.425,4.425,0,1,1,10.324,8.85a4.419,4.419,0,0,1,4.424-4.425Zm0,20.945A10.621,10.621,0,0,1,5.9,20.62c.044-2.936,5.9-4.543,8.849-4.543s8.805,1.607,8.849,4.543a10.62,10.62,0,0,1-8.849,4.75Z" fill="#2997e7" fill-rule="evenodd"/>
+                            </svg>
+                        </div>
 
-                        <div class="relative">
-                            <button
-                                type="button"
-                                class="flex items-center gap-3 rounded-xl border border-white/10 bg-white/10 px-3 py-2 text-sm font-bold text-slate-100 transition hover:border-cyan-300/50 hover:bg-white/15"
-                                data-action="toggle-account-menu"
-                                aria-expanded="false"
-                                aria-haspopup="true"
-                            >
-                                <span class="hidden max-w-32 truncate sm:inline">{{ Auth::user()->name }}</span>
-                                <span class="grid size-7 place-items-center rounded-lg bg-cyan-400 text-xs font-black text-slate-950">{{ mb_substr(Auth::user()->name ?? 'A', 0, 1) }}</span>
+                        <div class="relative ml-3">
+                            <button type="button" class="inline-flex size-9 items-center justify-center rounded-md text-gray-500 transition hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500" data-action="toggle-account-menu" aria-expanded="false" aria-haspopup="true" aria-label="アカウントメニュー" title="アカウントメニュー">
+                                <svg width="20" height="20" viewBox="0 0 19.454 20" aria-hidden="true">
+                                    <path d="M17.159,11.78A6.234,6.234,0,0,0,17.215,11a6.234,6.234,0,0,0-.056-.78l1.688-1.32a.4.4,0,0,0,.1-.512l-1.6-2.768a.4.4,0,0,0-.488-.176l-1.992.8a5.845,5.845,0,0,0-1.352-.784l-.3-2.12A.39.39,0,0,0,12.816,3h-3.2a.39.39,0,0,0-.392.336l-.3,2.12a6.147,6.147,0,0,0-1.352.784l-1.992-.8a.39.39,0,0,0-.488.176l-1.6,2.768a.394.394,0,0,0,.1.512l1.688,1.32A6.345,6.345,0,0,0,5.215,11a6.345,6.345,0,0,0,.056.78L3.583,13.1a.4.4,0,0,0-.1.512l1.6,2.768a.4.4,0,0,0,.488.176l1.992-.8a5.845,5.845,0,0,0,1.352.784l.3,2.12a.39.39,0,0,0,.392.336h3.2a.39.39,0,0,0,.392-.336l.3-2.12a6.147,6.147,0,0,0,1.352-.784l1.992.8a.39.39,0,0,0,.488-.176l1.6-2.768a.4.4,0,0,0-.1-.512ZM11.215,13.8A2.8,2.8,0,1,1,14.015,11,2.8,2.8,0,0,1,11.215,13.8Z" transform="translate(-1.488 -1.5)" fill="#c4c4c4"/>
+                                </svg>
                             </button>
 
-                            <div class="absolute right-0 z-50 mt-2 hidden w-56 overflow-hidden rounded-2xl border border-white/10 bg-slate-950/95 py-2 shadow-2xl shadow-black/50 backdrop-blur" data-account-menu>
-                                <div class="border-b border-white/10 px-4 pb-3">
-                                    <p class="truncate text-sm font-bold text-white">{{ Auth::user()->name }}</p>
-                                    <p class="truncate text-xs text-slate-400">{{ Auth::user()->email }}</p>
-                                </div>
-                                <a href="{{ route('two-factor.settings') }}" class="block px-4 py-2 text-start text-sm font-semibold text-slate-300 transition hover:bg-cyan-400/10 hover:text-cyan-100">
-                                    2段階認証設定
-                                </a>
-                                <form method="POST" action="{{ route('logout') }}">
+                            <div class="absolute right-0 z-50 mt-2 hidden w-44 overflow-hidden rounded-md border border-gray-200 bg-white py-1 shadow-lg" data-account-menu>
+                                <form method="POST" action="{{ route('logout') }}" novalidate>
                                     @csrf
-                                    <button type="submit" class="block w-full px-4 py-2 text-start text-sm font-semibold text-slate-300 transition hover:bg-cyan-400/10 hover:text-cyan-100">
+                                    <button type="submit" class="block w-full px-4 py-2 text-left text-sm font-semibold text-gray-700 transition hover:bg-gray-50 hover:text-gray-900">
                                         ログアウト
                                     </button>
                                 </form>
                             </div>
                         </div>
+
+                        <button type="button" class="ml-3 inline-flex items-center justify-center rounded-md p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:bg-gray-100 focus:text-gray-500 sm:hidden" data-action="open-mobile-sidebar" aria-controls="app-sidebar-drawer" aria-expanded="false" aria-label="管理メニューを開く">
+                            <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                        </button>
                     </div>
                 </div>
             </header>
 
+            <div class="border-b border-gray-200 bg-white px-4 py-3 shadow-sm lg:hidden">
+                <button type="button" class="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2" data-action="open-mobile-sidebar" aria-controls="app-sidebar-drawer" aria-expanded="false">
+                    <svg class="size-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                    <span>管理メニュー</span>
+                </button>
+            </div>
+
             <div class="pointer-events-none fixed inset-0 z-50 hidden lg:hidden" data-sidebar-drawer role="dialog" aria-modal="true" aria-label="管理メニュー">
-                <button type="button" class="absolute inset-0 bg-slate-950/80 opacity-0 transition-opacity" data-sidebar-backdrop data-action="close-mobile-sidebar" aria-label="メニューを閉じる"></button>
-                <aside id="app-sidebar-drawer" class="relative h-full w-80 max-w-[86vw] -translate-x-full overflow-y-auto border-r border-white/10 bg-slate-950 shadow-2xl transition-transform duration-200 ease-out" data-sidebar-panel>
-                    <div class="flex items-center justify-between border-b border-white/10 px-5 py-4">
-                        <p class="text-sm font-black text-cyan-200">Navigation</p>
-                        <button type="button" class="rounded-lg p-2 text-slate-400 transition hover:bg-white/10 hover:text-cyan-100" data-action="close-mobile-sidebar" aria-label="メニューを閉じる">
+                <button type="button" class="absolute inset-0 bg-gray-900/40 opacity-0 transition-opacity" data-sidebar-backdrop data-action="close-mobile-sidebar" aria-label="メニューを閉じる"></button>
+                <aside id="app-sidebar-drawer" class="relative h-full w-80 max-w-[86vw] -translate-x-full overflow-y-auto border-r border-gray-200 bg-white shadow-2xl transition-transform duration-200 ease-out" data-sidebar-panel>
+                    <div class="flex items-center justify-between border-b border-gray-200 px-5 py-4">
+                        <p class="text-sm font-semibold text-gray-700">管理メニュー</p>
+                        <button type="button" class="rounded-md p-2 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500" data-action="close-mobile-sidebar" aria-label="メニューを閉じる" title="閉じる">
                             <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </button>
                     </div>
-                    <nav class="space-y-6 px-4 py-5" aria-label="管理メニュー">
-                        @foreach ($menuSections as $section)
-                            <div>
-                                <p class="px-3 pb-2 text-xs font-black text-slate-500">{{ $section['label'] }}</p>
-                                <div class="space-y-1">
-                                    @foreach ($section['items'] as $item)
-                                        <a href="{{ $item['href'] }}" class="flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-bold transition {{ $item['active'] ? 'bg-cyan-400 text-slate-950 shadow-lg shadow-cyan-950/30' : 'text-slate-300 hover:bg-white/10 hover:text-white' }}" @if ($item['active']) aria-current="page" @endif data-sidebar-link data-action="close-mobile-sidebar">
-                                            <svg class="size-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}" />
-                                            </svg>
-                                            <span>{{ $item['label'] }}</span>
-                                        </a>
-                                    @endforeach
-                                </div>
-                            </div>
+                    <nav class="space-y-2 px-4 py-5 sm:px-6" aria-label="管理メニュー">
+                        @foreach ($sidebarItems as $item)
+                            <a href="{{ $item['href'] }}" class="flex items-center gap-4 rounded-lg px-4 py-4 text-base font-semibold transition {{ $item['active'] ? 'bg-green-50 text-green-700' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900' }}" @if ($item['active']) aria-current="page" @endif data-sidebar-link data-action="close-mobile-sidebar">
+                                <svg class="size-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}" />
+                                </svg>
+                                <span>{{ $item['label'] }}</span>
+                            </a>
                         @endforeach
                     </nav>
                 </aside>
             </div>
 
             <div class="lg:flex">
-                <aside class="hidden w-64 shrink-0 border-r border-white/10 bg-slate-950/55 backdrop-blur lg:sticky lg:top-16 lg:block lg:h-[calc(100vh-4rem)] lg:overflow-y-auto">
-                    <nav class="space-y-7 px-5 py-7" aria-label="管理メニュー">
-                        @foreach ($menuSections as $section)
-                            <div>
-                                <p class="px-3 pb-3 text-xs font-black text-slate-500">{{ $section['label'] }}</p>
-                                <div class="space-y-1">
-                                    @foreach ($section['items'] as $item)
-                                        <a href="{{ $item['href'] }}" class="flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-bold transition {{ $item['active'] ? 'bg-cyan-400 text-slate-950 shadow-lg shadow-cyan-950/30' : 'text-slate-300 hover:bg-white/10 hover:text-white' }}" @if ($item['active']) aria-current="page" @endif data-sidebar-link>
-                                            <svg class="size-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}" />
-                                            </svg>
-                                            <span>{{ $item['label'] }}</span>
-                                        </a>
-                                    @endforeach
-                                </div>
-                            </div>
+                <aside id="admin-sidebar-desktop-collapsed" class="hidden bg-white lg:sticky lg:top-16 lg:z-20 lg:h-[calc(100vh-4rem)] lg:w-12 lg:shrink-0 lg:flex-col lg:items-center lg:overflow-y-auto lg:border-r lg:border-gray-300 lg:shadow-[6px_0_18px_rgba(31,41,55,0.04)]" data-sidebar-collapsed aria-label="管理メニュー">
+                    <div class="flex w-full justify-center px-1 pt-2">
+                        <button type="button" class="inline-flex size-7 items-center justify-center rounded-md text-gray-500 transition hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500" data-action="expand-desktop-sidebar" aria-controls="admin-sidebar-desktop" aria-expanded="false" aria-label="サイドメニューを開く" title="開く">
+                            <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <nav class="mt-8 flex w-full flex-col items-center gap-3 px-1" aria-label="管理メニュー">
+                        @foreach ($sidebarItems as $item)
+                            <a href="{{ $item['href'] }}" class="flex size-10 items-center justify-center rounded-lg transition {{ $item['active'] ? 'bg-green-50 text-green-700' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900' }}" @if ($item['active']) aria-current="page" @endif data-sidebar-link aria-label="{{ $item['label'] }}" title="{{ $item['label'] }}">
+                                <svg class="size-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}" />
+                                </svg>
+                            </a>
+                        @endforeach
+                    </nav>
+                </aside>
+
+                <aside id="admin-sidebar-desktop" class="hidden bg-white lg:sticky lg:top-16 lg:z-20 lg:block lg:h-[calc(100vh-4rem)] lg:w-60 lg:shrink-0 lg:overflow-y-auto lg:border-r lg:border-gray-300 lg:shadow-[6px_0_18px_rgba(31,41,55,0.04)]" data-sidebar-expanded aria-label="管理メニュー">
+                    <div class="flex justify-end px-3 pt-2">
+                        <button type="button" class="inline-flex size-7 items-center justify-center rounded-md text-gray-500 transition hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500" data-action="collapse-desktop-sidebar" aria-label="サイドメニューを閉じる" title="閉じる">
+                            <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <nav class="space-y-2 px-6 pb-8 pt-3" aria-label="管理メニュー">
+                        @foreach ($sidebarItems as $item)
+                            <a href="{{ $item['href'] }}" class="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold leading-tight transition {{ $item['active'] ? 'bg-green-50 text-green-700' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900' }}" @if ($item['active']) aria-current="page" @endif data-sidebar-link>
+                                <svg class="size-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}" />
+                                </svg>
+                                <span class="min-w-0 whitespace-nowrap">{{ $item['label'] }}</span>
+                            </a>
                         @endforeach
                     </nav>
                 </aside>
 
                 <main class="min-w-0 flex-1">
-                    <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-                        <div class="mb-5 hidden rounded-2xl border border-red-400/30 bg-red-950/60 px-4 py-3 text-sm font-semibold text-red-100" data-alert></div>
-                        <div class="mb-5 hidden rounded-2xl border border-emerald-400/30 bg-emerald-950/60 px-4 py-3 text-sm font-semibold text-emerald-100" data-notice></div>
+                    <div class="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
+                        <div class="mb-5 hidden rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700" data-alert></div>
+                        <div class="mb-5 hidden rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700" data-notice></div>
 
-                        <section id="overview" class="relative mb-8 overflow-hidden rounded-3xl border border-white/10 bg-white/10 shadow-[0_24px_90px_rgba(0,0,0,0.32)] backdrop-blur">
-                            <div class="absolute inset-y-0 right-0 hidden w-1/2 bg-[radial-gradient(circle_at_center,rgba(34,211,238,0.22),transparent_58%)] lg:block"></div>
-                            <div class="relative grid gap-8 p-5 sm:p-7 lg:grid-cols-[minmax(0,1fr)_420px] lg:p-9">
-                                <div>
-                                    <p class="inline-flex rounded-full bg-cyan-400/10 px-3 py-1 text-xs font-black text-cyan-200 ring-1 ring-cyan-300/20">Shift Operations Network</p>
-                                    <h1 class="mt-4 max-w-3xl text-4xl font-black leading-tight text-white sm:text-5xl">管理コンソール</h1>
-                                    <p class="mt-4 max-w-2xl text-sm leading-7 text-slate-300">
-                                        店舗、キャスト、シフト公開状況をひとつの管理ポータルで確認します。
-                                    </p>
-                                    <div class="mt-7 flex flex-wrap gap-3">
-                                        <a href="#schedules" class="rounded-2xl bg-cyan-400 px-5 py-3 text-sm font-black text-slate-950 shadow-lg shadow-cyan-950/30 transition hover:bg-cyan-300">シフトを見る</a>
-                                        <a href="#members" class="rounded-2xl border border-white/10 bg-white/10 px-5 py-3 text-sm font-black text-slate-100 transition hover:border-cyan-300/40 hover:bg-white/15">キャスト管理</a>
-                                    </div>
+                        @if ($page === 'overview')
+                        <div class="mb-5">
+                            <h2 class="text-xl font-semibold leading-tight text-gray-900">ダッシュボード</h2>
+                        </div>
+
+                        <div class="mb-4 grid gap-3 lg:grid-cols-[minmax(340px,0.72fr)_minmax(520px,1fr)] lg:items-stretch">
+                            <div class="grid overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm sm:grid-cols-4">
+                                <div class="flex flex-col justify-center border-b border-gray-200 px-3 py-3 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0">
+                                    <p class="text-[11px] font-medium leading-tight text-gray-500">店舗数</p>
+                                    <p class="mt-1 text-lg font-semibold leading-none text-gray-950" data-stat="stores">0</p>
                                 </div>
-                                <div class="grid grid-cols-2 gap-3">
-                                    <div class="rounded-2xl border border-white/10 bg-slate-950/55 p-4">
-                                        <p class="text-xs font-black text-slate-500">Stores</p>
-                                        <p class="mt-2 text-4xl font-black text-white" data-stat="stores">0</p>
-                                    </div>
-                                    <div class="rounded-2xl border border-white/10 bg-slate-950/55 p-4">
-                                        <p class="text-xs font-black text-slate-500">Members</p>
-                                        <p class="mt-2 text-4xl font-black text-white" data-stat="members">0</p>
-                                    </div>
-                                    <div class="rounded-2xl border border-white/10 bg-slate-950/55 p-4">
-                                        <p class="text-xs font-black text-slate-500">Submitters</p>
-                                        <p class="mt-2 text-4xl font-black text-white" data-stat="submitters">0</p>
-                                    </div>
-                                    <div class="rounded-2xl border border-cyan-300/35 bg-cyan-400/10 p-4">
-                                        <p class="text-xs font-black text-cyan-200">Published</p>
-                                        <p class="mt-2 text-4xl font-black text-cyan-100" data-stat="published">0</p>
-                                    </div>
+                                <div class="flex flex-col justify-center border-b border-gray-200 px-3 py-3 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0">
+                                    <p class="text-[11px] font-medium leading-tight text-gray-500">キャスト数</p>
+                                    <p class="mt-1 text-lg font-semibold leading-none text-gray-950" data-stat="members">0</p>
+                                </div>
+                                <div class="flex flex-col justify-center border-b border-gray-200 px-3 py-3 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0">
+                                    <p class="text-[11px] font-medium leading-tight text-gray-500">提出対象者</p>
+                                    <p class="mt-1 text-lg font-semibold leading-none text-gray-950" data-stat="submitters">0</p>
+                                </div>
+                                <div class="flex flex-col justify-center px-3 py-3">
+                                    <p class="text-[11px] font-medium leading-tight text-gray-500">公開済みシフト</p>
+                                    <p class="mt-1 text-lg font-semibold leading-none text-gray-950" data-stat="published">0</p>
                                 </div>
                             </div>
-                        </section>
 
+                            <form class="grid rounded-lg border border-gray-200 bg-white p-3 shadow-sm gap-2 lg:grid-cols-[minmax(220px,1fr)_auto_auto] lg:items-center" data-form="dashboard-filter">
+                                <label class="flex min-w-0 items-center gap-2">
+                                    <span class="shrink-0 text-xs font-semibold text-gray-600">店舗</span>
+                                    <select class="min-w-0 flex-1 rounded-md border-gray-300 text-sm shadow-sm focus:border-green-500 focus:ring-green-500" data-filter="dashboardStore">
+                                        <option value="">すべて</option>
+                                    </select>
+                                </label>
+                                <button type="submit" class="inline-flex h-9 items-center justify-center rounded-md bg-gray-900 px-4 text-sm font-semibold text-white shadow-sm hover:bg-gray-800">
+                                    反映
+                                </button>
+                                <button type="button" class="inline-flex h-9 items-center justify-center rounded-md border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50" data-action="reset-dashboard-filter">
+                                    リセット
+                                </button>
+                            </form>
+                        </div>
+
+                        <div class="mt-5">
+                            <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+                                <div class="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                    <div>
+                                        <h3 class="text-sm font-semibold text-gray-900">シフト公開状況の推移</h3>
+                                        <p class="mt-1 text-xs text-gray-500" data-dashboard-chart-caption>全店舗の公開済み・下書きシフトを表示しています。</p>
+                                    </div>
+                                    <div class="flex items-center gap-4 text-xs text-gray-500">
+                                        <span class="inline-flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-green-500"></span>公開済み</span>
+                                        <span class="inline-flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-amber-500"></span>下書き</span>
+                                    </div>
+                                </div>
+                                <div class="relative h-64">
+                                    <svg class="h-full w-full" viewBox="0 0 760 220" preserveAspectRatio="none" aria-label="シフト公開状況の推移グラフ" data-dashboard-chart>
+                                        <g stroke="#e5e7eb" stroke-width="1">
+                                            <path d="M40 20H740M40 80H740M40 140H740M40 200H740"/>
+                                        </g>
+                                        <path d="M40 20V200H740" fill="none" stroke="#cbd5e1" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
+                                    </svg>
+                                </div>
+                                <div class="relative mt-1 h-4 border-t border-gray-100 pt-1 text-xs font-medium text-gray-500" data-dashboard-axis>
+                                    <span class="absolute left-1/2 top-1 -translate-x-1/2 whitespace-nowrap">データなし</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-5 rounded-lg border border-gray-200 bg-white shadow-sm">
+                            <div class="border-b border-gray-200 px-5 py-4">
+                                <h3 class="text-sm font-semibold text-gray-900">直近のシフト表</h3>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200 text-sm">
+                                    <thead class="bg-gray-50 text-xs font-semibold text-gray-500">
+                                        <tr>
+                                            <th class="px-5 py-3 text-left">店舗</th>
+                                            <th class="px-5 py-3 text-left">期間</th>
+                                            <th class="px-5 py-3 text-right">枠数</th>
+                                            <th class="px-5 py-3 text-right">状態</th>
+                                            <th class="px-5 py-3 text-right">アクション</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100 bg-white" data-list="dashboardSchedules">
+                                        <tr><td colspan="5" class="px-5 py-8 text-center text-sm text-gray-500">データなし</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        @endif
+
+                        @if ($page === 'schedules')
                         <div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_390px]">
-                            <div class="space-y-6">
-                                <section id="schedules" class="overflow-hidden rounded-3xl border border-white/10 bg-white/10 shadow-xl shadow-black/10 backdrop-blur">
-                                    <div class="border-b border-white/10 px-5 py-4">
+                            <div>
+                                <section class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+                                    <div class="border-b border-slate-200 px-4 py-3">
                                         <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                                             <div>
-                                                <p class="text-xs font-black text-cyan-200">Schedule Control</p>
-                                                <h2 class="mt-1 text-xl font-black text-white">シフト管理</h2>
+                                                <p class="text-xs font-black text-teal-700">Schedule Control</p>
+                                                <h2 class="mt-1 text-lg font-bold text-slate-950">シフト管理</h2>
                                             </div>
-                                            <label class="flex items-center gap-2 text-sm font-bold text-slate-300">
+                                            <label class="flex items-center gap-2 text-sm font-bold text-slate-600">
                                                 店舗
-                                                <select class="rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white outline-none transition focus:border-cyan-300" data-filter="scheduleStore">
+                                                <select class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500" data-filter="scheduleStore">
                                                     <option value="">すべて</option>
                                                 </select>
                                             </label>
                                         </div>
                                     </div>
                                     <div class="overflow-x-auto">
-                                        <table class="min-w-[760px] w-full divide-y divide-white/10 text-sm">
-                                            <thead class="bg-slate-950/65 text-left text-xs font-black text-slate-400">
+                                        <table class="min-w-[700px] w-full divide-y divide-slate-200 text-sm">
+                                            <thead class="bg-slate-50 text-left text-xs font-black text-slate-500">
                                                 <tr>
-                                                    <th class="px-5 py-3">店舗</th>
-                                                    <th class="px-5 py-3">期間</th>
-                                                    <th class="px-5 py-3">状態</th>
-                                                    <th class="px-5 py-3">枠数</th>
-                                                    <th class="px-5 py-3 text-right">操作</th>
+                                                    <th class="px-4 py-3">店舗</th>
+                                                    <th class="px-4 py-3">期間</th>
+                                                    <th class="px-4 py-3">状態</th>
+                                                    <th class="px-4 py-3">枠数</th>
+                                                    <th class="px-4 py-3 text-right">操作</th>
                                                 </tr>
                                             </thead>
-                                            <tbody class="divide-y divide-white/10" data-list="schedules"></tbody>
+                                            <tbody class="divide-y divide-slate-200" data-list="schedules"></tbody>
                                         </table>
                                     </div>
                                 </section>
 
-                                <section id="members" class="overflow-hidden rounded-3xl border border-white/10 bg-white/10 shadow-xl shadow-black/10 backdrop-blur">
-                                    <div class="border-b border-white/10 px-5 py-4">
+                            </div>
+
+                            <div>
+                                <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+                                    <p class="text-xs font-black text-teal-700">Create Schedule</p>
+                                    <h2 class="mt-1 text-lg font-bold text-slate-950">シフト表作成</h2>
+                                    <form class="mt-5 space-y-4" data-form="schedule">
+                                        <div>
+                                            <label class="block text-sm font-bold text-slate-700">店舗</label>
+                                            <select name="store_id" required class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white"></select>
+                                        </div>
+                                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                            <div>
+                                                <label class="block text-sm font-bold text-slate-700">開始日</label>
+                                                <input name="starts_on" type="date" required class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-bold text-slate-700">終了日</label>
+                                                <input name="ends_on" type="date" required class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
+                                            </div>
+                                        </div>
+                                        <button class="w-full rounded-xl border border-teal-200 bg-teal-50 px-4 py-3 text-sm font-black text-teal-800 transition hover:bg-teal-700 hover:text-white">シフト表を作成</button>
+                                    </form>
+                                </section>
+                            </div>
+                        </div>
+                        @endif
+
+                        @if ($page === 'members')
+                        <section class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+                                    <div class="border-b border-slate-200 px-4 py-3">
                                         <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                                             <div>
-                                                <p class="text-xs font-black text-cyan-200">Crew Directory</p>
-                                                <h2 class="mt-1 text-xl font-black text-white">キャスト管理</h2>
+                                                <p class="text-xs font-black text-teal-700">Crew Directory</p>
+                                                <h2 class="mt-1 text-lg font-bold text-slate-950">キャスト管理</h2>
                                             </div>
                                             <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-                                                <label class="flex items-center gap-2 text-sm font-bold text-slate-300">
+                                                <label class="flex items-center gap-2 text-sm font-bold text-slate-600">
                                                     店舗
-                                                    <select class="rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white outline-none transition focus:border-cyan-300" data-filter="memberStore">
+                                                    <select class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500" data-filter="memberStore">
                                                         <option value="">すべて</option>
                                                     </select>
                                                 </label>
-                                                <button type="button" class="rounded-xl bg-cyan-400 px-4 py-2 text-sm font-black text-slate-950 transition hover:bg-cyan-300" data-action="open-member-modal">
+                                                <button type="button" class="rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-800" data-action="open-member-modal">
                                                     キャストを追加
                                                 </button>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="overflow-x-auto">
-                                        <table class="min-w-[900px] w-full divide-y divide-white/10 text-sm">
-                                            <thead class="bg-slate-950/65 text-left text-xs font-black text-slate-400">
+                                        <table class="min-w-[820px] w-full divide-y divide-slate-200 text-sm">
+                                            <thead class="bg-slate-50 text-left text-xs font-black text-slate-500">
                                                 <tr>
-                                                    <th class="px-5 py-3">氏名</th>
-                                                    <th class="px-5 py-3">店舗</th>
-                                                    <th class="px-5 py-3">連絡先</th>
-                                                    <th class="px-5 py-3">状態</th>
-                                                    <th class="px-5 py-3">提出</th>
-                                                    <th class="px-5 py-3">備考</th>
+                                                    <th class="px-4 py-3">氏名</th>
+                                                    <th class="px-4 py-3">店舗</th>
+                                                    <th class="px-4 py-3">連絡先</th>
+                                                    <th class="px-4 py-3">状態</th>
+                                                    <th class="px-4 py-3">提出</th>
+                                                    <th class="px-4 py-3">備考</th>
                                                 </tr>
                                             </thead>
-                                            <tbody class="divide-y divide-white/10" data-list="members"></tbody>
+                                            <tbody class="divide-y divide-slate-200" data-list="members"></tbody>
                                         </table>
                                     </div>
-                                </section>
-                            </div>
+                        </section>
+                        @endif
 
-                            <div class="space-y-6">
-                                <section id="stores" class="rounded-3xl border border-white/10 bg-white/10 p-5 shadow-xl shadow-black/10 backdrop-blur">
-                                    <p class="text-xs font-black text-cyan-200">Store Registry</p>
-                                    <h2 class="mt-1 text-xl font-black text-white">店舗登録</h2>
+                        @if ($page === 'stores')
+                        <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+                                    <p class="text-xs font-black text-teal-700">Store Registry</p>
+                                    <h2 class="mt-1 text-lg font-bold text-slate-950">店舗登録</h2>
                                     <form class="mt-5 space-y-4" data-form="store">
                                         <div>
-                                            <label class="block text-sm font-bold text-slate-300">店舗名</label>
-                                            <input name="name" required class="mt-2 min-h-11 w-full rounded-xl border border-white/10 bg-slate-950/80 px-3 py-2 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300">
+                                            <label class="block text-sm font-bold text-slate-700">店舗名</label>
+                                            <input name="name" required class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:bg-white">
                                         </div>
                                         <div>
-                                            <label class="block text-sm font-bold text-slate-300">住所</label>
-                                            <input name="address" class="mt-2 min-h-11 w-full rounded-xl border border-white/10 bg-slate-950/80 px-3 py-2 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300">
+                                            <label class="block text-sm font-bold text-slate-700">住所</label>
+                                            <input name="address" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:bg-white">
                                         </div>
-                                        <button class="w-full rounded-xl bg-cyan-400 px-4 py-3 text-sm font-black text-slate-950 transition hover:bg-cyan-300">店舗を追加</button>
+                                        <button class="w-full rounded-xl bg-teal-700 px-4 py-3 text-sm font-black text-white transition hover:bg-teal-800">店舗を追加</button>
                                     </form>
-                                    <div class="mt-5 divide-y divide-white/10" data-list="stores"></div>
-                                </section>
+                                    <div class="mt-5 divide-y divide-slate-200" data-list="stores"></div>
+                        </section>
+                        @endif
 
-                                <section class="rounded-3xl border border-white/10 bg-white/10 p-5 shadow-xl shadow-black/10 backdrop-blur">
-                                    <p class="text-xs font-black text-cyan-200">Create Schedule</p>
-                                    <h2 class="mt-1 text-xl font-black text-white">シフト表作成</h2>
-                                    <form class="mt-5 space-y-4" data-form="schedule">
-                                        <div>
-                                            <label class="block text-sm font-bold text-slate-300">店舗</label>
-                                            <select name="store_id" required class="mt-2 min-h-11 w-full rounded-xl border border-white/10 bg-slate-950/80 px-3 py-2 text-sm text-white outline-none transition focus:border-cyan-300"></select>
-                                        </div>
-                                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                            <div>
-                                                <label class="block text-sm font-bold text-slate-300">開始日</label>
-                                                <input name="starts_on" type="date" required class="mt-2 min-h-11 w-full rounded-xl border border-white/10 bg-slate-950/80 px-3 py-2 text-sm text-white outline-none transition focus:border-cyan-300">
-                                            </div>
-                                            <div>
-                                                <label class="block text-sm font-bold text-slate-300">終了日</label>
-                                                <input name="ends_on" type="date" required class="mt-2 min-h-11 w-full rounded-xl border border-white/10 bg-slate-950/80 px-3 py-2 text-sm text-white outline-none transition focus:border-cyan-300">
-                                            </div>
-                                        </div>
-                                        <button class="w-full rounded-xl border border-cyan-300/30 bg-cyan-400/10 px-4 py-3 text-sm font-black text-cyan-100 transition hover:bg-cyan-400 hover:text-slate-950">シフト表を作成</button>
-                                    </form>
-                                </section>
-
-                                <section id="account" class="rounded-3xl border border-white/10 bg-white/10 p-5 shadow-xl shadow-black/10 backdrop-blur">
-                                    <p class="text-xs font-black text-cyan-200">Account Security</p>
-                                    <h2 class="mt-1 text-xl font-black text-white">アカウント</h2>
-                                    <p class="mt-3 text-sm leading-6 text-slate-400">管理ログインは2段階認証で保護されています。</p>
-                                    <a href="{{ route('two-factor.settings') }}" class="mt-4 inline-flex rounded-xl border border-white/10 px-4 py-2 text-sm font-black text-slate-100 transition hover:border-cyan-300/40 hover:text-cyan-100">
+                        @if ($page === 'account')
+                        <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+                                    <p class="text-xs font-black text-teal-700">Account Security</p>
+                                    <h2 class="mt-1 text-lg font-bold text-slate-950">アカウント</h2>
+                                    <p class="mt-3 text-sm leading-6 text-slate-600">管理ログインは2段階認証で保護されています。</p>
+                                    <a href="{{ route('two-factor.settings') }}" class="mt-4 inline-flex rounded-xl border border-slate-200 px-4 py-2 text-sm font-black text-slate-700 transition hover:border-teal-200 hover:bg-teal-50 hover:text-teal-800">
                                         2段階認証設定
                                     </a>
-                                </section>
-                            </div>
-                        </div>
+                        </section>
+                        @endif
                     </div>
                 </main>
             </div>
         </div>
 
-        <div class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/80 px-4 py-6 backdrop-blur" data-member-modal role="dialog" aria-modal="true" aria-labelledby="member-modal-title">
-            <div class="w-full max-w-xl overflow-hidden rounded-3xl border border-white/10 bg-slate-950 shadow-2xl shadow-black/50">
-                <div class="flex items-center justify-between border-b border-white/10 px-5 py-4">
+        <div class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/40 px-4 py-6 backdrop-blur" data-member-modal role="dialog" aria-modal="true" aria-labelledby="member-modal-title">
+            <div class="w-full max-w-xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl shadow-slate-400/50">
+                <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
                     <div>
-                        <p class="text-xs font-black text-cyan-200">Crew Entry</p>
-                        <h2 id="member-modal-title" class="mt-1 text-xl font-black text-white">キャスト登録</h2>
+                        <p class="text-xs font-black text-teal-700">Crew Entry</p>
+                        <h2 id="member-modal-title" class="mt-1 text-xl font-black text-slate-950">キャスト登録</h2>
                     </div>
-                    <button type="button" class="rounded-lg p-2 text-slate-400 transition hover:bg-white/10 hover:text-cyan-100" data-action="close-member-modal" aria-label="閉じる">
+                    <button type="button" class="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900" data-action="close-member-modal" aria-label="閉じる">
                         <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
@@ -356,34 +427,34 @@
                 </div>
                 <form class="space-y-4 px-5 py-5" data-form="member">
                     <div>
-                        <label class="block text-sm font-bold text-slate-300">氏名</label>
-                        <input name="name" required class="mt-2 min-h-11 w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-sm text-white outline-none transition focus:border-cyan-300">
+                        <label class="block text-sm font-bold text-slate-700">氏名</label>
+                        <input name="name" required class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
                     </div>
                     <div>
-                        <label class="block text-sm font-bold text-slate-300">店舗</label>
-                        <select name="store_id" class="mt-2 min-h-11 w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-sm text-white outline-none transition focus:border-cyan-300">
+                        <label class="block text-sm font-bold text-slate-700">店舗</label>
+                        <select name="store_id" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
                             <option value="">未割り当て</option>
                         </select>
                     </div>
                     <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <div>
-                            <label class="block text-sm font-bold text-slate-300">電話</label>
-                            <input name="phone" class="mt-2 min-h-11 w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-sm text-white outline-none transition focus:border-cyan-300">
+                            <label class="block text-sm font-bold text-slate-700">電話</label>
+                            <input name="phone" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-slate-300">メール</label>
-                            <input name="email" type="email" class="mt-2 min-h-11 w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-sm text-white outline-none transition focus:border-cyan-300">
+                            <label class="block text-sm font-bold text-slate-700">メール</label>
+                            <input name="email" type="email" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
                         </div>
                     </div>
                     <div>
-                        <label class="block text-sm font-bold text-slate-300">備考</label>
-                        <textarea name="remarks" rows="3" class="mt-2 w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-sm text-white outline-none transition focus:border-cyan-300"></textarea>
+                        <label class="block text-sm font-bold text-slate-700">備考</label>
+                        <textarea name="remarks" rows="3" class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white"></textarea>
                     </div>
-                    <div class="flex justify-end gap-3 border-t border-white/10 pt-4">
-                        <button type="button" class="rounded-xl border border-white/10 bg-slate-950 px-4 py-2 text-sm font-black text-slate-200 transition hover:border-cyan-300/40" data-action="close-member-modal">
+                    <div class="flex justify-end gap-3 border-t border-slate-200 pt-4">
+                        <button type="button" class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-black text-slate-700 transition hover:border-teal-200 hover:bg-teal-50" data-action="close-member-modal">
                             キャンセル
                         </button>
-                        <button class="rounded-xl bg-cyan-400 px-4 py-2 text-sm font-black text-slate-950 transition hover:bg-cyan-300">
+                        <button class="rounded-xl bg-teal-700 px-4 py-2 text-sm font-black text-white transition hover:bg-teal-800">
                             キャストを追加
                         </button>
                     </div>
@@ -394,10 +465,10 @@
         <script>
             (() => {
                 const state = {
-                    stores: [],
-                    members: [],
-                    schedules: [],
-                    user: @json(Auth::user()->load('tenant')),
+                    stores: @json($initialData['stores'] ?? []),
+                    members: @json($initialData['members'] ?? []),
+                    schedules: @json($initialData['schedules'] ?? []),
+                    user: @json($initialData['user'] ?? Auth::user()->load('tenant')),
                 };
 
                 const csrf = document.querySelector('meta[name="csrf-token"]').content;
@@ -408,7 +479,6 @@
                     const drawer = $('[data-sidebar-drawer]');
                     const panel = $('[data-sidebar-panel]');
                     const backdrop = $('[data-sidebar-backdrop]');
-                    const trigger = $('[data-action="open-mobile-sidebar"]');
 
                     drawer?.classList.remove('hidden', 'pointer-events-none');
                     drawer?.classList.add('pointer-events-auto');
@@ -416,21 +486,31 @@
                         panel?.classList.remove('-translate-x-full');
                         backdrop?.classList.remove('opacity-0');
                     });
-                    trigger?.setAttribute('aria-expanded', 'true');
+                    $$('[data-action="open-mobile-sidebar"]').forEach((trigger) => trigger.setAttribute('aria-expanded', 'true'));
                 };
 
                 const closeMobileSidebar = () => {
                     const drawer = $('[data-sidebar-drawer]');
                     const panel = $('[data-sidebar-panel]');
                     const backdrop = $('[data-sidebar-backdrop]');
-                    const trigger = $('[data-action="open-mobile-sidebar"]');
 
                     panel?.classList.add('-translate-x-full');
                     backdrop?.classList.add('opacity-0');
                     drawer?.classList.remove('pointer-events-auto');
                     drawer?.classList.add('pointer-events-none');
                     window.setTimeout(() => drawer?.classList.add('hidden'), 180);
-                    trigger?.setAttribute('aria-expanded', 'false');
+                    $$('[data-action="open-mobile-sidebar"]').forEach((trigger) => trigger.setAttribute('aria-expanded', 'false'));
+                };
+
+                const setDesktopSidebar = (isOpen) => {
+                    const expanded = $('[data-sidebar-expanded]');
+                    const collapsed = $('[data-sidebar-collapsed]');
+
+                    expanded?.classList.toggle('lg:block', isOpen);
+                    expanded?.classList.toggle('hidden', !isOpen);
+                    collapsed?.classList.toggle('hidden', isOpen);
+                    collapsed?.classList.toggle('lg:flex', !isOpen);
+                    $('[data-action="expand-desktop-sidebar"]')?.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
                 };
 
                 const closeAccountMenu = () => {
@@ -458,19 +538,18 @@
                     $('[data-member-modal]')?.classList.remove('flex');
                 };
 
-                const setSidebarActive = (targetHash = window.location.hash || '#overview') => {
-                    const hash = targetHash || '#overview';
+                const setSidebarActive = (targetUrl = window.location.href) => {
+                    const activePath = new URL(targetUrl, window.location.origin).pathname;
 
                     $$('[data-sidebar-link]').forEach((link) => {
-                        const isActive = link.getAttribute('href') === hash;
+                        const linkPath = new URL(link.href, window.location.origin).pathname;
+                        const isActive = linkPath === activePath;
 
-                        link.classList.toggle('bg-cyan-400', isActive);
-                        link.classList.toggle('text-slate-950', isActive);
-                        link.classList.toggle('shadow-lg', isActive);
-                        link.classList.toggle('shadow-cyan-950/30', isActive);
-                        link.classList.toggle('text-slate-300', !isActive);
-                        link.classList.toggle('hover:bg-white/10', !isActive);
-                        link.classList.toggle('hover:text-white', !isActive);
+                        link.classList.toggle('bg-green-50', isActive);
+                        link.classList.toggle('text-green-700', isActive);
+                        link.classList.toggle('text-gray-700', !isActive);
+                        link.classList.toggle('hover:bg-gray-50', !isActive);
+                        link.classList.toggle('hover:text-gray-900', !isActive);
 
                         if (isActive) {
                             link.setAttribute('aria-current', 'page');
@@ -513,7 +592,7 @@
 
                 const badge = (status) => {
                     const label = status === 'published' ? '公開済み' : status === 'archived' ? 'アーカイブ' : '下書き';
-                    const klass = status === 'published' ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-200' : status === 'archived' ? 'border-slate-600 bg-slate-800 text-slate-400' : 'border-cyan-300/30 bg-cyan-400/10 text-cyan-200';
+                    const klass = status === 'published' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : status === 'archived' ? 'border-slate-200 bg-slate-100 text-slate-500' : 'border-teal-200 bg-teal-50 text-teal-700';
                     return `<span class="inline-flex rounded-full border px-2.5 py-1 text-xs font-black ${klass}">${label}</span>`;
                 };
 
@@ -532,7 +611,7 @@
                         const first = select.querySelector('option[value=""]') ? '<option value="">未割り当て</option>' : '';
                         select.innerHTML = first + options;
                     });
-                    $$('[data-filter="memberStore"], [data-filter="scheduleStore"]').forEach((select) => {
+                    $$('[data-filter="memberStore"], [data-filter="scheduleStore"], [data-filter="dashboardStore"]').forEach((select) => {
                         const current = select.value;
                         select.innerHTML = `<option value="">すべて</option>${options}`;
                         select.value = current;
@@ -540,15 +619,20 @@
                 };
 
                 const renderStores = () => {
-                    $('[data-list="stores"]').innerHTML = state.stores.length
+                    const list = $('[data-list="stores"]');
+                    if (!list) {
+                        return;
+                    }
+
+                    list.innerHTML = state.stores.length
                         ? state.stores.map((store) => `
                             <div class="py-3">
                                 <div class="flex items-start justify-between gap-3">
                                     <div>
-                                        <p class="font-black text-white">${escapeHtml(store.name)}</p>
-                                        <p class="mt-1 text-sm text-slate-400">${escapeHtml(store.address || '住所未登録')}</p>
+                                        <p class="font-black text-slate-950">${escapeHtml(store.name)}</p>
+                                        <p class="mt-1 text-sm text-slate-500">${escapeHtml(store.address || '住所未登録')}</p>
                                     </div>
-                                    <span class="rounded-full border ${store.is_active ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-200' : 'border-slate-700 bg-slate-900 text-slate-500'} px-2.5 py-1 text-xs font-black">
+                                    <span class="rounded-full border ${store.is_active ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-slate-100 text-slate-500'} px-2.5 py-1 text-xs font-black">
                                         ${store.is_active ? '稼働中' : '停止中'}
                                     </span>
                                 </div>
@@ -558,51 +642,152 @@
                 };
 
                 const renderMembers = () => {
-                    const storeId = $('[data-filter="memberStore"]').value;
+                    const list = $('[data-list="members"]');
+                    const filter = $('[data-filter="memberStore"]');
+                    if (!list || !filter) {
+                        return;
+                    }
+
+                    const storeId = filter.value;
                     const members = storeId ? state.members.filter((member) => String(member.store_id || '') === storeId) : state.members;
-                    $('[data-list="members"]').innerHTML = members.length
+                    list.innerHTML = members.length
                         ? members.map((member) => `
-                            <tr class="transition hover:bg-white/10">
-                                <td class="px-5 py-4 font-black text-white">${escapeHtml(member.name)}</td>
-                                <td class="px-5 py-4 text-slate-300">${escapeHtml(member.store?.name || '未割り当て')}</td>
-                                <td class="px-5 py-4 text-slate-300">
+                            <tr class="transition hover:bg-slate-50">
+                                <td class="px-4 py-3 font-black text-slate-950">${escapeHtml(member.name)}</td>
+                                <td class="px-4 py-3 text-slate-700">${escapeHtml(member.store?.name || '未割り当て')}</td>
+                                <td class="px-4 py-3 text-slate-700">
                                     <div>${escapeHtml(member.phone || '-')}</div>
                                     <div class="text-xs text-slate-500">${escapeHtml(member.email || '')}</div>
                                 </td>
-                                <td class="px-5 py-4"><span class="rounded-full border border-sky-400/30 bg-sky-400/10 px-2.5 py-1 text-xs font-black text-sky-200">${escapeHtml(member.status || 'active')}</span></td>
-                                <td class="px-5 py-4 text-slate-300">${member.is_shift_submitter ? '対象' : '対象外'}</td>
-                                <td class="max-w-xs truncate px-5 py-4 text-slate-500">${escapeHtml(member.remarks || '-')}</td>
+                                <td class="px-4 py-3"><span class="rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-xs font-black text-sky-700">${escapeHtml(member.status || 'active')}</span></td>
+                                <td class="px-4 py-3 text-slate-700">${member.is_shift_submitter ? '対象' : '対象外'}</td>
+                                <td class="max-w-xs truncate px-4 py-3 text-slate-500">${escapeHtml(member.remarks || '-')}</td>
                             </tr>
                         `).join('')
-                        : '<tr><td colspan="6" class="px-5 py-8 text-center text-sm text-slate-500">条件に一致するキャストがいません。</td></tr>';
+                        : '<tr><td colspan="6" class="px-4 py-8 text-center text-sm text-slate-500">条件に一致するキャストがいません。</td></tr>';
                 };
 
                 const renderSchedules = () => {
-                    const storeId = $('[data-filter="scheduleStore"]').value;
+                    const list = $('[data-list="schedules"]');
+                    const filter = $('[data-filter="scheduleStore"]');
+                    if (!list || !filter) {
+                        return;
+                    }
+
+                    const storeId = filter.value;
                     const schedules = storeId ? state.schedules.filter((schedule) => String(schedule.store_id || '') === storeId) : state.schedules;
-                    $('[data-list="schedules"]').innerHTML = schedules.length
+                    list.innerHTML = schedules.length
                         ? schedules.map((schedule) => `
-                            <tr class="transition hover:bg-white/10">
-                                <td class="px-5 py-4 font-black text-white">${escapeHtml(schedule.store?.name || '-')}</td>
-                                <td class="px-5 py-4 text-slate-300">${escapeHtml(schedule.starts_on)} - ${escapeHtml(schedule.ends_on)}</td>
-                                <td class="px-5 py-4">${badge(schedule.status)}</td>
-                                <td class="px-5 py-4 text-slate-300">${schedule.shift_slots?.length || 0}</td>
-                                <td class="px-5 py-4 text-right">
+                            <tr class="transition hover:bg-slate-50">
+                                <td class="px-4 py-3 font-black text-slate-950">${escapeHtml(schedule.store?.name || '-')}</td>
+                                <td class="px-4 py-3 text-slate-700">${escapeHtml(schedule.starts_on)} - ${escapeHtml(schedule.ends_on)}</td>
+                                <td class="px-4 py-3">${badge(schedule.status)}</td>
+                                <td class="px-4 py-3 text-slate-700">${schedule.shift_slots?.length || 0}</td>
+                                <td class="px-4 py-3 text-right">
                                     ${schedule.status === 'published'
                                         ? '<span class="text-xs font-black text-slate-500">公開済み</span>'
-                                        : `<button type="button" class="rounded-xl border border-cyan-300/40 px-3 py-1.5 text-xs font-black text-cyan-100 transition hover:bg-cyan-400 hover:text-slate-950" data-publish="${schedule.id}">公開</button>`}
+                                        : `<button type="button" class="rounded-xl border border-teal-200 px-3 py-1.5 text-xs font-black text-teal-700 transition hover:bg-teal-700 hover:text-white" data-publish="${schedule.id}">公開</button>`}
                                 </td>
                             </tr>
                         `).join('')
-                        : '<tr><td colspan="5" class="px-5 py-8 text-center text-sm text-slate-500">シフト表がまだありません。</td></tr>';
+                        : '<tr><td colspan="5" class="px-4 py-8 text-center text-sm text-slate-500">シフト表がまだありません。</td></tr>';
+                };
+
+                const renderDashboard = () => {
+                    const dashboardFilter = $('[data-filter="dashboardStore"]');
+                    const dashboardTable = $('[data-list="dashboardSchedules"]');
+                    const chart = $('[data-dashboard-chart]');
+                    const axis = $('[data-dashboard-axis]');
+                    const caption = $('[data-dashboard-chart-caption]');
+
+                    if (!dashboardFilter || !dashboardTable || !chart || !axis) {
+                        return;
+                    }
+
+                    const storeId = dashboardFilter.value;
+                    const schedules = storeId
+                        ? state.schedules.filter((schedule) => String(schedule.store_id || '') === storeId)
+                        : state.schedules;
+                    const members = storeId
+                        ? state.members.filter((member) => String(member.store_id || '') === storeId)
+                        : state.members;
+                    const selectedStore = storeId ? state.stores.find((store) => String(store.id) === storeId) : null;
+
+                    $('[data-stat="stores"]') && ($('[data-stat="stores"]').textContent = storeId ? 1 : state.stores.length);
+                    $('[data-stat="members"]') && ($('[data-stat="members"]').textContent = members.length);
+                    $('[data-stat="submitters"]') && ($('[data-stat="submitters"]').textContent = members.filter((member) => member.is_shift_submitter).length);
+                    $('[data-stat="published"]') && ($('[data-stat="published"]').textContent = schedules.filter((schedule) => schedule.status === 'published').length);
+                    if (caption) {
+                        caption.textContent = selectedStore
+                            ? `${selectedStore.name}の公開済み・下書きシフトを表示しています。`
+                            : '全店舗の公開済み・下書きシフトを表示しています。';
+                    }
+
+                    const buckets = new Map();
+                    schedules.forEach((schedule) => {
+                        const label = schedule.starts_on || '-';
+                        if (!buckets.has(label)) {
+                            buckets.set(label, { label, published: 0, draft: 0 });
+                        }
+                        const bucket = buckets.get(label);
+                        if (schedule.status === 'published') {
+                            bucket.published += 1;
+                        } else {
+                            bucket.draft += 1;
+                        }
+                    });
+                    const series = Array.from(buckets.values()).sort((a, b) => a.label.localeCompare(b.label)).slice(-8);
+                    const maxValue = Math.max(1, ...series.flatMap((item) => [item.published, item.draft]));
+                    const xFor = (index) => series.length <= 1 ? 390 : 50 + (index * (680 / (series.length - 1)));
+                    const yFor = (value) => 200 - (value / maxValue) * 170;
+                    const publishedPoints = series.map((item, index) => `${xFor(index)},${yFor(item.published)}`).join(' ');
+                    const draftPoints = series.map((item, index) => `${xFor(index)},${yFor(item.draft)}`).join(' ');
+                    const verticalLines = series.map((item, index) => `<line x1="${xFor(index)}" y1="20" x2="${xFor(index)}" y2="200"/>`).join('');
+                    const publishedDots = series.map((item, index) => `<circle cx="${xFor(index)}" cy="${yFor(item.published)}" r="4" fill="#ffffff" stroke="#16a34a" stroke-width="2"/>`).join('');
+                    const draftDots = series.map((item, index) => `<circle cx="${xFor(index)}" cy="${yFor(item.draft)}" r="3.5" fill="#ffffff" stroke="#f59e0b" stroke-width="2"/>`).join('');
+
+                    chart.innerHTML = `
+                        <g stroke="#e5e7eb" stroke-width="1">
+                            <path d="M50 30H730M50 86H730M50 143H730M50 200H730"/>
+                            ${verticalLines}
+                        </g>
+                        <path d="M50 20V200H730" fill="none" stroke="#cbd5e1" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
+                        ${series.length ? `<polyline fill="none" stroke="#16a34a" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" vector-effect="non-scaling-stroke" points="${publishedPoints}"/>` : ''}
+                        ${series.length ? `<polyline fill="none" stroke="#f59e0b" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" vector-effect="non-scaling-stroke" points="${draftPoints}"/>` : ''}
+                        ${publishedDots}
+                        ${draftDots}
+                    `;
+                    axis.innerHTML = series.length
+                        ? series.map((item, index) => `<span class="absolute top-1 -translate-x-1/2 whitespace-nowrap" style="left: ${((xFor(index) - 50) / 680) * 92 + 4}%;">${escapeHtml(item.label.slice(5))}</span>`).join('')
+                        : '<span class="absolute left-1/2 top-1 -translate-x-1/2 whitespace-nowrap">データなし</span>';
+
+                    dashboardTable.innerHTML = schedules.length
+                        ? schedules.slice(0, 10).map((schedule) => `
+                            <tr class="hover:bg-gray-50">
+                                <td class="min-w-[180px] px-5 py-4 font-medium text-gray-900">${escapeHtml(schedule.store?.name || '-')}</td>
+                                <td class="whitespace-nowrap px-5 py-4 text-left text-gray-600">
+                                    <span class="block">${escapeHtml(schedule.starts_on || '-')}</span>
+                                    <span class="mt-1 block text-xs text-gray-400">- ${escapeHtml(schedule.ends_on || '-')}</span>
+                                </td>
+                                <td class="whitespace-nowrap px-5 py-4 text-right text-gray-600">${schedule.shift_slots?.length || 0}</td>
+                                <td class="whitespace-nowrap px-5 py-4 text-right">${badge(schedule.status)}</td>
+                                <td class="px-5 py-4 text-right">
+                                    ${schedule.status === 'published'
+                                        ? '<span class="text-xs font-semibold text-gray-500">公開済み</span>'
+                                        : `<button type="button" class="inline-flex rounded-md border border-gray-200 px-4 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50" data-publish="${schedule.id}">公開</button>`}
+                                </td>
+                            </tr>
+                        `).join('')
+                        : '<tr><td colspan="5" class="px-5 py-8 text-center text-sm text-gray-500">シフト表がありません。</td></tr>';
                 };
 
                 const renderStats = () => {
-                    $('[data-bind="tenantName"]').textContent = state.user.tenant?.name || 'ADMIN PORTAL';
-                    $('[data-stat="stores"]').textContent = state.stores.length;
-                    $('[data-stat="members"]').textContent = state.members.length;
-                    $('[data-stat="submitters"]').textContent = state.members.filter((member) => member.is_shift_submitter).length;
-                    $('[data-stat="published"]').textContent = state.schedules.filter((schedule) => schedule.status === 'published').length;
+                    const tenantName = state.user.tenant?.name || @json(Auth::user()->tenant?->name ?? '');
+                    $('[data-bind="tenantName"]').textContent = tenantName;
+                    $('[data-stat="stores"]') && ($('[data-stat="stores"]').textContent = state.stores.length);
+                    $('[data-stat="members"]') && ($('[data-stat="members"]').textContent = state.members.length);
+                    $('[data-stat="submitters"]') && ($('[data-stat="submitters"]').textContent = state.members.filter((member) => member.is_shift_submitter).length);
+                    $('[data-stat="published"]') && ($('[data-stat="published"]').textContent = state.schedules.filter((schedule) => schedule.status === 'published').length);
                 };
 
                 const render = () => {
@@ -611,6 +796,7 @@
                     renderMembers();
                     renderSchedules();
                     renderStats();
+                    renderDashboard();
                 };
 
                 const load = async () => {
@@ -639,7 +825,7 @@
                     return payload;
                 };
 
-                $('[data-form="store"]').addEventListener('submit', async (event) => {
+                $('[data-form="store"]')?.addEventListener('submit', async (event) => {
                     event.preventDefault();
                     try {
                         await api('/api/admin/stores', { method: 'POST', body: JSON.stringify({ timezone: 'Asia/Tokyo', is_active: true, ...formPayload(event.currentTarget) }) });
@@ -651,7 +837,7 @@
                     }
                 });
 
-                $('[data-form="member"]').addEventListener('submit', async (event) => {
+                $('[data-form="member"]')?.addEventListener('submit', async (event) => {
                     event.preventDefault();
                     try {
                         await api('/api/admin/members', { method: 'POST', body: JSON.stringify({ status: 'active', is_shift_submitter: true, ...formPayload(event.currentTarget) }) });
@@ -664,7 +850,7 @@
                     }
                 });
 
-                $('[data-form="schedule"]').addEventListener('submit', async (event) => {
+                $('[data-form="schedule"]')?.addEventListener('submit', async (event) => {
                     event.preventDefault();
                     try {
                         await api('/api/admin/shift-schedules', { method: 'POST', body: JSON.stringify({ status: 'draft', ...formPayload(event.currentTarget) }) });
@@ -674,6 +860,11 @@
                     } catch (error) {
                         setMessage('[data-alert]', error.message);
                     }
+                });
+
+                $('[data-form="dashboard-filter"]')?.addEventListener('submit', (event) => {
+                    event.preventDefault();
+                    renderDashboard();
                 });
 
                 document.addEventListener('click', async (event) => {
@@ -688,14 +879,9 @@
                         }
                     }
 
-                    if (event.target.closest('[data-action="reload"]')) {
-                        await load();
-                        setMessage('[data-notice]', '最新データに更新しました。');
-                    }
-
                     const sidebarLink = event.target.closest('[data-sidebar-link]');
                     if (sidebarLink) {
-                        setSidebarActive(sidebarLink.getAttribute('href'));
+                        setSidebarActive(sidebarLink.href);
                     }
 
                     if (event.target.closest('[data-action="toggle-account-menu"]')) {
@@ -709,6 +895,14 @@
 
                     if (event.target.closest('[data-action="open-member-modal"]')) {
                         openMemberModal();
+                    }
+
+                    if (event.target.closest('[data-action="reset-dashboard-filter"]')) {
+                        const dashboardStore = $('[data-filter="dashboardStore"]');
+                        if (dashboardStore) {
+                            dashboardStore.value = '';
+                            renderDashboard();
+                        }
                     }
 
                     if (event.target.closest('[data-action="close-member-modal"]')) {
@@ -725,6 +919,14 @@
 
                     if (event.target.closest('[data-action="close-mobile-sidebar"]')) {
                         closeMobileSidebar();
+                    }
+
+                    if (event.target.closest('[data-action="collapse-desktop-sidebar"]')) {
+                        setDesktopSidebar(false);
+                    }
+
+                    if (event.target.closest('[data-action="expand-desktop-sidebar"]')) {
+                        setDesktopSidebar(true);
                     }
                 });
 
@@ -743,6 +945,7 @@
                 });
 
                 setSidebarActive();
+                render();
                 load().catch((error) => setMessage('[data-alert]', error.message));
             })();
         </script>
