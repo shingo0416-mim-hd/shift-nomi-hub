@@ -3,7 +3,7 @@
         @csrf
 
         <div class="space-y-2 text-center">
-            <h2 class="text-3xl font-bold text-blue-900">パスワード確認</h2>
+            <h2 class="text-3xl font-black text-slate-950">パスワード確認</h2>
             <p class="text-sm text-slate-500">操作を続けるため、現在のパスワードを入力してください。</p>
         </div>
 
@@ -14,7 +14,7 @@
         </div>
 
         <div class="flex justify-end pt-2">
-            <button type="submit" class="btn-gradient-primary">
+            <button type="submit" class="btn-gradient-primary w-full sm:w-auto">
                 {{ __('確認する') }}
             </button>
         </div>

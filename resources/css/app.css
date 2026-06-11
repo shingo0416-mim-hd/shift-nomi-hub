@@ -13,19 +13,20 @@
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    border-radius: 9999px;
-    padding: 0.5rem 1.5rem;
+    border: 1px solid #0f766e;
+    border-radius: 0.75rem;
+    padding: 0.875rem 1.5rem;
     font-size: 0.875rem;
-    font-weight: 600;
+    font-weight: 900;
     color: #ffffff;
-    background-image: linear-gradient(135deg, #1f68ff 0%, #5aa9ff 100%);
-    box-shadow: 0 10px 25px rgba(31, 104, 255, 0.35);
+    background: #0f766e;
+    box-shadow: 0 14px 30px rgba(15, 118, 110, 0.22);
     transition: all 0.2s ease;
 }
 
 .btn-gradient-primary:hover:not(:disabled) {
-    background-image: linear-gradient(135deg, #2c75ff 0%, #6cb6ff 100%);
-    box-shadow: 0 12px 28px rgba(31, 104, 255, 0.45);
+    background: #115e59;
+    box-shadow: 0 16px 34px rgba(15, 118, 110, 0.32);
     transform: translateY(-1px);
 }
 

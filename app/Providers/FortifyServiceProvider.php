@@ -44,6 +44,7 @@ class FortifyServiceProvider extends ServiceProvider
             'request' => $request,
         ]));
         Fortify::confirmPasswordView(fn () => view('auth.confirm-password'));
+        Fortify::twoFactorChallengeView(fn () => view('auth.two-factor-challenge'));
 
         Fortify::authenticateUsing(function (Request $request): ?User {
             $user = User::query()

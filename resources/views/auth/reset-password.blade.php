@@ -5,7 +5,7 @@
         <input type="hidden" name="token" value="{{ $request->route('token') }}">
 
         <div class="space-y-2 text-center">
-            <h2 class="text-3xl font-bold text-blue-900">新しいパスワード</h2>
+            <h2 class="text-3xl font-black text-slate-950">新しいパスワード</h2>
             <p class="text-sm text-slate-500">ログインに使用する新しいパスワードを設定します。</p>
         </div>
 
@@ -28,7 +28,7 @@
         </div>
 
         <div class="flex justify-end pt-2">
-            <button type="submit" class="btn-gradient-primary">
+            <button type="submit" class="btn-gradient-primary w-full sm:w-auto">
                 {{ __('更新する') }}
             </button>
         </div>
