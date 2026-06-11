@@ -19,7 +19,7 @@
                 [
                     'label' => 'キャスト管理',
                     'href' => route('admin.members'),
-                    'active' => $page === 'members',
+                    'active' => in_array($page, ['members', 'member-edit'], true),
                     'icon' => 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
                 ],
             ],
@@ -385,11 +385,87 @@
                                                     <th class="px-4 py-3">状態</th>
                                                     <th class="px-4 py-3">提出</th>
                                                     <th class="px-4 py-3">備考</th>
+                                                    <th class="px-4 py-3 text-right">操作</th>
                                                 </tr>
                                             </thead>
                                             <tbody class="divide-y divide-slate-200" data-list="members"></tbody>
                                         </table>
                                     </div>
+                        </section>
+                        @endif
+
+                        @if ($page === 'member-edit')
+                        <section class="max-w-2xl rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+                            <div class="mb-5 flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-center sm:justify-between">
+                                <div>
+                                    <p class="text-xs font-black text-teal-700">Crew Directory</p>
+                                    <h2 class="mt-1 text-lg font-bold text-slate-950">キャスト編集</h2>
+                                </div>
+                                <a href="{{ route('admin.members') }}" class="inline-flex items-center justify-center rounded-md border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50">
+                                    一覧へ戻る
+                                </a>
+                            </div>
+                            <form class="space-y-4" data-form="member-edit" data-member-id="{{ $editingMember->id }}">
+                                <div>
+                                    <label class="block text-sm font-bold text-slate-700">氏名</label>
+                                    <input name="name" required value="{{ old('name', $editingMember->name) }}" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-slate-700">店舗</label>
+                                    <select name="store_id" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white" data-initial-value="{{ $editingMember->store_id }}">
+                                        <option value="">未割り当て</option>
+                                    </select>
+                                </div>
+                                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                    <div>
+                                        <label class="block text-sm font-bold text-slate-700">電話</label>
+                                        <input name="phone" value="{{ old('phone', $editingMember->phone) }}" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-bold text-slate-700">メール</label>
+                                        <input name="email" type="email" value="{{ old('email', $editingMember->email) }}" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-slate-700">状態</label>
+                                    <select name="status" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
+                                        <option value="active" @selected(old('status', $editingMember->status) === 'active')>active</option>
+                                        <option value="inactive" @selected(old('status', $editingMember->status) === 'inactive')>inactive</option>
+                                    </select>
+                                </div>
+                                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                    <label class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                                        <span class="flex items-start gap-3">
+                                            <input type="checkbox" name="is_shift_submitter" value="1" @checked(old('is_shift_submitter', $editingMember->is_shift_submitter)) class="mt-1 rounded border-slate-300 text-teal-700 accent-teal-700 transition focus:ring-4 focus:ring-teal-100">
+                                            <span>
+                                                <span class="block text-sm font-bold text-slate-800">提出対象</span>
+                                                <span class="mt-1 block text-xs leading-5 text-slate-500">シフト提出対象者として扱います。</span>
+                                            </span>
+                                        </span>
+                                    </label>
+                                    <label class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                                        <span class="flex items-start gap-3">
+                                            <input type="checkbox" name="is_remind_disabled" value="1" @checked(old('is_remind_disabled', $editingMember->is_remind_disabled)) class="mt-1 rounded border-slate-300 text-teal-700 accent-teal-700 transition focus:ring-4 focus:ring-teal-100">
+                                            <span>
+                                                <span class="block text-sm font-bold text-slate-800">リマインド停止</span>
+                                                <span class="mt-1 block text-xs leading-5 text-slate-500">通知対象から外します。</span>
+                                            </span>
+                                        </span>
+                                    </label>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-slate-700">備考</label>
+                                    <textarea name="remarks" rows="3" class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">{{ old('remarks', $editingMember->remarks) }}</textarea>
+                                </div>
+                                <div class="flex justify-end gap-3 border-t border-slate-200 pt-4">
+                                    <a href="{{ route('admin.members') }}" class="inline-flex items-center justify-center rounded-md border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50">
+                                        キャンセル
+                                    </a>
+                                    <button class="inline-flex items-center justify-center rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-800">
+                                        キャストを保存
+                                    </button>
+                                </div>
+                            </form>
                         </section>
                         @endif
 
@@ -539,6 +615,7 @@
                 };
                 const routes = {
                     storesBase: @json(url('/dashboard/stores')),
+                    membersBase: @json(url('/dashboard/members')),
                 };
 
                 const csrf = document.querySelector('meta[name="csrf-token"]').content;
@@ -678,8 +755,10 @@
                 const renderSelects = () => {
                     const options = state.stores.map((store) => `<option value="${store.id}">${escapeHtml(store.name)}</option>`).join('');
                     $$('select[name="store_id"]').forEach((select) => {
+                        const current = select.value || select.dataset.initialValue || '';
                         const first = select.querySelector('option[value=""]') ? '<option value="">未割り当て</option>' : '';
                         select.innerHTML = first + options;
+                        select.value = current;
                     });
                     $$('[data-filter="memberStore"], [data-filter="scheduleStore"], [data-filter="dashboardStore"]').forEach((select) => {
                         const current = select.value;
@@ -733,9 +812,12 @@
                                 <td class="px-4 py-3"><span class="rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-xs font-black text-sky-700">${escapeHtml(member.status || 'active')}</span></td>
                                 <td class="px-4 py-3 text-slate-700">${member.is_shift_submitter ? '対象' : '対象外'}</td>
                                 <td class="max-w-xs truncate px-4 py-3 text-slate-500">${escapeHtml(member.remarks || '-')}</td>
+                                <td class="px-4 py-3 text-right">
+                                    <a href="${routes.membersBase}/${member.id}/edit" class="inline-flex rounded-md border border-gray-200 px-4 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50">編集</a>
+                                </td>
                             </tr>
                         `).join('')
-                        : '<tr><td colspan="6" class="px-4 py-8 text-center text-sm text-slate-500">条件に一致するキャストがいません。</td></tr>';
+                        : '<tr><td colspan="7" class="px-4 py-8 text-center text-sm text-slate-500">条件に一致するキャストがいません。</td></tr>';
                 };
 
                 const renderSchedules = () => {
@@ -933,6 +1015,21 @@
                         closeMemberModal();
                         await load();
                         setMessage('[data-notice]', 'キャストを追加しました。');
+                    } catch (error) {
+                        setMessage('[data-alert]', error.message);
+                    }
+                });
+
+                $('[data-form="member-edit"]')?.addEventListener('submit', async (event) => {
+                    event.preventDefault();
+                    const form = event.currentTarget;
+                    const payload = { is_shift_submitter: false, is_remind_disabled: false, ...formPayload(form) };
+                    payload.store_id = form.elements.store_id.value || null;
+                    try {
+                        await api(`/api/admin/members/${form.dataset.memberId}`, { method: 'PUT', body: JSON.stringify(payload) });
+                        await load();
+                        setMessage('[data-notice]', 'キャストを更新しました。');
+                        window.location.href = @json(route('admin.members'));
                     } catch (error) {
                         setMessage('[data-alert]', error.message);
                     }

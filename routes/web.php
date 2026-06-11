@@ -52,6 +52,11 @@ Route::middleware('auth')->group(function (): void {
     Route::get('/dashboard/schedules', fn () => $adminPage('schedules'))->name('admin.schedules');
     Route::get('/dashboard/schedules/create', fn () => $adminPage('schedule-create'))->name('admin.schedules.create');
     Route::get('/dashboard/members', fn () => $adminPage('members'))->name('admin.members');
+    Route::get('/dashboard/members/{member}/edit', function (Member $member) use ($adminPage) {
+        abort_unless((int) $member->getAttribute('tenant_id') === (int) auth()->user()->tenant_id, 404);
+
+        return $adminPage('member-edit')->with('editingMember', $member->load(['store', 'employeeProfile']));
+    })->name('admin.members.edit');
     Route::get('/dashboard/stores', fn () => $adminPage('stores'))->name('admin.stores');
     Route::get('/dashboard/stores/create', fn () => $adminPage('store-create'))->name('admin.stores.create');
     Route::get('/dashboard/stores/{store}/edit', function (Store $store) use ($adminPage) {
