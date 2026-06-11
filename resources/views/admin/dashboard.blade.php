@@ -30,7 +30,7 @@
                 [
                     'label' => '店舗管理',
                     'href' => route('admin.stores'),
-                    'active' => $page === 'stores',
+                    'active' => in_array($page, ['stores', 'store-create'], true),
                     'icon' => 'M3 21h18M5 21V7l8-4v18M19 21V11l-6-4M9 9h1M9 13h1M9 17h1M14 13h1M14 17h1',
                 ],
                 [
@@ -393,21 +393,62 @@
                         @endif
 
                         @if ($page === 'stores')
-                        <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+                        <section class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+                            <div class="border-b border-slate-200 px-4 py-3">
+                                <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                                    <div>
+                                        <p class="text-xs font-black text-teal-700">Store Registry</p>
+                                        <h2 class="mt-1 text-lg font-bold text-slate-950">店舗管理</h2>
+                                    </div>
+                                    <a href="{{ route('admin.stores.create') }}" class="inline-flex items-center justify-center rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-800">
+                                        店舗登録
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200 text-sm">
+                                    <thead class="bg-gray-50 text-xs font-semibold text-gray-500">
+                                        <tr>
+                                            <th class="px-5 py-3 text-left">店舗名</th>
+                                            <th class="px-5 py-3 text-left">住所</th>
+                                            <th class="px-5 py-3 text-right">状態</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100 bg-white" data-list="stores"></tbody>
+                                </table>
+                            </div>
+                        </section>
+                        @endif
+
+                        @if ($page === 'store-create')
+                        <section class="max-w-xl rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+                            <div class="mb-5 flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-center sm:justify-between">
+                                <div>
                                     <p class="text-xs font-black text-teal-700">Store Registry</p>
                                     <h2 class="mt-1 text-lg font-bold text-slate-950">店舗登録</h2>
-                                    <form class="mt-5 space-y-4" data-form="store">
-                                        <div>
-                                            <label class="block text-sm font-bold text-slate-700">店舗名</label>
-                                            <input name="name" required class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:bg-white">
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-bold text-slate-700">住所</label>
-                                            <input name="address" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:bg-white">
-                                        </div>
-                                        <button class="w-full rounded-xl bg-teal-700 px-4 py-3 text-sm font-black text-white transition hover:bg-teal-800">店舗を追加</button>
-                                    </form>
-                                    <div class="mt-5 divide-y divide-slate-200" data-list="stores"></div>
+                                </div>
+                                <a href="{{ route('admin.stores') }}" class="inline-flex items-center justify-center rounded-md border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50">
+                                    一覧へ戻る
+                                </a>
+                            </div>
+                            <form class="space-y-4" data-form="store">
+                                <div>
+                                    <label class="block text-sm font-bold text-slate-700">店舗名</label>
+                                    <input name="name" required class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-slate-700">住所</label>
+                                    <input name="address" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:bg-white">
+                                </div>
+                                <div class="flex justify-end gap-3 border-t border-slate-200 pt-4">
+                                    <a href="{{ route('admin.stores') }}" class="inline-flex items-center justify-center rounded-md border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50">
+                                        キャンセル
+                                    </a>
+                                    <button class="inline-flex items-center justify-center rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-800">
+                                        店舗を追加
+                                    </button>
+                                </div>
+                            </form>
                         </section>
                         @endif
 
@@ -640,19 +681,17 @@
 
                     list.innerHTML = state.stores.length
                         ? state.stores.map((store) => `
-                            <div class="py-3">
-                                <div class="flex items-start justify-between gap-3">
-                                    <div>
-                                        <p class="font-black text-slate-950">${escapeHtml(store.name)}</p>
-                                        <p class="mt-1 text-sm text-slate-500">${escapeHtml(store.address || '住所未登録')}</p>
-                                    </div>
-                                    <span class="rounded-full border ${store.is_active ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-slate-100 text-slate-500'} px-2.5 py-1 text-xs font-black">
+                            <tr class="hover:bg-gray-50">
+                                <td class="min-w-[180px] px-5 py-4 font-medium text-gray-900">${escapeHtml(store.name)}</td>
+                                <td class="px-5 py-4 text-gray-600">${escapeHtml(store.address || '住所未登録')}</td>
+                                <td class="whitespace-nowrap px-5 py-4 text-right">
+                                    <span class="rounded-full ${store.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'} px-2.5 py-1 text-xs font-semibold">
                                         ${store.is_active ? '稼働中' : '停止中'}
                                     </span>
-                                </div>
-                            </div>
+                                </td>
+                            </tr>
                         `).join('')
-                        : '<p class="py-4 text-sm text-slate-500">店舗がまだ登録されていません。</p>';
+                        : '<tr><td colspan="3" class="px-5 py-8 text-center text-sm text-gray-500">店舗がまだ登録されていません。</td></tr>';
                 };
 
                 const renderMembers = () => {
@@ -846,6 +885,7 @@
                         event.currentTarget.reset();
                         await load();
                         setMessage('[data-notice]', '店舗を追加しました。');
+                        window.location.href = @json(route('admin.stores'));
                     } catch (error) {
                         setMessage('[data-alert]', error.message);
                     }
