@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Liff\RegistrationController;
 use App\Models\Member;
 use App\Models\ShiftSchedule;
 use App\Models\Store;
@@ -8,6 +9,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/login');
 Route::redirect('/admin', '/dashboard');
+
+Route::get('/liff/register/{registrationToken}', [RegistrationController::class, 'show'])->name('liff.register');
 
 Route::middleware('auth')->group(function (): void {
     Route::get('/two-factor-settings', fn () => view('auth.two-factor-settings'))->name('two-factor.settings');

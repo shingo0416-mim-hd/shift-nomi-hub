@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Api\Admin\MemberController as AdminMemberController;
 use App\Http\Controllers\Api\Admin\ShiftScheduleController as AdminShiftScheduleController;
 use App\Http\Controllers\Api\Admin\StoreController as AdminStoreController;
+use App\Http\Controllers\Api\Admin\TenantSettingsController as AdminTenantSettingsController;
 use App\Http\Controllers\Api\DeployController;
 use App\Http\Controllers\Api\Liff\AuthController as LiffAuthController;
 use App\Http\Controllers\Api\Liff\AvailabilityController as LiffAvailabilityController;
@@ -20,9 +21,12 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
     Route::middleware(['auth:sanctum', 'ability:admin'])->group(function (): void {
         Route::get('/auth/me', [AdminAuthController::class, 'me'])->name('auth.me');
         Route::post('/auth/logout', [AdminAuthController::class, 'logout'])->name('auth.logout');
+        Route::put('/tenant/settings', [AdminTenantSettingsController::class, 'update'])->name('tenant.settings.update');
 
         Route::apiResource('stores', AdminStoreController::class)->only(['index', 'store', 'update']);
         Route::apiResource('members', AdminMemberController::class)->only(['index', 'store', 'update']);
+        Route::get('/members/{member}/registration-qr', [AdminMemberController::class, 'registrationQr'])
+            ->name('members.registration-qr');
         Route::apiResource('shift-schedules', AdminShiftScheduleController::class)->only(['index', 'store']);
         Route::post('/shift-schedules/{shiftSchedule}/publish', [AdminShiftScheduleController::class, 'publish'])
             ->name('shift-schedules.publish');

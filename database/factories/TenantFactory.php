@@ -19,6 +19,7 @@ class TenantFactory extends Factory
     {
         return [
             'name' => fake()->company(),
+            'line_liff_id' => null,
             'data' => [],
         ];
     }

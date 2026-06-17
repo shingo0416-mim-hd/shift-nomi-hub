@@ -416,6 +416,20 @@
                                         <option value="">未割り当て</option>
                                     </select>
                                 </div>
+                                <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                                    <div>
+                                        <label class="block text-sm font-bold text-slate-700">LINE ID</label>
+                                        <input name="line_id" value="{{ old('line_id', $editingMember->line_id) }}" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-bold text-slate-700">LINE名</label>
+                                        <input name="line_name" value="{{ old('line_name', $editingMember->line_name) }}" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-bold text-slate-700">CLINE No</label>
+                                        <input name="cline_id" value="{{ old('cline_id', $editingMember->cline_id) }}" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
+                                    </div>
+                                </div>
                                 <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                     <div>
                                         <label class="block text-sm font-bold text-slate-700">電話</label>
@@ -541,13 +555,28 @@
                         @endif
 
                         @if ($page === 'account')
-                        <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-                                    <p class="text-xs font-black text-teal-700">Account Security</p>
-                                    <h2 class="mt-1 text-lg font-bold text-slate-950">アカウント</h2>
-                                    <p class="mt-3 text-sm leading-6 text-slate-600">管理ログインは2段階認証で保護されています。</p>
-                                    <a href="{{ route('two-factor.settings') }}" class="mt-4 inline-flex rounded-xl border border-slate-200 px-4 py-2 text-sm font-black text-slate-700 transition hover:border-teal-200 hover:bg-teal-50 hover:text-teal-800">
-                                        2段階認証設定
-                                    </a>
+                        <section class="space-y-5 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+                            <div>
+                                <p class="text-xs font-black text-teal-700">Account Security</p>
+                                <h2 class="mt-1 text-lg font-bold text-slate-950">アカウント</h2>
+                                <p class="mt-3 text-sm leading-6 text-slate-600">管理ログインは2段階認証で保護されています。</p>
+                                <a href="{{ route('two-factor.settings') }}" class="mt-4 inline-flex rounded-xl border border-slate-200 px-4 py-2 text-sm font-black text-slate-700 transition hover:border-teal-200 hover:bg-teal-50 hover:text-teal-800">
+                                    2段階認証設定
+                                </a>
+                            </div>
+                            <form class="border-t border-slate-200 pt-5" data-form="tenant-settings">
+                                <p class="text-xs font-black text-teal-700">Mini App</p>
+                                <h3 class="mt-1 text-base font-black text-slate-950">LINE LIFF設定</h3>
+                                <div class="mt-4">
+                                    <label class="block text-sm font-bold text-slate-700">LIFF ID</label>
+                                    <input name="line_liff_id" value="{{ old('line_liff_id', Auth::user()->tenant?->line_liff_id) }}" placeholder="例: 2000000000-xxxxxxxx" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
+                                </div>
+                                <div class="mt-4 flex justify-end">
+                                    <button class="inline-flex items-center justify-center rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-800">
+                                        LIFF IDを保存
+                                    </button>
+                                </div>
+                            </form>
                         </section>
                         @endif
                     </div>
@@ -579,6 +608,20 @@
                             <option value="">未割り当て</option>
                         </select>
                     </div>
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700">LINE ID</label>
+                            <input name="line_id" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700">LINE名</label>
+                            <input name="line_name" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700">CLINE No</label>
+                            <input name="cline_id" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
+                        </div>
+                    </div>
                     <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <div>
                             <label class="block text-sm font-bold text-slate-700">電話</label>
@@ -602,6 +645,37 @@
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        <div class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/40 px-4 py-6 backdrop-blur" data-registration-qr-modal role="dialog" aria-modal="true" aria-labelledby="registration-qr-title">
+            <div class="w-full max-w-md overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl shadow-slate-400/50">
+                <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+                    <div>
+                        <p class="text-xs font-black text-teal-700">Mini App Entry</p>
+                        <h2 id="registration-qr-title" class="mt-1 text-xl font-black text-slate-950">登録QR</h2>
+                    </div>
+                    <button type="button" class="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900" data-action="close-registration-qr-modal" aria-label="閉じる">
+                        <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="px-5 py-5">
+                    <p class="text-sm leading-6 text-slate-600" data-registration-qr-description>スタッフ本人にこのQRを読み込んでもらうと、LINEミニアプリで登録できます。</p>
+                    <div class="mt-4 grid min-h-80 place-items-center rounded-2xl border border-slate-200 bg-slate-50 p-4" data-registration-qr-code>
+                        <span class="text-sm font-bold text-slate-500">QRを読み込み中です。</span>
+                    </div>
+                    <input type="text" readonly class="mt-4 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700 outline-none" data-registration-qr-url>
+                    <div class="mt-4 flex justify-end gap-3">
+                        <button type="button" class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-black text-slate-700 transition hover:border-teal-200 hover:bg-teal-50" data-action="close-registration-qr-modal">
+                            閉じる
+                        </button>
+                        <button type="button" class="rounded-xl bg-teal-700 px-4 py-2 text-sm font-black text-white transition hover:bg-teal-800" data-action="copy-registration-qr-url">
+                            URLをコピー
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -683,6 +757,42 @@
                 const closeMemberModal = () => {
                     $('[data-member-modal]')?.classList.add('hidden');
                     $('[data-member-modal]')?.classList.remove('flex');
+                };
+
+                const openRegistrationQrModal = async (memberId) => {
+                    const modal = $('[data-registration-qr-modal]');
+                    const code = $('[data-registration-qr-code]');
+                    const url = $('[data-registration-qr-url]');
+                    const description = $('[data-registration-qr-description]');
+
+                    modal?.classList.remove('hidden');
+                    modal?.classList.add('flex');
+                    code.innerHTML = '<span class="text-sm font-bold text-slate-500">QRを読み込み中です。</span>';
+                    url.value = '';
+
+                    try {
+                        const data = await api(`/api/admin/members/${memberId}/registration-qr`);
+                        code.innerHTML = data.qr_svg;
+                        url.value = data.registration_url;
+                        description.textContent = `${data.member.name || 'スタッフ'}さん本人にこのQRを読み込んでもらうと、LINEミニアプリで登録できます。`;
+                    } catch (error) {
+                        code.innerHTML = `<span class="text-sm font-bold text-red-700">${escapeHtml(error.message)}</span>`;
+                    }
+                };
+
+                const closeRegistrationQrModal = () => {
+                    $('[data-registration-qr-modal]')?.classList.add('hidden');
+                    $('[data-registration-qr-modal]')?.classList.remove('flex');
+                };
+
+                const copyRegistrationQrUrl = async () => {
+                    const url = $('[data-registration-qr-url]')?.value;
+                    if (!url) {
+                        return;
+                    }
+
+                    await navigator.clipboard.writeText(url);
+                    setMessage('[data-notice]', '登録URLをコピーしました。');
                 };
 
                 const setSidebarActive = (targetUrl = window.location.href) => {
@@ -813,7 +923,10 @@
                                 <td class="px-4 py-3 text-slate-700">${member.is_shift_submitter ? '対象' : '対象外'}</td>
                                 <td class="max-w-xs truncate px-4 py-3 text-slate-500">${escapeHtml(member.remarks || '-')}</td>
                                 <td class="px-4 py-3 text-right">
-                                    <a href="${routes.membersBase}/${member.id}/edit" class="inline-flex rounded-md border border-gray-200 px-4 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50">編集</a>
+                                    <div class="flex justify-end gap-2">
+                                        <button type="button" class="inline-flex rounded-md border border-teal-200 px-3 py-1.5 text-xs font-semibold text-teal-700 hover:bg-teal-50" data-registration-qr="${member.id}">登録QR</button>
+                                        <a href="${routes.membersBase}/${member.id}/edit" class="inline-flex rounded-md border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50">編集</a>
+                                    </div>
                                 </td>
                             </tr>
                         `).join('')
@@ -1006,6 +1119,19 @@
                     }
                 });
 
+                $('[data-form="tenant-settings"]')?.addEventListener('submit', async (event) => {
+                    event.preventDefault();
+                    const form = event.currentTarget;
+                    try {
+                        const data = await api('/api/admin/tenant/settings', { method: 'PUT', body: JSON.stringify(formPayload(form)) });
+                        state.user.tenant = data.tenant;
+                        renderStats();
+                        setMessage('[data-notice]', 'LIFF IDを保存しました。');
+                    } catch (error) {
+                        setMessage('[data-alert]', error.message);
+                    }
+                });
+
                 $('[data-form="member"]')?.addEventListener('submit', async (event) => {
                     event.preventDefault();
                     const form = event.currentTarget;
@@ -1084,6 +1210,19 @@
                         openMemberModal();
                     }
 
+                    const registrationQrButton = event.target.closest('[data-registration-qr]');
+                    if (registrationQrButton) {
+                        openRegistrationQrModal(registrationQrButton.dataset.registrationQr);
+                    }
+
+                    if (event.target.closest('[data-action="close-registration-qr-modal"]')) {
+                        closeRegistrationQrModal();
+                    }
+
+                    if (event.target.closest('[data-action="copy-registration-qr-url"]')) {
+                        copyRegistrationQrUrl();
+                    }
+
                     if (event.target.closest('[data-action="reset-dashboard-filter"]')) {
                         const dashboardStore = $('[data-filter="dashboardStore"]');
                         if (dashboardStore) {
@@ -1098,6 +1237,10 @@
 
                     if (event.target === $('[data-member-modal]')) {
                         closeMemberModal();
+                    }
+
+                    if (event.target === $('[data-registration-qr-modal]')) {
+                        closeRegistrationQrModal();
                     }
 
                     if (event.target.closest('[data-action="open-mobile-sidebar"]')) {
@@ -1122,6 +1265,7 @@
                         closeMobileSidebar();
                         closeAccountMenu();
                         closeMemberModal();
+                        closeRegistrationQrModal();
                     }
                 });
 

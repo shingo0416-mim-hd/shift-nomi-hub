@@ -9,6 +9,7 @@ use App\Models\Member;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
@@ -17,10 +18,34 @@ class AuthController extends Controller
         $payload = $request->validated();
 
         $result = DB::transaction(function () use ($payload): array {
-            $member = Member::query()
+            $registeredMember = null;
+
+            if (! empty($payload['registration_token'])) {
+                $registeredMember = Member::query()
+                    ->where('tenant_id', $payload['tenant_id'])
+                    ->where('registration_token', $payload['registration_token'])
+                    ->lockForUpdate()
+                    ->first();
+
+                if (! $registeredMember) {
+                    throw ValidationException::withMessages([
+                        'registration_token' => '登録用QRコードが無効です。',
+                    ]);
+                }
+            }
+
+            $lineLinkedMember = Member::query()
                 ->where('tenant_id', $payload['tenant_id'])
                 ->where('line_id', $payload['line_user_id'])
                 ->first();
+
+            if ($registeredMember && $lineLinkedMember && $lineLinkedMember->id !== $registeredMember->id) {
+                throw ValidationException::withMessages([
+                    'line_user_id' => 'このLINEアカウントは別のスタッフに登録済みです。',
+                ]);
+            }
+
+            $member = $registeredMember ?: $lineLinkedMember;
 
             if (! $member) {
                 $user = User::create([
@@ -41,6 +66,7 @@ class AuthController extends Controller
                     'status' => 'active',
                     'is_linked' => true,
                     'login_at' => now(),
+                    'registered_at' => now(),
                 ]);
 
                 EmployeeProfile::create([
@@ -59,17 +85,21 @@ class AuthController extends Controller
 
                 $member->update([
                     'user_id' => $user->id,
+                    'line_id' => $payload['line_user_id'],
                     'line_name' => $payload['display_name'] ?? $member->line_name,
                     'icon_url' => $payload['picture_url'] ?? $member->icon_url,
                     'is_linked' => true,
                     'login_at' => now(),
+                    'registered_at' => $member->registered_at ?? now(),
                 ]);
 
-                $member->employeeProfile()->firstOrCreate(
+                $member->employeeProfile()->updateOrCreate(
                     ['tenant_id' => $member->tenant_id],
                     [
                         'user_id' => $user->id,
                         'display_name' => $member->name ?: ($payload['display_name'] ?? 'LINE User'),
+                        'email' => $member->email,
+                        'phone' => $member->phone,
                     ],
                 );
             }

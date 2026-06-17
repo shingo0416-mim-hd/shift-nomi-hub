@@ -6,9 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\MemberStoreRequest;
 use App\Models\EmployeeProfile;
 use App\Models\Member;
+use BaconQrCode\Renderer\Image\SvgImageBackEnd;
+use BaconQrCode\Renderer\ImageRenderer;
+use BaconQrCode\Renderer\RendererStyle\RendererStyle;
+use BaconQrCode\Writer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class MemberController extends Controller
 {
@@ -31,6 +36,7 @@ class MemberController extends Controller
                 ...$request->validated(),
                 'tenant_id' => $request->user()->tenant_id,
                 'status' => $request->validated('status', 'active'),
+                'registration_token' => Str::random(48),
             ]);
 
             EmployeeProfile::create([
@@ -59,5 +65,36 @@ class MemberController extends Controller
         ]);
 
         return response()->json(['member' => $member->refresh()->load(['store', 'employeeProfile'])]);
+    }
+
+    public function registrationQr(Request $request, Member $member): JsonResponse
+    {
+        abort_unless($member->tenant_id === $request->user()->tenant_id, 404);
+
+        if (! $member->registration_token) {
+            $member->forceFill(['registration_token' => Str::random(48)])->save();
+        }
+
+        $url = $this->registrationUrl($member);
+        $renderer = new ImageRenderer(new RendererStyle(320, 2), new SvgImageBackEnd);
+        $qrSvg = (new Writer($renderer))->writeString($url);
+
+        return response()->json([
+            'member' => $member->only(['id', 'name', 'line_id', 'is_linked', 'registered_at']),
+            'registration_url' => $url,
+            'qr_svg' => $qrSvg,
+        ]);
+    }
+
+    private function registrationUrl(Member $member): string
+    {
+        $appUrl = route('liff.register', ['registrationToken' => $member->registration_token]);
+        $liffId = $member->tenant?->line_liff_id;
+
+        if (! $liffId) {
+            return $appUrl;
+        }
+
+        return 'https://liff.line.me/'.rawurlencode($liffId).'/liff/register/'.rawurlencode($member->registration_token);
     }
 }

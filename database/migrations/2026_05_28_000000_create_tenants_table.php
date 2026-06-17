@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('tenants', function (Blueprint $table) {
             $table->id()->comment('テナントID');
             $table->string('name')->nullable()->comment('テナント名');
+            $table->string('line_liff_id')->nullable()->comment('LINE LIFF ID');
             $table->json('data')->nullable()->comment('テナントデータ');
             $table->timestamps();
             $table->softDeletes('deleted_at', 0);

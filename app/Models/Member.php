@@ -48,6 +48,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'profiles',
     'tags',
     'ip_address',
+    'registration_token',
+    'registered_at',
     'login_at',
     'created_by',
     'updated_by',
@@ -70,6 +72,7 @@ class Member extends Model
             'profiles' => 'array',
             'tags' => 'array',
             'login_at' => 'datetime',
+            'registered_at' => 'datetime',
         ];
     }
 

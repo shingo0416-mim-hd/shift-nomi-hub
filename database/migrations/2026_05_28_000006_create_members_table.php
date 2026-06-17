@@ -51,6 +51,8 @@ return new class extends Migration
             $table->json('profiles')->nullable()->comment('プロフィール情報');
             $table->json('tags')->nullable()->comment('タグ');
             $table->ipAddress('ip_address')->nullable()->comment('IPアドレス');
+            $table->string('registration_token', 80)->nullable()->unique()->comment('ミニアプリ登録用トークン');
+            $table->timestamp('registered_at')->nullable()->comment('ミニアプリ登録日時');
             $table->timestamp('login_at')->nullable()->comment('ログイン日時');
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete()->comment('作成者');
             $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete()->comment('最終更新者');

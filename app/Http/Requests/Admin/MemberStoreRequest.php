@@ -32,6 +32,7 @@ class MemberStoreRequest extends FormRequest
                     ->ignore($memberId),
             ],
             'line_name' => ['nullable', 'string', 'max:255'],
+            'cline_id' => ['nullable', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
             'email' => ['nullable', 'email', 'max:255'],
             'status' => ['nullable', 'string', 'max:50'],
