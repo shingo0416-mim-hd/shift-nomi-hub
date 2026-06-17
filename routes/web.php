@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\LineAuthController;
 use App\Http\Controllers\Liff\RegistrationController;
 use App\Models\Member;
 use App\Models\ShiftSchedule;
@@ -14,6 +15,16 @@ Route::redirect('/', '/login');
 Route::redirect('/admin', '/dashboard');
 
 Route::get('/liff/register/{registrationToken}', [RegistrationController::class, 'show'])->name('liff.register');
+
+Route::prefix('{tenant}')
+    ->middleware('tenant.path')
+    ->group(function (): void {
+        Route::get('/line/login', [LineAuthController::class, 'login'])->name('line.login');
+        Route::get('/line/login/callback', [LineAuthController::class, 'callback'])->name('line.callback');
+        Route::get('/line/login/complete', [LineAuthController::class, 'complete'])
+            ->middleware('auth.line')
+            ->name('line.login.complete');
+    });
 
 Route::middleware('auth')->group(function (): void {
     Route::get('/two-factor-settings', fn () => view('auth.two-factor-settings'))->name('two-factor.settings');

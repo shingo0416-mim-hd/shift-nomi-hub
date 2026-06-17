@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\MemberStoreRequest;
 use App\Models\EmployeeProfile;
 use App\Models\Member;
+use App\Services\TenantPathService;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
@@ -96,15 +97,16 @@ class MemberController extends Controller
 
     private function registrationUrl(Member $member): string
     {
-        $appUrl = route('liff.register', ['registrationToken' => $member->registration_token]);
-        $liffId = Schema::hasTable('line_liff_settings')
-            ? $member->tenant?->lineLiffSetting?->liff_id
-            : null;
+        $tenant = $member->tenant;
+        $tenantPath = $tenant ? app(TenantPathService::class)->pathFor($tenant) : null;
 
-        if (! $liffId) {
-            return $appUrl;
+        if (! $tenantPath) {
+            return route('liff.register', ['registrationToken' => $member->registration_token]);
         }
 
-        return 'https://liff.line.me/' . rawurlencode($liffId) . '/liff/register/' . rawurlencode($member->registration_token);
+        return route('line.login', [
+            'tenant' => $tenantPath,
+            'registration_token' => $member->registration_token,
+        ]);
     }
 }
