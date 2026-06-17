@@ -397,11 +397,12 @@
                                         </div>
                                     </div>
                                     <div class="overflow-x-auto">
-                                        <table class="min-w-[820px] w-full divide-y divide-slate-200 text-sm">
+                                        <table class="min-w-[980px] w-full divide-y divide-slate-200 text-sm">
                                             <thead class="bg-slate-50 text-left text-xs font-black text-slate-500">
                                                 <tr>
                                                     <th class="px-4 py-3">氏名</th>
                                                     <th class="px-4 py-3">店舗</th>
+                                                    <th class="px-4 py-3">LINE</th>
                                                     <th class="px-4 py-3">連絡先</th>
                                                     <th class="px-4 py-3">状態</th>
                                                     <th class="px-4 py-3">提出</th>
@@ -1168,11 +1169,27 @@
                     const storeId = filter.value;
                     const hasLineLoginChannel = Boolean(state.user.tenant?.line_login_setting?.channel_id);
                     const members = storeId ? state.members.filter((member) => String(member.store_id || '') === storeId) : state.members;
+                    const lineAvatar = (member) => {
+                        if (member.icon_url) {
+                            return `<img src="${escapeHtml(member.icon_url)}" alt="" class="h-9 w-9 rounded-full object-cover ring-1 ring-slate-200">`;
+                        }
+
+                        return `<span class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-xs font-black text-slate-500 ring-1 ring-slate-200">${escapeHtml((member.line_name || member.name || '?').slice(0, 1))}</span>`;
+                    };
                     list.innerHTML = members.length
                         ? members.map((member) => `
                             <tr class="transition hover:bg-slate-50">
                                 <td class="px-4 py-3 font-black text-slate-950">${escapeHtml(member.name)}</td>
                                 <td class="px-4 py-3 text-slate-700">${escapeHtml(member.store?.name || '未割り当て')}</td>
+                                <td class="px-4 py-3">
+                                    <div class="flex min-w-0 items-center gap-3">
+                                        ${lineAvatar(member)}
+                                        <div class="min-w-0">
+                                            <div class="truncate font-semibold text-slate-900">${escapeHtml(member.line_name || '未連携')}</div>
+                                            <div class="text-xs ${member.is_linked ? 'text-emerald-700' : 'text-slate-500'}">${member.is_linked ? 'LINE連携済み' : 'LINE未連携'}</div>
+                                        </div>
+                                    </div>
+                                </td>
                                 <td class="px-4 py-3 text-slate-700">
                                     <div>${escapeHtml(member.phone || '-')}</div>
                                     <div class="text-xs text-slate-500">${escapeHtml(member.email || '')}</div>
@@ -1188,7 +1205,7 @@
                                 </td>
                             </tr>
                         `).join('')
-                        : '<tr><td colspan="7" class="px-4 py-8 text-center text-sm text-slate-500">条件に一致するキャストがいません。</td></tr>';
+                        : '<tr><td colspan="8" class="px-4 py-8 text-center text-sm text-slate-500">条件に一致するキャストがいません。</td></tr>';
                 };
 
                 const renderSchedules = () => {
