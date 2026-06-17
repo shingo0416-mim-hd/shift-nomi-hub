@@ -13,6 +13,7 @@ use BaconQrCode\Writer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class MemberController extends Controller
@@ -89,7 +90,9 @@ class MemberController extends Controller
     private function registrationUrl(Member $member): string
     {
         $appUrl = route('liff.register', ['registrationToken' => $member->registration_token]);
-        $liffId = $member->tenant?->lineLiffSetting?->liff_id;
+        $liffId = Schema::hasTable('line_liff_settings')
+            ? $member->tenant?->lineLiffSetting?->liff_id
+            : null;
 
         if (! $liffId) {
             return $appUrl;

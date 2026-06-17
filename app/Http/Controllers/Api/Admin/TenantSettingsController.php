@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\ValidationException;
 
 class TenantSettingsController extends Controller
 {
@@ -21,6 +23,12 @@ class TenantSettingsController extends Controller
             'line_official_line_at_id' => ['nullable', 'string', 'max:255'],
             'line_official_line_timeline_url' => ['nullable', 'url', 'max:255'],
         ]);
+
+        if (! Schema::hasTable('line_login_settings') || ! Schema::hasTable('line_liff_settings') || ! Schema::hasTable('line_official_accounts')) {
+            throw ValidationException::withMessages([
+                'line_settings' => ['LINE設定テーブルが未作成です。マイグレーション実行後に保存してください。'],
+            ]);
+        }
 
         $tenant = $request->user()->tenant;
         $lineLoginValues = [

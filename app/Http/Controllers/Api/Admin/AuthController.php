@@ -12,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -67,7 +68,7 @@ class AuthController extends Controller
         $user->forceFill(['login_at' => now()])->save();
 
         return response()->json([
-            'user' => $user->load(['tenant.lineLoginSetting', 'tenant.lineLiffSetting', 'tenant.lineOfficialAccount']),
+            'user' => $user->load($this->userRelations()),
             'token' => $user->createToken($payload['device_name'] ?? 'admin', ['admin'])->plainTextToken,
         ]);
     }
@@ -75,7 +76,7 @@ class AuthController extends Controller
     public function me(Request $request): JsonResponse
     {
         return response()->json([
-            'user' => $request->user()->load(['tenant.lineLoginSetting', 'tenant.lineLiffSetting', 'tenant.lineOfficialAccount']),
+            'user' => $request->user()->load($this->userRelations()),
         ]);
     }
 
@@ -84,5 +85,24 @@ class AuthController extends Controller
         $request->user()->currentAccessToken()?->delete();
 
         return response()->json(['message' => 'Logged out']);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function userRelations(): array
+    {
+        $relations = ['tenant'];
+        if (Schema::hasTable('line_login_settings')) {
+            $relations[] = 'tenant.lineLoginSetting';
+        }
+        if (Schema::hasTable('line_liff_settings')) {
+            $relations[] = 'tenant.lineLiffSetting';
+        }
+        if (Schema::hasTable('line_official_accounts')) {
+            $relations[] = 'tenant.lineOfficialAccount';
+        }
+
+        return $relations;
     }
 }

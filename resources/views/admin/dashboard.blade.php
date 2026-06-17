@@ -552,9 +552,9 @@
                             </div>
                             @php
                                 $tenant = Auth::user()->tenant;
-                                $lineLoginSetting = $tenant?->lineLoginSetting;
-                                $lineLiffSetting = $tenant?->lineLiffSetting;
-                                $lineOfficialAccount = $tenant?->lineOfficialAccount;
+                                $lineLoginSetting = $tenant?->relationLoaded('lineLoginSetting') ? $tenant->lineLoginSetting : null;
+                                $lineLiffSetting = $tenant?->relationLoaded('lineLiffSetting') ? $tenant->lineLiffSetting : null;
+                                $lineOfficialAccount = $tenant?->relationLoaded('lineOfficialAccount') ? $tenant->lineOfficialAccount : null;
                             @endphp
                             <form class="space-y-6 border-t border-slate-200 pt-5" data-form="tenant-settings">
                                 <div>
@@ -712,7 +712,7 @@
                     stores: @json($initialData['stores'] ?? []),
                     members: @json($initialData['members'] ?? []),
                     schedules: @json($initialData['schedules'] ?? []),
-                    user: @json($initialData['user'] ?? Auth::user()->load(['tenant.lineLoginSetting', 'tenant.lineLiffSetting', 'tenant.lineOfficialAccount'])),
+                    user: @json($initialData['user'] ?? Auth::user()->load('tenant')),
                 };
                 const routes = {
                     storesBase: @json(url('/dashboard/stores')),

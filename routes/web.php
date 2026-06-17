@@ -6,6 +6,7 @@ use App\Models\ShiftSchedule;
 use App\Models\Store;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schema;
 
 Route::redirect('/', '/login');
 Route::redirect('/admin', '/dashboard');
@@ -40,13 +41,24 @@ Route::middleware('auth')->group(function (): void {
             ->limit(100)
             ->get();
 
+        $userRelations = ['tenant'];
+        if (Schema::hasTable('line_login_settings')) {
+            $userRelations[] = 'tenant.lineLoginSetting';
+        }
+        if (Schema::hasTable('line_liff_settings')) {
+            $userRelations[] = 'tenant.lineLiffSetting';
+        }
+        if (Schema::hasTable('line_official_accounts')) {
+            $userRelations[] = 'tenant.lineOfficialAccount';
+        }
+
         return view('admin.dashboard', [
             'page' => $page,
             'initialData' => [
                 'stores' => $stores,
                 'members' => $members,
                 'schedules' => $schedules,
-                'user' => $user->load(['tenant.lineLoginSetting', 'tenant.lineLiffSetting', 'tenant.lineOfficialAccount']),
+                'user' => $user->load($userRelations),
             ],
         ]);
     };
