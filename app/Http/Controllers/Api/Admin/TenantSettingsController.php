@@ -13,6 +13,7 @@ class TenantSettingsController extends Controller
     public function update(Request $request): JsonResponse
     {
         $payload = $request->validate([
+            'setting_type' => ['required', 'string', 'in:line_login,liff,official'],
             'line_login_channel_id' => ['nullable', 'string', 'max:255'],
             'line_login_channel_secret' => ['nullable', 'string'],
             'liff_id' => ['nullable', 'string', 'max:255'],
@@ -31,43 +32,51 @@ class TenantSettingsController extends Controller
         }
 
         $tenant = $request->user()->tenant;
-        $lineLoginValues = [
-            'channel_id' => $payload['line_login_channel_id'] ?? null,
-            'is_active' => true,
-        ];
-        if ($request->filled('line_login_channel_secret')) {
-            $lineLoginValues['channel_secret'] = $payload['line_login_channel_secret'];
-        }
-
-        $lineOfficialValues = [
-            'channel_id' => $payload['line_official_channel_id'] ?? null,
-            'webhook_url' => $payload['line_official_webhook_url'] ?? null,
-            'line_at_id' => $payload['line_official_line_at_id'] ?? null,
-            'line_timeline_url' => $payload['line_official_line_timeline_url'] ?? null,
-            'is_active' => true,
-        ];
-        if ($request->filled('line_official_channel_access_token')) {
-            $lineOfficialValues['channel_access_token'] = $payload['line_official_channel_access_token'];
-        }
-        if ($request->filled('line_official_channel_secret')) {
-            $lineOfficialValues['channel_secret'] = $payload['line_official_channel_secret'];
-        }
-
-        $tenant->lineLoginSetting()->updateOrCreate(
-            ['tenant_id' => $tenant->id],
-            $lineLoginValues
-        );
-        $tenant->lineLiffSetting()->updateOrCreate(
-            ['tenant_id' => $tenant->id],
-            [
-                'liff_id' => $payload['liff_id'] ?? null,
+        if ($payload['setting_type'] === 'line_login') {
+            $lineLoginValues = [
+                'channel_id' => $payload['line_login_channel_id'] ?? null,
                 'is_active' => true,
-            ]
-        );
-        $tenant->lineOfficialAccount()->updateOrCreate(
-            ['tenant_id' => $tenant->id],
-            $lineOfficialValues
-        );
+            ];
+            if ($request->filled('line_login_channel_secret')) {
+                $lineLoginValues['channel_secret'] = $payload['line_login_channel_secret'];
+            }
+
+            $tenant->lineLoginSetting()->updateOrCreate(
+                ['tenant_id' => $tenant->id],
+                $lineLoginValues
+            );
+        }
+
+        if ($payload['setting_type'] === 'liff') {
+            $tenant->lineLiffSetting()->updateOrCreate(
+                ['tenant_id' => $tenant->id],
+                [
+                    'liff_id' => $payload['liff_id'] ?? null,
+                    'is_active' => true,
+                ]
+            );
+        }
+
+        if ($payload['setting_type'] === 'official') {
+            $lineOfficialValues = [
+                'channel_id' => $payload['line_official_channel_id'] ?? null,
+                'webhook_url' => $payload['line_official_webhook_url'] ?? null,
+                'line_at_id' => $payload['line_official_line_at_id'] ?? null,
+                'line_timeline_url' => $payload['line_official_line_timeline_url'] ?? null,
+                'is_active' => true,
+            ];
+            if ($request->filled('line_official_channel_access_token')) {
+                $lineOfficialValues['channel_access_token'] = $payload['line_official_channel_access_token'];
+            }
+            if ($request->filled('line_official_channel_secret')) {
+                $lineOfficialValues['channel_secret'] = $payload['line_official_channel_secret'];
+            }
+
+            $tenant->lineOfficialAccount()->updateOrCreate(
+                ['tenant_id' => $tenant->id],
+                $lineOfficialValues
+            );
+        }
 
         return response()->json([
             'tenant' => $tenant->refresh()->load(['lineLoginSetting', 'lineLiffSetting', 'lineOfficialAccount']),
