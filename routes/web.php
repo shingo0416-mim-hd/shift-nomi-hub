@@ -4,7 +4,9 @@ use App\Http\Controllers\Liff\RegistrationController;
 use App\Models\Member;
 use App\Models\ShiftSchedule;
 use App\Models\Store;
+use App\Models\Tenant;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 
@@ -80,5 +82,94 @@ Route::middleware('auth')->group(function (): void {
         return $adminPage('store-edit')->with('editingStore', $store);
     })->name('admin.stores.edit');
     Route::get('/dashboard/account', fn () => $adminPage('account'))->name('admin.account');
+    Route::get('/dashboard/global', function () use ($adminPage) {
+        abort_unless(auth()->user()?->isSuperAdmin(), 404);
+
+        $relations = [];
+        if (Schema::hasTable('line_login_settings')) {
+            $relations[] = 'lineLoginSetting';
+        }
+        if (Schema::hasTable('line_liff_settings')) {
+            $relations[] = 'lineLiffSetting';
+        }
+        if (Schema::hasTable('line_official_accounts')) {
+            $relations[] = 'lineOfficialAccount';
+        }
+
+        $globalTenants = Tenant::query()
+            ->with($relations)
+            ->withCount(['stores', 'members'])
+            ->orderBy('id')
+            ->get();
+
+        return $adminPage('global-management')->with('globalTenants', $globalTenants);
+    })->name('admin.global-management');
+    Route::get('/dashboard/global/tenants/{tenant}/line-settings', function (Tenant $tenant) use ($adminPage) {
+        abort_unless(auth()->user()?->isSuperAdmin(), 404);
+
+        $lineSettingTablesReady = Schema::hasTable('line_login_settings')
+            && Schema::hasTable('line_liff_settings')
+            && Schema::hasTable('line_official_accounts');
+
+        if ($lineSettingTablesReady) {
+            $tenant->load(['lineLoginSetting', 'lineLiffSetting', 'lineOfficialAccount']);
+        }
+
+        return $adminPage('global-line-settings')
+            ->with('editingTenant', $tenant)
+            ->with('lineSettingTablesReady', $lineSettingTablesReady);
+    })->name('admin.global-management.tenants.line-settings');
+    Route::put('/dashboard/global/tenants/{tenant}/line-settings', function (Request $request, Tenant $tenant) {
+        abort_unless(auth()->user()?->isSuperAdmin(), 404);
+
+        if (! Schema::hasTable('line_login_settings') || ! Schema::hasTable('line_liff_settings') || ! Schema::hasTable('line_official_accounts')) {
+            return back()->withErrors(['line_settings' => 'LINE設定テーブルが未作成です。マイグレーション実行後に保存してください。']);
+        }
+
+        $payload = $request->validate([
+            'line_login_channel_id' => ['nullable', 'string', 'max:255'],
+            'line_login_channel_secret' => ['nullable', 'string'],
+            'liff_id' => ['nullable', 'string', 'max:255'],
+            'line_official_channel_id' => ['nullable', 'string', 'max:255'],
+            'line_official_channel_access_token' => ['nullable', 'string'],
+            'line_official_channel_secret' => ['nullable', 'string'],
+            'line_official_webhook_url' => ['nullable', 'url', 'max:255'],
+            'line_official_line_at_id' => ['nullable', 'string', 'max:255'],
+            'line_official_line_timeline_url' => ['nullable', 'url', 'max:255'],
+        ]);
+
+        $lineLoginValues = [
+            'channel_id' => $payload['line_login_channel_id'] ?? null,
+            'is_active' => true,
+        ];
+        if ($request->filled('line_login_channel_secret')) {
+            $lineLoginValues['channel_secret'] = $payload['line_login_channel_secret'];
+        }
+
+        $lineOfficialValues = [
+            'channel_id' => $payload['line_official_channel_id'] ?? null,
+            'webhook_url' => $payload['line_official_webhook_url'] ?? null,
+            'line_at_id' => $payload['line_official_line_at_id'] ?? null,
+            'line_timeline_url' => $payload['line_official_line_timeline_url'] ?? null,
+            'is_active' => true,
+        ];
+        if ($request->filled('line_official_channel_access_token')) {
+            $lineOfficialValues['channel_access_token'] = $payload['line_official_channel_access_token'];
+        }
+        if ($request->filled('line_official_channel_secret')) {
+            $lineOfficialValues['channel_secret'] = $payload['line_official_channel_secret'];
+        }
+
+        $tenant->lineLoginSetting()->updateOrCreate(['tenant_id' => $tenant->id], $lineLoginValues);
+        $tenant->lineLiffSetting()->updateOrCreate(['tenant_id' => $tenant->id], [
+            'liff_id' => $payload['liff_id'] ?? null,
+            'is_active' => true,
+        ]);
+        $tenant->lineOfficialAccount()->updateOrCreate(['tenant_id' => $tenant->id], $lineOfficialValues);
+
+        return redirect()
+            ->route('admin.global-management.tenants.line-settings', $tenant)
+            ->with('notice', 'LINE設定を保存しました。');
+    })->name('admin.global-management.tenants.line-settings.update');
     Route::redirect('/admin/dashboard', '/dashboard')->name('admin.dashboard');
 });

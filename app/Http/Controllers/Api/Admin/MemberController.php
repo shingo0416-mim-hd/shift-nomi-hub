@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class MemberController extends Controller
 {
@@ -71,6 +72,12 @@ class MemberController extends Controller
     public function registrationQr(Request $request, Member $member): JsonResponse
     {
         abort_unless($member->tenant_id === $request->user()->tenant_id, 404);
+
+        if (! Schema::hasTable('line_login_settings') || ! $request->user()->tenant?->lineLoginSetting?->channel_id) {
+            throw ValidationException::withMessages([
+                'line_login' => ['LINEログインのチャネルIDが未設定のため、登録QRは表示できません。'],
+            ]);
+        }
 
         if (! $member->registration_token) {
             $member->forceFill(['registration_token' => Str::random(48)])->save();

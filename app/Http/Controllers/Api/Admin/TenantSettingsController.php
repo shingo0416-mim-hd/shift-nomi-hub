@@ -35,7 +35,7 @@ class TenantSettingsController extends Controller
             'channel_id' => $payload['line_login_channel_id'] ?? null,
             'is_active' => true,
         ];
-        if (array_key_exists('line_login_channel_secret', $payload)) {
+        if ($request->filled('line_login_channel_secret')) {
             $lineLoginValues['channel_secret'] = $payload['line_login_channel_secret'];
         }
 
@@ -46,10 +46,10 @@ class TenantSettingsController extends Controller
             'line_timeline_url' => $payload['line_official_line_timeline_url'] ?? null,
             'is_active' => true,
         ];
-        if (array_key_exists('line_official_channel_access_token', $payload)) {
+        if ($request->filled('line_official_channel_access_token')) {
             $lineOfficialValues['channel_access_token'] = $payload['line_official_channel_access_token'];
         }
-        if (array_key_exists('line_official_channel_secret', $payload)) {
+        if ($request->filled('line_official_channel_secret')) {
             $lineOfficialValues['channel_secret'] = $payload['line_official_channel_secret'];
         }
 
