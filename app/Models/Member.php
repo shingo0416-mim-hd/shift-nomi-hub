@@ -40,6 +40,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'city',
     'street_address',
     'status',
+    'role',
     'comment',
     'remarks',
     'is_shift_submitter',
@@ -59,6 +60,10 @@ class Member extends Model
 {
     use HasFactory;
     use SoftDeletes;
+
+    public const ROLE_CAST = 'cast';
+
+    public const ROLE_ADMIN = 'admin';
 
     /**
      * @return array<string, string>
@@ -98,6 +103,11 @@ class Member extends Model
     public function getFullNameKanaAttribute(): string
     {
         return trim("{$this->last_name_kana} {$this->first_name_kana}");
+    }
+
+    public function isCastAdmin(): bool
+    {
+        return $this->role === self::ROLE_ADMIN;
     }
 
     public function tenant(): BelongsTo

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 use Laravel\Sanctum\Http\Middleware\CheckForAnyAbility;
 use App\Http\Middleware\AuthenticateWithLine;
+use App\Http\Middleware\EnsureLineAdmin;
 use App\Http\Middleware\ResolveTenantPath;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -23,6 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'abilities' => CheckAbilities::class,
             'ability' => CheckForAnyAbility::class,
             'auth.line' => AuthenticateWithLine::class,
+            'line.admin' => EnsureLineAdmin::class,
             'tenant.path' => ResolveTenantPath::class,
         ]);
     })

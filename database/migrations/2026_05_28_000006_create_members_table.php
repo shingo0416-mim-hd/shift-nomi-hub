@@ -43,6 +43,7 @@ return new class extends Migration
             $table->string('city')->nullable()->comment('市区町村');
             $table->string('street_address')->nullable()->comment('番地');
             $table->string('status', 50)->nullable()->comment('ステータス');
+            $table->string('role', 50)->default('cast')->comment('キャスト権限');
             $table->text('comment')->nullable()->comment('ステータスコメント');
             $table->text('remarks')->nullable()->comment('備考');
             $table->boolean('is_shift_submitter')->default(true)->comment('シフト提出対象者かどうか');

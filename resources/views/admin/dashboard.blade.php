@@ -403,6 +403,7 @@
                                                     <th class="px-4 py-3">氏名</th>
                                                     <th class="px-4 py-3">店舗</th>
                                                     <th class="px-4 py-3">LINE</th>
+                                                    <th class="px-4 py-3">権限</th>
                                                     <th class="px-4 py-3">連絡先</th>
                                                     <th class="px-4 py-3">状態</th>
                                                     <th class="px-4 py-3">提出</th>
@@ -453,6 +454,13 @@
                                     <select name="status" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
                                         <option value="active" @selected(old('status', $editingMember->status) === 'active')>active</option>
                                         <option value="inactive" @selected(old('status', $editingMember->status) === 'inactive')>inactive</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-slate-700">権限</label>
+                                    <select name="role" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
+                                        <option value="cast" @selected(old('role', $editingMember->role ?? 'cast') === 'cast')>キャスト</option>
+                                        <option value="admin" @selected(old('role', $editingMember->role ?? 'cast') === 'admin')>管理者</option>
                                     </select>
                                 </div>
                                 <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -861,6 +869,13 @@
                             <option value="">未割り当て</option>
                         </select>
                     </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700">権限</label>
+                        <select name="role" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
+                            <option value="cast">キャスト</option>
+                            <option value="admin">管理者</option>
+                        </select>
+                    </div>
                     <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <div>
                             <label class="block text-sm font-bold text-slate-700">電話</label>
@@ -1190,6 +1205,9 @@
                                         </div>
                                     </div>
                                 </td>
+                                <td class="px-4 py-3">
+                                    <span class="rounded-full border px-2.5 py-1 text-xs font-black ${member.role === 'admin' ? 'border-amber-200 bg-amber-50 text-amber-700' : 'border-slate-200 bg-slate-50 text-slate-600'}">${member.role === 'admin' ? '管理者' : 'キャスト'}</span>
+                                </td>
                                 <td class="px-4 py-3 text-slate-700">
                                     <div>${escapeHtml(member.phone || '-')}</div>
                                     <div class="text-xs text-slate-500">${escapeHtml(member.email || '')}</div>
@@ -1205,7 +1223,7 @@
                                 </td>
                             </tr>
                         `).join('')
-                        : '<tr><td colspan="8" class="px-4 py-8 text-center text-sm text-slate-500">条件に一致するキャストがいません。</td></tr>';
+                        : '<tr><td colspan="9" class="px-4 py-8 text-center text-sm text-slate-500">条件に一致するキャストがいません。</td></tr>';
                 };
 
                 const renderSchedules = () => {

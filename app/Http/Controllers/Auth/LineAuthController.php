@@ -73,9 +73,17 @@ class LineAuthController extends Controller
         }
     }
 
-    public function complete(): \Illuminate\Contracts\View\View
+    public function complete(Request $request): \Illuminate\Contracts\View\View
     {
-        return view('line.login-complete');
+        $member = Member::query()
+            ->with('user')
+            ->find(Session::get('line_member_id'));
+        $tenantPath = $request->attributes->get('tenantPath');
+
+        return view('line.login-complete', [
+            'canOpenLineAdmin' => $member?->isCastAdmin() === true && $member?->user?->isAdmin() === true,
+            'lineAdminUrl' => is_string($tenantPath) ? route('line.admin.dashboard', ['tenant' => $tenantPath]) : null,
+        ]);
     }
 
     /**

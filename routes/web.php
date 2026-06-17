@@ -1,7 +1,11 @@
 <?php
 
 use App\Http\Controllers\Auth\LineAuthController;
+use App\Http\Controllers\Api\Admin\MemberController as AdminMemberController;
+use App\Http\Controllers\Api\Admin\ShiftScheduleController as AdminShiftScheduleController;
+use App\Http\Controllers\Api\Admin\StoreController as AdminStoreController;
 use App\Http\Controllers\Liff\RegistrationController;
+use App\Http\Controllers\LineAdminController;
 use App\Models\Member;
 use App\Models\ShiftSchedule;
 use App\Models\Store;
@@ -24,6 +28,19 @@ Route::prefix('{tenant}')
         Route::get('/line/login/complete', [LineAuthController::class, 'complete'])
             ->middleware('auth.line')
             ->name('line.login.complete');
+
+        Route::middleware(['auth.line', 'line.admin'])
+            ->prefix('/line/admin')
+            ->name('line.admin.')
+            ->group(function (): void {
+                Route::get('/', [LineAdminController::class, 'dashboard'])->name('dashboard');
+                Route::get('/api/stores', [AdminStoreController::class, 'index'])->name('api.stores.index');
+                Route::get('/api/members', [AdminMemberController::class, 'index'])->name('api.members.index');
+                Route::post('/api/members', [AdminMemberController::class, 'store'])->name('api.members.store');
+                Route::get('/api/shift-schedules', [AdminShiftScheduleController::class, 'index'])->name('api.shift-schedules.index');
+                Route::post('/api/shift-schedules', [AdminShiftScheduleController::class, 'store'])->name('api.shift-schedules.store');
+                Route::post('/api/shift-schedules/{shiftSchedule}/publish', [AdminShiftScheduleController::class, 'publish'])->name('api.shift-schedules.publish');
+            });
     });
 
 Route::middleware('auth')->group(function (): void {

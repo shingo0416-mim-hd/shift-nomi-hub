@@ -39,6 +39,7 @@ class MemberController extends Controller
                 ...$request->validated(),
                 'tenant_id' => $request->user()->tenant_id,
                 'status' => $request->validated('status', 'active'),
+                'role' => $request->validated('role', Member::ROLE_CAST),
                 'registration_token' => Str::random(48),
             ]);
 

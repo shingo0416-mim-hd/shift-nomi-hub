@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Member;
+use App\Models\ShiftSchedule;
+use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -140,5 +142,145 @@ class LiffRegistrationTest extends TestCase
         $this->assertSame('LINE Staff', $member->line_name);
         $this->assertTrue($member->is_linked);
         $this->assertNotNull($member->registered_at);
+    }
+
+    public function test_line_admin_dashboard_allows_line_linked_admin_member(): void
+    {
+        $tenant = Tenant::factory()->create([
+            'data' => ['path' => 'mim-hd'],
+        ]);
+        $admin = User::factory()->create([
+            'tenant_id' => $tenant->id,
+            'role' => User::ROLE_ADMIN,
+        ]);
+        $member = Member::create([
+            'tenant_id' => $tenant->id,
+            'user_id' => $admin->id,
+            'name' => '管理者 スタッフ',
+            'status' => 'active',
+            'role' => Member::ROLE_ADMIN,
+            'line_id' => 'line-admin-001',
+            'is_linked' => true,
+        ]);
+
+        $this->withSession([
+            'line_id' => 'line-admin-001',
+            'line_member_id' => $member->id,
+        ])->get('/mim-hd/line/admin')
+            ->assertOk()
+            ->assertSee('シフト管理');
+    }
+
+    public function test_line_admin_dashboard_rejects_non_admin_member(): void
+    {
+        $tenant = Tenant::factory()->create([
+            'data' => ['path' => 'mim-hd'],
+        ]);
+        $member = Member::create([
+            'tenant_id' => $tenant->id,
+            'name' => '一般 スタッフ',
+            'status' => 'active',
+            'line_id' => 'line-member-001',
+            'is_linked' => true,
+        ]);
+
+        $this->withSession([
+            'line_id' => 'line-member-001',
+            'line_member_id' => $member->id,
+        ])->get('/mim-hd/line/admin')
+            ->assertForbidden();
+    }
+
+    public function test_line_admin_can_create_shift_schedule(): void
+    {
+        $tenant = Tenant::factory()->create([
+            'data' => ['path' => 'mim-hd'],
+        ]);
+        $store = Store::create([
+            'tenant_id' => $tenant->id,
+            'name' => '本店',
+            'timezone' => 'Asia/Tokyo',
+            'is_active' => true,
+        ]);
+        $admin = User::factory()->create([
+            'tenant_id' => $tenant->id,
+            'role' => User::ROLE_ADMIN,
+        ]);
+        $member = Member::create([
+            'tenant_id' => $tenant->id,
+            'user_id' => $admin->id,
+            'name' => '管理者 スタッフ',
+            'status' => 'active',
+            'role' => Member::ROLE_ADMIN,
+            'line_id' => 'line-admin-001',
+            'is_linked' => true,
+        ]);
+
+        $this->withSession([
+            '_token' => 'csrf-token',
+            'line_id' => 'line-admin-001',
+            'line_member_id' => $member->id,
+        ])->withHeader('X-CSRF-TOKEN', 'csrf-token')
+            ->postJson('/mim-hd/line/admin/api/shift-schedules', [
+                'store_id' => $store->id,
+                'starts_on' => '2026-07-01',
+                'ends_on' => '2026-07-31',
+                'status' => 'draft',
+            ])->assertCreated()
+            ->assertJsonPath('shift_schedule.store_id', $store->id);
+
+        $this->assertDatabaseHas(ShiftSchedule::class, [
+            'tenant_id' => $tenant->id,
+            'store_id' => $store->id,
+            'created_by' => $admin->id,
+            'status' => 'draft',
+        ]);
+    }
+
+    public function test_line_admin_can_create_member_when_cast_role_is_admin(): void
+    {
+        $tenant = Tenant::factory()->create([
+            'data' => ['path' => 'mim-hd'],
+        ]);
+        $store = Store::create([
+            'tenant_id' => $tenant->id,
+            'name' => '本店',
+            'timezone' => 'Asia/Tokyo',
+            'is_active' => true,
+        ]);
+        $admin = User::factory()->create([
+            'tenant_id' => $tenant->id,
+            'role' => User::ROLE_ADMIN,
+        ]);
+        $member = Member::create([
+            'tenant_id' => $tenant->id,
+            'user_id' => $admin->id,
+            'name' => '管理者 スタッフ',
+            'status' => 'active',
+            'role' => Member::ROLE_ADMIN,
+            'line_id' => 'line-admin-001',
+            'is_linked' => true,
+        ]);
+
+        $this->withSession([
+            '_token' => 'csrf-token',
+            'line_id' => 'line-admin-001',
+            'line_member_id' => $member->id,
+        ])->withHeader('X-CSRF-TOKEN', 'csrf-token')
+            ->postJson('/mim-hd/line/admin/api/members', [
+                'store_id' => $store->id,
+                'name' => '新規 キャスト',
+                'status' => 'active',
+                'role' => Member::ROLE_CAST,
+                'is_shift_submitter' => true,
+            ])->assertCreated()
+            ->assertJsonPath('member.name', '新規 キャスト');
+
+        $this->assertDatabaseHas(Member::class, [
+            'tenant_id' => $tenant->id,
+            'store_id' => $store->id,
+            'name' => '新規 キャスト',
+            'role' => Member::ROLE_CAST,
+        ]);
     }
 }

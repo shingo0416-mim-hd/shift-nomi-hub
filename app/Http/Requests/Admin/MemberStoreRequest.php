@@ -9,7 +9,13 @@ class MemberStoreRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->isAdmin() === true;
+        if ($this->user()?->isAdmin() !== true) {
+            return false;
+        }
+
+        $lineMember = $this->attributes->get('lineMember');
+
+        return ! $lineMember || $lineMember->isCastAdmin();
     }
 
     /**
@@ -25,6 +31,7 @@ class MemberStoreRequest extends FormRequest
             'phone' => ['nullable', 'string', 'max:50'],
             'email' => ['nullable', 'email', 'max:255'],
             'status' => ['nullable', 'string', 'max:50'],
+            'role' => ['nullable', Rule::in(['cast', 'admin'])],
             'is_shift_submitter' => ['nullable', 'boolean'],
             'is_remind_disabled' => ['nullable', 'boolean'],
             'tags' => ['nullable', 'array'],
