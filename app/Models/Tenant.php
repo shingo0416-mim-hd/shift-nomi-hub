@@ -6,9 +6,10 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['name', 'line_liff_id', 'data'])]
+#[Fillable(['name', 'data'])]
 class Tenant extends Model
 {
     use HasFactory;
@@ -34,6 +35,21 @@ class Tenant extends Model
     public function stores(): HasMany
     {
         return $this->hasMany(Store::class);
+    }
+
+    public function lineLoginSetting(): HasOne
+    {
+        return $this->hasOne(LineLoginSetting::class);
+    }
+
+    public function lineLiffSetting(): HasOne
+    {
+        return $this->hasOne(LineLiffSetting::class);
+    }
+
+    public function lineOfficialAccount(): HasOne
+    {
+        return $this->hasOne(LineOfficialAccount::class);
     }
 
     public function teams(): HasMany

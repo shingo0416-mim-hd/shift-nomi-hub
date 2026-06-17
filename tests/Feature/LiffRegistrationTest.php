@@ -69,10 +69,12 @@ class LiffRegistrationTest extends TestCase
             ->assertJsonValidationErrors('line_user_id');
     }
 
-    public function test_admin_registration_qr_uses_tenant_liff_id(): void
+    public function test_admin_registration_qr_uses_line_liff_setting_liff_id(): void
     {
-        $tenant = Tenant::factory()->create([
-            'line_liff_id' => '2000000000-tenantabc',
+        $tenant = Tenant::factory()->create();
+        $tenant->lineLiffSetting()->create([
+            'liff_id' => '2000000000-tenantabc',
+            'is_active' => true,
         ]);
         $admin = User::factory()->create([
             'tenant_id' => $tenant->id,

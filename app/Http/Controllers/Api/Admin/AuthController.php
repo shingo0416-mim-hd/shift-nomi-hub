@@ -67,7 +67,7 @@ class AuthController extends Controller
         $user->forceFill(['login_at' => now()])->save();
 
         return response()->json([
-            'user' => $user->load('tenant'),
+            'user' => $user->load(['tenant.lineLoginSetting', 'tenant.lineLiffSetting', 'tenant.lineOfficialAccount']),
             'token' => $user->createToken($payload['device_name'] ?? 'admin', ['admin'])->plainTextToken,
         ]);
     }
@@ -75,7 +75,7 @@ class AuthController extends Controller
     public function me(Request $request): JsonResponse
     {
         return response()->json([
-            'user' => $request->user()->load('tenant'),
+            'user' => $request->user()->load(['tenant.lineLoginSetting', 'tenant.lineLiffSetting', 'tenant.lineOfficialAccount']),
         ]);
     }
 

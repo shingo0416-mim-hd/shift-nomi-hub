@@ -550,16 +550,71 @@
                                     2段階認証設定
                                 </a>
                             </div>
-                            <form class="border-t border-slate-200 pt-5" data-form="tenant-settings">
-                                <p class="text-xs font-black text-teal-700">Mini App</p>
-                                <h3 class="mt-1 text-base font-black text-slate-950">LINE LIFF設定</h3>
-                                <div class="mt-4">
-                                    <label class="block text-sm font-bold text-slate-700">LIFF ID</label>
-                                    <input name="line_liff_id" value="{{ old('line_liff_id', Auth::user()->tenant?->line_liff_id) }}" placeholder="例: 2000000000-xxxxxxxx" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
+                            @php
+                                $tenant = Auth::user()->tenant;
+                                $lineLoginSetting = $tenant?->lineLoginSetting;
+                                $lineLiffSetting = $tenant?->lineLiffSetting;
+                                $lineOfficialAccount = $tenant?->lineOfficialAccount;
+                            @endphp
+                            <form class="space-y-6 border-t border-slate-200 pt-5" data-form="tenant-settings">
+                                <div>
+                                    <p class="text-xs font-black text-teal-700">LINE Login</p>
+                                    <h3 class="mt-1 text-base font-black text-slate-950">LINEログイン設定</h3>
+                                    <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                        <div>
+                                            <label class="block text-sm font-bold text-slate-700">チャネルID</label>
+                                            <input name="line_login_channel_id" value="{{ old('line_login_channel_id', $lineLoginSetting?->channel_id) }}" placeholder="例: 2000000000" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-slate-700">チャネルシークレット</label>
+                                            <input name="line_login_channel_secret" type="password" autocomplete="new-password" placeholder="{{ $lineLoginSetting?->channel_secret ? '保存済み' : '' }}" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:bg-white">
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="mt-4 flex justify-end">
+
+                                <div class="border-t border-slate-200 pt-5">
+                                    <p class="text-xs font-black text-teal-700">Mini App</p>
+                                    <h3 class="mt-1 text-base font-black text-slate-950">LINE LIFF設定</h3>
+                                    <div class="mt-4">
+                                        <label class="block text-sm font-bold text-slate-700">LIFF ID</label>
+                                        <input name="liff_id" value="{{ old('liff_id', $lineLiffSetting?->liff_id) }}" placeholder="例: 2000000000-xxxxxxxx" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
+                                    </div>
+                                </div>
+
+                                <div class="border-t border-slate-200 pt-5">
+                                    <p class="text-xs font-black text-teal-700">Messaging API</p>
+                                    <h3 class="mt-1 text-base font-black text-slate-950">公式LINE設定</h3>
+                                    <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                        <div>
+                                            <label class="block text-sm font-bold text-slate-700">チャネルID</label>
+                                            <input name="line_official_channel_id" value="{{ old('line_official_channel_id', $lineOfficialAccount?->channel_id) }}" placeholder="例: 2000000000" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-slate-700">LINE公式アカウントID</label>
+                                            <input name="line_official_line_at_id" value="{{ old('line_official_line_at_id', $lineOfficialAccount?->line_at_id) }}" placeholder="例: @nomihub" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-slate-700">チャネルアクセストークン</label>
+                                            <input name="line_official_channel_access_token" type="password" autocomplete="new-password" placeholder="{{ $lineOfficialAccount?->channel_access_token ? '保存済み' : '' }}" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:bg-white">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-slate-700">チャネルシークレット</label>
+                                            <input name="line_official_channel_secret" type="password" autocomplete="new-password" placeholder="{{ $lineOfficialAccount?->channel_secret ? '保存済み' : '' }}" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:bg-white">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-slate-700">Webhook URL</label>
+                                            <input name="line_official_webhook_url" type="url" value="{{ old('line_official_webhook_url', $lineOfficialAccount?->webhook_url) }}" placeholder="https://example.com/webhook/line" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-slate-700">LINEタイムラインURL</label>
+                                            <input name="line_official_line_timeline_url" type="url" value="{{ old('line_official_line_timeline_url', $lineOfficialAccount?->line_timeline_url) }}" placeholder="https://line.me/R/ti/p/..." class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex justify-end border-t border-slate-200 pt-4">
                                     <button class="inline-flex items-center justify-center rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-800">
-                                        LIFF IDを保存
+                                        LINE設定を保存
                                     </button>
                                 </div>
                             </form>
@@ -657,7 +712,7 @@
                     stores: @json($initialData['stores'] ?? []),
                     members: @json($initialData['members'] ?? []),
                     schedules: @json($initialData['schedules'] ?? []),
-                    user: @json($initialData['user'] ?? Auth::user()->load('tenant')),
+                    user: @json($initialData['user'] ?? Auth::user()->load(['tenant.lineLoginSetting', 'tenant.lineLiffSetting', 'tenant.lineOfficialAccount'])),
                 };
                 const routes = {
                     storesBase: @json(url('/dashboard/stores')),
@@ -1098,7 +1153,7 @@
                         const data = await api('/api/admin/tenant/settings', { method: 'PUT', body: JSON.stringify(formPayload(form)) });
                         state.user.tenant = data.tenant;
                         renderStats();
-                        setMessage('[data-notice]', 'LIFF IDを保存しました。');
+                        setMessage('[data-notice]', 'LINE設定を保存しました。');
                     } catch (error) {
                         setMessage('[data-alert]', error.message);
                     }

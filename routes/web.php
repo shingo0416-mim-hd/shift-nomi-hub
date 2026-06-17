@@ -46,7 +46,7 @@ Route::middleware('auth')->group(function (): void {
                 'stores' => $stores,
                 'members' => $members,
                 'schedules' => $schedules,
-                'user' => $user->load('tenant'),
+                'user' => $user->load(['tenant.lineLoginSetting', 'tenant.lineLiffSetting', 'tenant.lineOfficialAccount']),
             ],
         ]);
     };

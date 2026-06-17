@@ -76,7 +76,7 @@ class MemberController extends Controller
         }
 
         $url = $this->registrationUrl($member);
-        $renderer = new ImageRenderer(new RendererStyle(320, 2), new SvgImageBackEnd);
+        $renderer = new ImageRenderer(new RendererStyle(320, 2), new SvgImageBackEnd());
         $qrSvg = (new Writer($renderer))->writeString($url);
 
         return response()->json([
@@ -89,12 +89,12 @@ class MemberController extends Controller
     private function registrationUrl(Member $member): string
     {
         $appUrl = route('liff.register', ['registrationToken' => $member->registration_token]);
-        $liffId = $member->tenant?->line_liff_id;
+        $liffId = $member->tenant?->lineLiffSetting?->liff_id;
 
         if (! $liffId) {
             return $appUrl;
         }
 
-        return 'https://liff.line.me/'.rawurlencode($liffId).'/liff/register/'.rawurlencode($member->registration_token);
+        return 'https://liff.line.me/' . rawurlencode($liffId) . '/liff/register/' . rawurlencode($member->registration_token);
     }
 }
