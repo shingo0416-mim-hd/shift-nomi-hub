@@ -50,13 +50,13 @@
 
         <script>
             (() => {
-                const registrationToken = @json($registrationToken);
-                const liffId = @json($liffId);
-                const member = @json([
+                const registrationToken = {{ Illuminate\Support\Js::from($registrationToken) }};
+                const liffId = {{ Illuminate\Support\Js::from($liffId) }};
+                const member = {{ Illuminate\Support\Js::from([
                     'tenant_id' => $member->tenant_id,
                     'store_id' => $member->store_id,
                     'name' => $member->name,
-                ]);
+                ]) }};
                 const csrf = document.querySelector('meta[name="csrf-token"]').content;
                 const status = document.querySelector('[data-liff-status]');
                 const error = document.querySelector('[data-liff-error]');
