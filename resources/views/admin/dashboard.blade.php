@@ -416,20 +416,6 @@
                                         <option value="">未割り当て</option>
                                     </select>
                                 </div>
-                                <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                                    <div>
-                                        <label class="block text-sm font-bold text-slate-700">LINE ID</label>
-                                        <input name="line_id" value="{{ old('line_id', $editingMember->line_id) }}" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-bold text-slate-700">LINE名</label>
-                                        <input name="line_name" value="{{ old('line_name', $editingMember->line_name) }}" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-bold text-slate-700">CLINE No</label>
-                                        <input name="cline_id" value="{{ old('cline_id', $editingMember->cline_id) }}" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
-                                    </div>
-                                </div>
                                 <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                     <div>
                                         <label class="block text-sm font-bold text-slate-700">電話</label>
@@ -607,20 +593,6 @@
                         <select name="store_id" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
                             <option value="">未割り当て</option>
                         </select>
-                    </div>
-                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                        <div>
-                            <label class="block text-sm font-bold text-slate-700">LINE ID</label>
-                            <input name="line_id" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-slate-700">LINE名</label>
-                            <input name="line_name" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-slate-700">CLINE No</label>
-                            <input name="cline_id" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
-                        </div>
                     </div>
                     <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <div>

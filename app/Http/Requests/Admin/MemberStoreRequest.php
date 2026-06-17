@@ -18,21 +18,10 @@ class MemberStoreRequest extends FormRequest
     public function rules(): array
     {
         $tenantId = $this->user()?->tenant_id;
-        $memberId = $this->route('member')?->id ?? $this->route('member');
 
         return [
             'store_id' => ['nullable', Rule::exists('stores', 'id')->where('tenant_id', $tenantId)],
             'name' => ['required', 'string', 'max:255'],
-            'line_id' => [
-                'nullable',
-                'string',
-                'max:255',
-                Rule::unique('members', 'line_id')
-                    ->where('tenant_id', $tenantId)
-                    ->ignore($memberId),
-            ],
-            'line_name' => ['nullable', 'string', 'max:255'],
-            'cline_id' => ['nullable', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
             'email' => ['nullable', 'email', 'max:255'],
             'status' => ['nullable', 'string', 'max:50'],
