@@ -36,6 +36,16 @@ class TwoFactorResetEmailTest extends TestCase
         });
     }
 
+    public function test_reset_mail_does_not_escape_signed_url_query_separator(): void
+    {
+        $mail = new TwoFactorResetMail('https://example.test/two-factor-reset/1?email=abc&expires=123&signature=xyz');
+
+        $rendered = $mail->render();
+
+        $this->assertStringContainsString('email=abc&expires=123&signature=xyz', $rendered);
+        $this->assertStringNotContainsString('&amp;', $rendered);
+    }
+
     public function test_reset_email_redirects_to_login_without_challenged_user(): void
     {
         Mail::fake();
