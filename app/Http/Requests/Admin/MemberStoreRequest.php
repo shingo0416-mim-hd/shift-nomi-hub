@@ -27,11 +27,11 @@ class MemberStoreRequest extends FormRequest
         $tenantId = $this->user()?->tenant_id;
 
         return [
-            'store_id' => ['nullable', Rule::exists('stores', 'id')->where('tenant_id', $tenantId)],
+            'store_id' => ['required', Rule::exists('stores', 'id')->where('tenant_id', $tenantId)],
             'name' => ['nullable', 'string', 'max:255'],
             'display_name' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
-            'email' => ['nullable', 'email', 'max:255'],
+            'email' => ['required', 'email', 'max:255'],
             'status' => ['nullable', 'string', 'max:50'],
             'role' => ['nullable', Rule::in([Member::ROLE_CAST, Member::ROLE_MANAGER, Member::ROLE_ADMIN])],
             'is_shift_submitter' => ['nullable', 'boolean'],

@@ -439,18 +439,18 @@
                                 </div>
                                 <div>
                                     <label class="block text-sm font-bold text-slate-700">店舗</label>
-                                    <select name="store_id" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white" data-initial-value="{{ $editingMember->store_id }}">
+                                    <select name="store_id" required class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white" data-initial-value="{{ $editingMember->store_id }}">
                                         <option value="">未割り当て</option>
                                     </select>
                                 </div>
                                 <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                     <div>
-                                        <label class="block text-sm font-bold text-slate-700">電話</label>
+                                        <label class="block text-sm font-bold text-slate-700">電話 <span class="text-xs font-semibold text-slate-400">任意</span></label>
                                         <input name="phone" value="{{ old('phone', $editingMember->phone) }}" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
                                     </div>
                                     <div>
                                         <label class="block text-sm font-bold text-slate-700">メール</label>
-                                        <input name="email" type="email" value="{{ old('email', $editingMember->email) }}" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
+                                        <input name="email" type="email" required value="{{ old('email', $editingMember->email) }}" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
                                     </div>
                                 </div>
                                 <div>
@@ -874,7 +874,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-slate-700">店舗</label>
-                        <select name="store_id" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
+                        <select name="store_id" required class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
                             <option value="">未割り当て</option>
                         </select>
                     </div>
@@ -888,12 +888,12 @@
                     </div>
                     <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <div>
-                            <label class="block text-sm font-bold text-slate-700">電話</label>
+                            <label class="block text-sm font-bold text-slate-700">電話 <span class="text-xs font-semibold text-slate-400">任意</span></label>
                             <input name="phone" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
                         </div>
                         <div>
                             <label class="block text-sm font-bold text-slate-700">メール</label>
-                            <input name="email" type="email" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
+                            <input name="email" type="email" required class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
                         </div>
                     </div>
                     <div>
@@ -1188,6 +1188,8 @@
                 const validateMemberForm = (form) => {
                     const errors = {};
                     const displayName = form.elements.display_name?.value.trim() || '';
+                    const storeId = form.elements.store_id?.value || '';
+                    const phone = form.elements.phone?.value.trim() || '';
                     const email = form.elements.email?.value.trim() || '';
 
                     if (!displayName) {
@@ -1196,16 +1198,24 @@
                         errors.display_name = ['表示名は255文字以内で入力してください。'];
                     }
 
+                    if (!storeId) {
+                        errors.store_id = ['店舗を選択してください。'];
+                    }
+
                     if ((form.elements.name?.value.trim() || '').length > 255) {
                         errors.name = ['本名は255文字以内で入力してください。'];
                     }
 
-                    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                        errors.email = ['メールアドレスの形式で入力してください。'];
+                    if (phone.length > 50) {
+                        errors.phone = ['電話は50文字以内で入力してください。'];
                     }
 
-                    if ((form.elements.phone?.value.trim() || '').length > 50) {
-                        errors.phone = ['電話は50文字以内で入力してください。'];
+                    if (!email) {
+                        errors.email = ['メールを入力してください。'];
+                    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                        errors.email = ['メールアドレスの形式で入力してください。'];
+                    } else if (email.length > 255) {
+                        errors.email = ['メールは255文字以内で入力してください。'];
                     }
 
                     showFormValidationErrors(form, errors);

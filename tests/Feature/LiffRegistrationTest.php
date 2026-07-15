@@ -389,6 +389,7 @@ class LiffRegistrationTest extends TestCase
                 'display_name' => 'みらい',
                 'last_name' => '新規',
                 'first_name' => 'キャスト',
+                'email' => 'cast@example.com',
                 'status' => 'active',
                 'role' => Member::ROLE_CAST,
                 'is_shift_submitter' => true,
