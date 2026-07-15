@@ -50,11 +50,11 @@ class User extends Authenticatable
     use SoftDeletes;
     use TwoFactorAuthenticatable;
 
-    public const ROLE_MEMBER = 0;
+    public const ROLE_MEMBER = 'member';
 
-    public const ROLE_ADMIN = 1;
+    public const ROLE_ADMIN = 'admin';
 
-    public const ROLE_SUPER_ADMIN = 2;
+    public const ROLE_SUPER_ADMIN = 'super_admin';
 
     /**
      * Get the attributes that should be cast.
@@ -66,7 +66,6 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'role' => 'integer',
             'ips' => 'array',
             'login_at' => 'datetime',
             'two_factor_confirmed_at' => 'datetime',
@@ -129,7 +128,7 @@ class User extends Authenticatable
 
     public function isAdmin(): bool
     {
-        return $this->role >= self::ROLE_ADMIN;
+        return in_array($this->role, [self::ROLE_ADMIN, self::ROLE_SUPER_ADMIN], true);
     }
 
     public function isSuperAdmin(): bool

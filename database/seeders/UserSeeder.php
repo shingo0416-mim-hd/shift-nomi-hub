@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -22,7 +21,7 @@ class UserSeeder extends Seeder
                 'first_name' => '管理',
                 'email' => 'contact@mim-hd.co.jp',
                 'password' => Hash::make('mimn1203'),
-                'role' => User::ROLE_SUPER_ADMIN,
+                'role' => 'super_admin',
             ],
         ];
 

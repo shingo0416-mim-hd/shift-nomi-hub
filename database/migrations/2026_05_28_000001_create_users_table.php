@@ -29,7 +29,7 @@ return new class extends Migration
             $table->string('company')->nullable()->comment('会社名');
             $table->string('employees')->nullable()->comment('社員数');
             $table->string('company_type')->nullable()->comment('会社の種別');
-            $table->tinyInteger('role')->default(0)->comment('権限レベル: 0=一般ユーザー, 1=管理者, 2=スーパー管理者');
+            $table->string('role', 50)->default('member')->comment('権限: member, admin, super_admin');
             $table->json('ips')->nullable()->comment('許可IPアドレスリスト');
             $table->timestamp('login_at')->nullable()->comment('ログイン日時');
             $table->timestamps();
