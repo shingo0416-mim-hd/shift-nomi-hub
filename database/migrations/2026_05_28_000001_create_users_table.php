@@ -24,6 +24,8 @@ return new class extends Migration
             $table->text('two_factor_secret')->nullable()->comment('二要素認証シークレット');
             $table->text('two_factor_recovery_codes')->nullable()->comment('二要素認証リカバリーコード');
             $table->timestamp('two_factor_confirmed_at')->nullable()->comment('二要素認証確認日時');
+            $table->string('two_factor_reset_token')->nullable()->comment('二要素認証再設定トークン');
+            $table->timestamp('two_factor_reset_used_at')->nullable()->comment('二要素認証再設定使用日時');
             $table->rememberToken()->comment('リメンバートークン');
             $table->string('phone')->nullable()->comment('電話番号');
             $table->string('company')->nullable()->comment('会社名');

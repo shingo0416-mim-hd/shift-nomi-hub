@@ -15,7 +15,6 @@ use Illuminate\Support\Facades\Route;
 Route::post('/deploy', [DeployController::class, 'deploy'])->name('deploy');
 
 Route::prefix('admin')->name('admin.')->group(function (): void {
-    Route::post('/auth/register', [AdminAuthController::class, 'register'])->name('auth.register');
     Route::post('/auth/login', [AdminAuthController::class, 'login'])->name('auth.login');
 
     Route::middleware(['auth:sanctum', 'ability:admin'])->group(function (): void {

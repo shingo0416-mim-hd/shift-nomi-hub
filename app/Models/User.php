@@ -27,6 +27,8 @@ use Laravel\Sanctum\HasApiTokens;
     'two_factor_secret',
     'two_factor_recovery_codes',
     'two_factor_confirmed_at',
+    'two_factor_reset_token',
+    'two_factor_reset_used_at',
     'remember_token',
     'phone',
     'company',
@@ -69,6 +71,7 @@ class User extends Authenticatable
             'ips' => 'array',
             'login_at' => 'datetime',
             'two_factor_confirmed_at' => 'datetime',
+            'two_factor_reset_used_at' => 'datetime',
         ];
     }
 
