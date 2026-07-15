@@ -428,13 +428,13 @@
                                     一覧へ戻る
                                 </a>
                             </div>
-                            <form class="space-y-4" data-form="member-edit" data-member-id="{{ $editingMember->id }}">
+                            <form class="space-y-4" data-form="member-edit" data-member-id="{{ $editingMember->id }}" novalidate>
                                 <div>
                                     <label class="block text-sm font-bold text-slate-700">表示名</label>
                                     <input name="display_name" required value="{{ old('display_name', $editingMember->display_name ?: $editingMember->name) }}" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-bold text-slate-700">本名</label>
+                                    <label class="block text-sm font-bold text-slate-700">本名 <span class="text-xs font-semibold text-slate-400">任意</span></label>
                                     <input name="name" value="{{ old('name', $editingMember->name) }}" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
                                 </div>
                                 <div>
@@ -863,13 +863,13 @@
                         </svg>
                     </button>
                 </div>
-                <form class="space-y-4 px-5 py-5" data-form="member">
+                <form class="space-y-4 px-5 py-5" data-form="member" novalidate>
                     <div>
                         <label class="block text-sm font-bold text-slate-700">表示名</label>
                         <input name="display_name" required class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
                     </div>
                     <div>
-                        <label class="block text-sm font-bold text-slate-700">本名</label>
+                        <label class="block text-sm font-bold text-slate-700">本名 <span class="text-xs font-semibold text-slate-400">任意</span></label>
                         <input name="name" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
                     </div>
                     <div>
@@ -1015,10 +1015,18 @@
                 const openMemberModal = () => {
                     $('[data-member-modal]')?.classList.remove('hidden');
                     $('[data-member-modal]')?.classList.add('flex');
+                    const form = $('[data-form="member"]');
+                    if (form) {
+                        clearFormErrors(form);
+                    }
                     $('[data-member-modal] input[name="display_name"]')?.focus();
                 };
 
                 const closeMemberModal = () => {
+                    const form = $('[data-form="member"]');
+                    if (form) {
+                        clearFormErrors(form);
+                    }
                     $('[data-member-modal]')?.classList.add('hidden');
                     $('[data-member-modal]')?.classList.remove('flex');
                 };
@@ -1097,7 +1105,9 @@
                     const data = text ? JSON.parse(text) : {};
                     if (!response.ok) {
                         const message = data.message || Object.values(data.errors || {}).flat().join('\n') || '処理に失敗しました。';
-                        throw new Error(message);
+                        const error = new Error(message);
+                        error.validationErrors = data.errors || {};
+                        throw error;
                     }
 
                     return data;
@@ -1135,6 +1145,72 @@
                     if (message) {
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                     }
+                };
+
+                const clearFormErrors = (form) => {
+                    form.querySelectorAll('[data-field-error]').forEach((element) => element.remove());
+                    form.querySelectorAll('[aria-invalid="true"]').forEach((field) => {
+                        field.removeAttribute('aria-invalid');
+                        field.classList.remove('border-red-300', 'bg-red-50', 'focus:border-red-500');
+                    });
+                };
+
+                const setFormFieldError = (form, fieldName, message) => {
+                    const field = form.elements[fieldName];
+                    if (!field || !message) {
+                        return;
+                    }
+
+                    field.setAttribute('aria-invalid', 'true');
+                    field.classList.add('border-red-300', 'bg-red-50', 'focus:border-red-500');
+
+                    const error = document.createElement('p');
+                    error.dataset.fieldError = fieldName;
+                    error.className = 'mt-2 text-xs font-bold leading-5 text-red-700';
+                    error.textContent = message;
+                    field.insertAdjacentElement('afterend', error);
+                };
+
+                const focusFirstInvalidField = (form) => {
+                    form.querySelector('[aria-invalid="true"]')?.focus();
+                };
+
+                const showFormValidationErrors = (form, errors) => {
+                    clearFormErrors(form);
+
+                    Object.entries(errors).forEach(([fieldName, messages]) => {
+                        setFormFieldError(form, fieldName, Array.isArray(messages) ? messages[0] : messages);
+                    });
+
+                    focusFirstInvalidField(form);
+                };
+
+                const validateMemberForm = (form) => {
+                    const errors = {};
+                    const displayName = form.elements.display_name?.value.trim() || '';
+                    const email = form.elements.email?.value.trim() || '';
+
+                    if (!displayName) {
+                        errors.display_name = ['表示名を入力してください。'];
+                    } else if (displayName.length > 255) {
+                        errors.display_name = ['表示名は255文字以内で入力してください。'];
+                    }
+
+                    if ((form.elements.name?.value.trim() || '').length > 255) {
+                        errors.name = ['本名は255文字以内で入力してください。'];
+                    }
+
+                    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                        errors.email = ['メールアドレスの形式で入力してください。'];
+                    }
+
+                    if ((form.elements.phone?.value.trim() || '').length > 50) {
+                        errors.phone = ['電話は50文字以内で入力してください。'];
+                    }
+
+                    showFormValidationErrors(form, errors);
+
+                    return Object.keys(errors).length === 0;
                 };
 
                 const showLineTab = (scope, target) => {
@@ -1451,16 +1527,37 @@
                     });
                 });
 
+                $$('[data-form="member"], [data-form="member-edit"]').forEach((memberForm) => {
+                    memberForm.addEventListener('input', (event) => {
+                        const field = event.target.closest('input, select, textarea');
+                        if (!field?.name) {
+                            return;
+                        }
+
+                        field.removeAttribute('aria-invalid');
+                        field.classList.remove('border-red-300', 'bg-red-50', 'focus:border-red-500');
+                        memberForm.querySelector(`[data-field-error="${CSS.escape(field.name)}"]`)?.remove();
+                    });
+                });
+
                 $('[data-form="member"]')?.addEventListener('submit', async (event) => {
                     event.preventDefault();
                     const form = event.currentTarget;
+                    if (!validateMemberForm(form)) {
+                        return;
+                    }
+
                     try {
                         await api('/api/admin/members', { method: 'POST', body: JSON.stringify({ status: 'active', is_shift_submitter: true, ...formPayload(form) }) });
                         form.reset();
+                        clearFormErrors(form);
                         closeMemberModal();
                         await load();
                         setMessage('[data-notice]', 'キャストを追加しました。');
                     } catch (error) {
+                        if (error.validationErrors && Object.keys(error.validationErrors).length > 0) {
+                            showFormValidationErrors(form, error.validationErrors);
+                        }
                         setMessage('[data-alert]', error.message);
                     }
                 });
@@ -1468,14 +1565,22 @@
                 $('[data-form="member-edit"]')?.addEventListener('submit', async (event) => {
                     event.preventDefault();
                     const form = event.currentTarget;
+                    if (!validateMemberForm(form)) {
+                        return;
+                    }
+
                     const payload = { is_shift_submitter: false, is_remind_disabled: false, ...formPayload(form) };
                     payload.store_id = form.elements.store_id.value || null;
                     try {
                         await api(`/api/admin/members/${form.dataset.memberId}`, { method: 'PUT', body: JSON.stringify(payload) });
+                        clearFormErrors(form);
                         await load();
                         setMessage('[data-notice]', 'キャストを更新しました。');
                         window.location.href = @json(route('admin.members'));
                     } catch (error) {
+                        if (error.validationErrors && Object.keys(error.validationErrors).length > 0) {
+                            showFormValidationErrors(form, error.validationErrors);
+                        }
                         setMessage('[data-alert]', error.message);
                     }
                 });
