@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['shift_slot_id', 'employee_profile_id', 'status', 'confirmed_at', 'notes'])]
+#[Fillable(['shift_slot_id', 'member_id', 'status', 'confirmed_at', 'notes'])]
 class ShiftAssignment extends Model
 {
     use HasFactory;
@@ -27,8 +27,9 @@ class ShiftAssignment extends Model
         return $this->belongsTo(ShiftSlot::class);
     }
 
-    public function employeeProfile(): BelongsTo
+    public function member(): BelongsTo
     {
-        return $this->belongsTo(EmployeeProfile::class);
+        return $this->belongsTo(Member::class);
     }
+
 }

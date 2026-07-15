@@ -14,14 +14,14 @@ return new class extends Migration
         Schema::create('shift_assignments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('shift_slot_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('employee_profile_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('member_id')->constrained()->cascadeOnDelete();
             $table->string('status')->default('assigned');
             $table->timestamp('confirmed_at')->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();
 
-            $table->unique(['shift_slot_id', 'employee_profile_id']);
-            $table->index(['employee_profile_id', 'status']);
+            $table->unique(['shift_slot_id', 'member_id']);
+            $table->index(['member_id', 'status']);
         });
     }
 

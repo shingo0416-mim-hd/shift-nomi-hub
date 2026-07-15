@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\MemberStoreRequest;
-use App\Models\EmployeeProfile;
 use App\Models\Member;
 use App\Services\TenantPathService;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
@@ -23,7 +22,7 @@ class MemberController extends Controller
     public function index(Request $request): JsonResponse
     {
         $members = Member::query()
-            ->with(['store', 'employeeProfile'])
+            ->with(['store'])
             ->where('tenant_id', $request->user()->tenant_id)
             ->when($request->query('store_id'), fn ($query, $storeId) => $query->where('store_id', $storeId))
             ->orderBy('name')
@@ -43,18 +42,10 @@ class MemberController extends Controller
                 'registration_token' => Str::random(48),
             ]);
 
-            EmployeeProfile::create([
-                'tenant_id' => $member->tenant_id,
-                'member_id' => $member->id,
-                'display_name' => $member->name,
-                'email' => $member->email,
-                'phone' => $member->phone,
-            ]);
-
             return $member;
         });
 
-        return response()->json(['member' => $member->load(['store', 'employeeProfile'])], 201);
+        return response()->json(['member' => $member->load(['store'])], 201);
     }
 
     public function update(MemberStoreRequest $request, Member $member): JsonResponse
@@ -62,13 +53,8 @@ class MemberController extends Controller
         abort_unless($member->tenant_id === $request->user()->tenant_id, 404);
 
         $member->update($request->validated());
-        $member->employeeProfile?->update([
-            'display_name' => $member->name,
-            'email' => $member->email,
-            'phone' => $member->phone,
-        ]);
 
-        return response()->json(['member' => $member->refresh()->load(['store', 'employeeProfile'])]);
+        return response()->json(['member' => $member->refresh()->load(['store'])]);
     }
 
     public function registrationQr(Request $request, Member $member): JsonResponse
@@ -90,7 +76,10 @@ class MemberController extends Controller
         $qrSvg = (new Writer($renderer))->writeString($url);
 
         return response()->json([
-            'member' => $member->only(['id', 'name', 'line_id', 'is_linked', 'registered_at']),
+            'member' => [
+                ...$member->only(['id', 'name', 'display_name', 'line_id', 'is_linked', 'registered_at']),
+                'display_name' => $member->displayName(),
+            ],
             'registration_url' => $url,
             'qr_svg' => $qrSvg,
         ]);

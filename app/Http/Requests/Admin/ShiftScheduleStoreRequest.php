@@ -9,6 +9,12 @@ class ShiftScheduleStoreRequest extends FormRequest
 {
     public function authorize(): bool
     {
+        $lineMember = $this->attributes->get('lineMember');
+
+        if ($lineMember) {
+            return $lineMember->canManageShiftSchedules();
+        }
+
         return $this->user()?->isAdmin() === true;
     }
 

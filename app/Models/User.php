@@ -107,11 +107,6 @@ class User extends Authenticatable
         return $this->belongsTo(User::class, 'deleted_by');
     }
 
-    public function employeeProfiles(): HasMany
-    {
-        return $this->hasMany(EmployeeProfile::class);
-    }
-
     public function members(): HasMany
     {
         return $this->hasMany(Member::class);

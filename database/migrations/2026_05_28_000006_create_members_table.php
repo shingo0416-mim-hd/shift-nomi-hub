@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('store_id')->nullable()->constrained()->nullOnDelete()->comment('店舗ID');
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $table->string('name')->nullable()->comment('氏名');
+            $table->string('display_name')->nullable()->comment('表示名');
             $table->string('last_name')->nullable()->comment('姓');
             $table->string('first_name')->nullable()->comment('名');
             $table->string('name_kana')->nullable()->comment('氏名かな');

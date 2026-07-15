@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\EmployeeProfile;
 use App\Models\Member;
 use App\Models\Tenant;
 use App\Models\User;
@@ -81,7 +80,7 @@ class LineAuthController extends Controller
         $tenantPath = $request->attributes->get('tenantPath');
 
         return view('line.login-complete', [
-            'canOpenLineAdmin' => $member?->isCastAdmin() === true && $member?->user?->isAdmin() === true,
+            'canOpenLineAdmin' => $member?->canManageShiftSchedules() === true && $member?->user !== null,
             'lineAdminUrl' => is_string($tenantPath) ? route('line.admin.dashboard', ['tenant' => $tenantPath]) : null,
         ]);
     }
@@ -136,6 +135,7 @@ class LineAuthController extends Controller
                     'tenant_id' => $tenant->id,
                     'user_id' => $user->id,
                     'name' => $displayName,
+                    'display_name' => $displayName,
                     'line_id' => $profile['userId'],
                     'line_name' => $displayName,
                     'icon_url' => $pictureUrl,
@@ -147,7 +147,7 @@ class LineAuthController extends Controller
             } else {
                 $user = $member->user ?: User::create([
                     'tenant_id' => $tenant->id,
-                    'name' => $member->name ?: $displayName,
+                    'name' => $member->displayName(),
                     'icon_url' => $pictureUrl ?: $member->icon_url,
                     'role' => User::ROLE_MEMBER,
                 ]);
@@ -162,17 +162,6 @@ class LineAuthController extends Controller
                     'registered_at' => $member->registered_at ?? now(),
                 ]);
             }
-
-            $member->employeeProfile()->updateOrCreate(
-                ['tenant_id' => $member->tenant_id],
-                [
-                    'user_id' => $member->user_id,
-                    'display_name' => $member->name ?: $displayName,
-                    'email' => $member->email,
-                    'phone' => $member->phone,
-                ],
-            );
-
             return $member->refresh();
         });
     }

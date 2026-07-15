@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('availability_requests', function (Blueprint $table) {
             $table->id();
             $table->foreignId('tenant_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('employee_profile_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('member_id')->constrained()->cascadeOnDelete();
             $table->date('work_date');
             $table->time('available_from')->nullable();
             $table->time('available_until')->nullable();
@@ -22,7 +22,7 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->timestamps();
 
-            $table->unique(['employee_profile_id', 'work_date']);
+            $table->unique(['member_id', 'work_date']);
             $table->index(['tenant_id', 'work_date']);
         });
     }

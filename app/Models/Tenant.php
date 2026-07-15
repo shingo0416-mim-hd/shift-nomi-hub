@@ -62,11 +62,6 @@ class Tenant extends Model
         return $this->hasMany(Member::class);
     }
 
-    public function employeeProfiles(): HasMany
-    {
-        return $this->hasMany(EmployeeProfile::class);
-    }
-
     public function shiftSchedules(): HasMany
     {
         return $this->hasMany(ShiftSchedule::class);

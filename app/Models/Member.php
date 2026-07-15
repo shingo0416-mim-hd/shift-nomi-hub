@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'store_id',
     'user_id',
     'name',
+    'display_name',
     'last_name',
     'first_name',
     'name_kana',
@@ -63,7 +64,14 @@ class Member extends Model
 
     public const ROLE_CAST = 'cast';
 
+    public const ROLE_MANAGER = 'manager';
+
     public const ROLE_ADMIN = 'admin';
+
+    public const MANAGER_ROLES = [
+        self::ROLE_ADMIN,
+        self::ROLE_MANAGER,
+    ];
 
     /**
      * @return array<string, string>
@@ -97,7 +105,7 @@ class Member extends Model
 
     public function getFullNameAttribute(): string
     {
-        return trim("{$this->last_name} {$this->first_name}");
+        return $this->name ?: trim("{$this->last_name} {$this->first_name}");
     }
 
     public function getFullNameKanaAttribute(): string
@@ -108,6 +116,21 @@ class Member extends Model
     public function isCastAdmin(): bool
     {
         return $this->role === self::ROLE_ADMIN;
+    }
+
+    public function canManageMembers(): bool
+    {
+        return in_array($this->role, self::MANAGER_ROLES, true);
+    }
+
+    public function canManageShiftSchedules(): bool
+    {
+        return in_array($this->role, self::MANAGER_ROLES, true);
+    }
+
+    public function displayName(): string
+    {
+        return $this->display_name ?: $this->name ?: $this->line_name ?: 'スタッフ';
     }
 
     public function tenant(): BelongsTo
@@ -125,9 +148,14 @@ class Member extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function employeeProfile(): HasOne
+    public function shiftAssignments(): HasMany
     {
-        return $this->hasOne(EmployeeProfile::class);
+        return $this->hasMany(ShiftAssignment::class);
+    }
+
+    public function availabilityRequests(): HasMany
+    {
+        return $this->hasMany(AvailabilityRequest::class);
     }
 
     public function createdBy(): BelongsTo

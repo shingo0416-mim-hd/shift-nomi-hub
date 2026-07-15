@@ -22,7 +22,7 @@
                         @if ($member?->icon_url)
                             <img src="{{ $member->icon_url }}" alt="" class="h-10 w-10 rounded-full object-cover ring-1 ring-slate-200">
                         @else
-                            <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-200 text-sm font-black text-slate-600">{{ mb_substr($member?->line_name ?: $member?->name ?: '管', 0, 1) }}</span>
+                            <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-200 text-sm font-black text-slate-600">{{ mb_substr($member?->line_name ?: $member?->displayName() ?: '管', 0, 1) }}</span>
                         @endif
                     </div>
                 </div>
@@ -67,8 +67,12 @@
                     </div>
                     <form class="mt-4 space-y-3" data-form="member">
                         <label class="block text-sm font-bold text-slate-700">
-                            氏名
-                            <input name="name" required class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
+                            表示名
+                            <input name="display_name" required class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
+                        </label>
+                        <label class="block text-sm font-bold text-slate-700">
+                            本名
+                            <input name="name" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
                         </label>
                         <label class="block text-sm font-bold text-slate-700">
                             店舗
@@ -85,6 +89,7 @@
                                 権限
                                 <select name="role" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
                                     <option value="cast">キャスト</option>
+                                    <option value="manager">店長</option>
                                     <option value="admin">管理者</option>
                                 </select>
                             </label>
@@ -154,6 +159,17 @@
                     '"': '&quot;',
                     "'": '&#039;',
                 }[char]));
+                const memberDisplayName = (member) => member.display_name || member.name || member.line_name || 'スタッフ';
+                const memberRoleLabel = (role) => ({
+                    admin: '管理者',
+                    manager: '店長',
+                    cast: 'キャスト',
+                }[role] || 'キャスト');
+                const memberRoleClass = (role) => ({
+                    admin: 'border-amber-200 bg-amber-50 text-amber-700',
+                    manager: 'border-teal-200 bg-teal-50 text-teal-700',
+                    cast: 'border-slate-200 bg-slate-50 text-slate-600',
+                }[role] || 'border-slate-200 bg-slate-50 text-slate-600');
 
                 const api = async (url, options = {}) => {
                     const response = await fetch(url, {
@@ -238,11 +254,12 @@
                             <article class="p-4">
                                 <div class="flex items-center justify-between gap-3">
                                     <div class="min-w-0">
-                                        <h3 class="truncate text-base font-black text-slate-950">${escapeHtml(member.name || '-')}</h3>
+                                        <h3 class="truncate text-base font-black text-slate-950">${escapeHtml(memberDisplayName(member))}</h3>
+                                        ${member.name && member.name !== memberDisplayName(member) ? `<p class="mt-1 truncate text-xs text-slate-500">${escapeHtml(member.name)}</p>` : ''}
                                         <p class="mt-1 text-sm text-slate-600">${escapeHtml(member.store?.name || '未割り当て')}</p>
                                         <p class="mt-1 text-xs text-slate-500">${escapeHtml(member.phone || member.email || '')}</p>
                                     </div>
-                                    <span class="shrink-0 rounded-full border px-2.5 py-1 text-xs font-black ${member.role === 'admin' ? 'border-amber-200 bg-amber-50 text-amber-700' : 'border-slate-200 bg-slate-50 text-slate-600'}">${member.role === 'admin' ? '管理者' : 'キャスト'}</span>
+                                    <span class="shrink-0 rounded-full border px-2.5 py-1 text-xs font-black ${memberRoleClass(member.role)}">${memberRoleLabel(member.role)}</span>
                                 </div>
                             </article>
                         `).join('')

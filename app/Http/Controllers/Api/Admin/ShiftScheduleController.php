@@ -13,7 +13,7 @@ class ShiftScheduleController extends Controller
     public function index(Request $request): JsonResponse
     {
         $schedules = ShiftSchedule::query()
-            ->with(['store', 'shiftSlots.assignments.employeeProfile'])
+            ->with(['store', 'shiftSlots.assignments.member'])
             ->where('tenant_id', $request->user()->tenant_id)
             ->when($request->query('store_id'), fn ($query, $storeId) => $query->where('store_id', $storeId))
             ->latest('starts_on')

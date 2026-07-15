@@ -59,13 +59,13 @@ Route::middleware('auth')->group(function (): void {
             ->orderBy('name')
             ->get();
         $members = Member::query()
-            ->with(['store', 'employeeProfile'])
+            ->with(['store'])
             ->where('tenant_id', $user->tenant_id)
             ->orderBy('name')
             ->limit(100)
             ->get();
         $schedules = ShiftSchedule::query()
-            ->with(['store', 'shiftSlots.assignments.employeeProfile'])
+            ->with(['store', 'shiftSlots.assignments.member'])
             ->where('tenant_id', $user->tenant_id)
             ->latest('starts_on')
             ->limit(100)
@@ -100,7 +100,7 @@ Route::middleware('auth')->group(function (): void {
     Route::get('/dashboard/members/{member}/edit', function (Member $member) use ($adminPage) {
         abort_unless((int) $member->getAttribute('tenant_id') === (int) auth()->user()->tenant_id, 404);
 
-        return $adminPage('member-edit')->with('editingMember', $member->load(['store', 'employeeProfile']));
+        return $adminPage('member-edit')->with('editingMember', $member->load(['store']));
     })->name('admin.members.edit');
     Route::get('/dashboard/stores', fn () => $adminPage('stores'))->name('admin.stores');
     Route::get('/dashboard/stores/create', fn () => $adminPage('store-create'))->name('admin.stores.create');

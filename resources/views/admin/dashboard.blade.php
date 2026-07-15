@@ -400,7 +400,7 @@
                                         <table class="min-w-[980px] w-full divide-y divide-slate-200 text-sm">
                                             <thead class="bg-slate-50 text-left text-xs font-black text-slate-500">
                                                 <tr>
-                                                    <th class="px-4 py-3">氏名</th>
+                                                    <th class="px-4 py-3">表示名</th>
                                                     <th class="px-4 py-3">店舗</th>
                                                     <th class="px-4 py-3">LINE</th>
                                                     <th class="px-4 py-3">権限</th>
@@ -430,8 +430,12 @@
                             </div>
                             <form class="space-y-4" data-form="member-edit" data-member-id="{{ $editingMember->id }}">
                                 <div>
-                                    <label class="block text-sm font-bold text-slate-700">氏名</label>
-                                    <input name="name" required value="{{ old('name', $editingMember->name) }}" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
+                                    <label class="block text-sm font-bold text-slate-700">表示名</label>
+                                    <input name="display_name" required value="{{ old('display_name', $editingMember->display_name ?: $editingMember->name) }}" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-slate-700">本名</label>
+                                    <input name="name" value="{{ old('name', $editingMember->name) }}" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-bold text-slate-700">店舗</label>
@@ -460,6 +464,7 @@
                                     <label class="block text-sm font-bold text-slate-700">権限</label>
                                     <select name="role" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
                                         <option value="cast" @selected(old('role', $editingMember->role ?? 'cast') === 'cast')>キャスト</option>
+                                        <option value="manager" @selected(old('role', $editingMember->role ?? 'cast') === 'manager')>店長</option>
                                         <option value="admin" @selected(old('role', $editingMember->role ?? 'cast') === 'admin')>管理者</option>
                                     </select>
                                 </div>
@@ -860,8 +865,12 @@
                 </div>
                 <form class="space-y-4 px-5 py-5" data-form="member">
                     <div>
-                        <label class="block text-sm font-bold text-slate-700">氏名</label>
-                        <input name="name" required class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
+                        <label class="block text-sm font-bold text-slate-700">表示名</label>
+                        <input name="display_name" required class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700">本名</label>
+                        <input name="name" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-slate-700">店舗</label>
@@ -873,6 +882,7 @@
                         <label class="block text-sm font-bold text-slate-700">権限</label>
                         <select name="role" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
                             <option value="cast">キャスト</option>
+                            <option value="manager">店長</option>
                             <option value="admin">管理者</option>
                         </select>
                     </div>
@@ -1005,7 +1015,7 @@
                 const openMemberModal = () => {
                     $('[data-member-modal]')?.classList.remove('hidden');
                     $('[data-member-modal]')?.classList.add('flex');
-                    $('[data-member-modal] input[name="name"]')?.focus();
+                    $('[data-member-modal] input[name="display_name"]')?.focus();
                 };
 
                 const closeMemberModal = () => {
@@ -1028,7 +1038,7 @@
                         const data = await api(`/api/admin/members/${memberId}/registration-qr`);
                         code.innerHTML = data.qr_svg;
                         url.value = data.registration_url;
-                        description.textContent = `${data.member.name || 'スタッフ'}さん本人にこのQRを読み込んでもらうと、LINEミニアプリで登録できます。`;
+                        description.textContent = `${data.member.display_name || data.member.name || 'スタッフ'}さん本人にこのQRを読み込んでもらうと、LINEミニアプリで登録できます。`;
                     } catch (error) {
                         code.innerHTML = `<span class="text-sm font-bold text-red-700">${escapeHtml(error.message)}</span>`;
                     }
@@ -1100,6 +1110,17 @@
                     '"': '&quot;',
                     "'": '&#039;',
                 }[char]));
+                const memberDisplayName = (member) => member.display_name || member.name || member.line_name || 'スタッフ';
+                const memberRoleLabel = (role) => ({
+                    admin: '管理者',
+                    manager: '店長',
+                    cast: 'キャスト',
+                }[role] || 'キャスト');
+                const memberRoleClass = (role) => ({
+                    admin: 'border-amber-200 bg-amber-50 text-amber-700',
+                    manager: 'border-teal-200 bg-teal-50 text-teal-700',
+                    cast: 'border-slate-200 bg-slate-50 text-slate-600',
+                }[role] || 'border-slate-200 bg-slate-50 text-slate-600');
 
                 const badge = (status) => {
                     const label = status === 'published' ? '公開済み' : status === 'archived' ? 'アーカイブ' : '下書き';
@@ -1189,12 +1210,15 @@
                             return `<img src="${escapeHtml(member.icon_url)}" alt="" class="h-9 w-9 rounded-full object-cover ring-1 ring-slate-200">`;
                         }
 
-                        return `<span class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-xs font-black text-slate-500 ring-1 ring-slate-200">${escapeHtml((member.line_name || member.name || '?').slice(0, 1))}</span>`;
+                        return `<span class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-xs font-black text-slate-500 ring-1 ring-slate-200">${escapeHtml((member.line_name || memberDisplayName(member) || '?').slice(0, 1))}</span>`;
                     };
                     list.innerHTML = members.length
                         ? members.map((member) => `
                             <tr class="transition hover:bg-slate-50">
-                                <td class="px-4 py-3 font-black text-slate-950">${escapeHtml(member.name)}</td>
+                                <td class="px-4 py-3">
+                                    <div class="font-black text-slate-950">${escapeHtml(memberDisplayName(member))}</div>
+                                    ${member.name && member.name !== memberDisplayName(member) ? `<div class="mt-1 text-xs text-slate-500">${escapeHtml(member.name)}</div>` : ''}
+                                </td>
                                 <td class="px-4 py-3 text-slate-700">${escapeHtml(member.store?.name || '未割り当て')}</td>
                                 <td class="px-4 py-3">
                                     <div class="flex min-w-0 items-center gap-3">
@@ -1206,7 +1230,7 @@
                                     </div>
                                 </td>
                                 <td class="px-4 py-3">
-                                    <span class="rounded-full border px-2.5 py-1 text-xs font-black ${member.role === 'admin' ? 'border-amber-200 bg-amber-50 text-amber-700' : 'border-slate-200 bg-slate-50 text-slate-600'}">${member.role === 'admin' ? '管理者' : 'キャスト'}</span>
+                                    <span class="rounded-full border px-2.5 py-1 text-xs font-black ${memberRoleClass(member.role)}">${memberRoleLabel(member.role)}</span>
                                 </td>
                                 <td class="px-4 py-3 text-slate-700">
                                     <div>${escapeHtml(member.phone || '-')}</div>

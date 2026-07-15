@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\Liff;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Liff\AvailabilityRequest;
 use App\Models\AvailabilityRequest as Availability;
-use App\Models\EmployeeProfile;
+use App\Models\Member;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -13,11 +13,11 @@ class AvailabilityController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $profile = $this->profile($request);
+        $member = $this->member($request);
 
         $availability = Availability::query()
             ->where('tenant_id', $request->user()->tenant_id)
-            ->where('employee_profile_id', $profile->id)
+            ->where('member_id', $member->id)
             ->when($request->query('from'), fn ($query, $from) => $query->whereDate('work_date', '>=', $from))
             ->when($request->query('to'), fn ($query, $to) => $query->whereDate('work_date', '<=', $to))
             ->orderBy('work_date')
@@ -28,11 +28,11 @@ class AvailabilityController extends Controller
 
     public function store(AvailabilityRequest $request): JsonResponse
     {
-        $profile = $this->profile($request);
+        $member = $this->member($request);
 
         $availability = Availability::updateOrCreate(
             [
-                'employee_profile_id' => $profile->id,
+                'member_id' => $member->id,
                 'work_date' => $request->validated('work_date'),
             ],
             [
@@ -47,9 +47,9 @@ class AvailabilityController extends Controller
         return response()->json(['availability_request' => $availability]);
     }
 
-    private function profile(Request $request): EmployeeProfile
+    private function member(Request $request): Member
     {
-        return EmployeeProfile::query()
+        return Member::query()
             ->where('tenant_id', $request->user()->tenant_id)
             ->where('user_id', $request->user()->id)
             ->firstOrFail();

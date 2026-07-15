@@ -14,7 +14,7 @@ class LineAdminController extends Controller
             'tenant' => $request->attributes->get('tenant'),
             'member' => $request->attributes->get('lineMember'),
             'adminUser' => $request->attributes->get('lineAdminUser'),
-            'canManageMembers' => $request->attributes->get('lineMember')?->isCastAdmin() === true,
+            'canManageMembers' => $request->attributes->get('lineMember')?->canManageMembers() === true,
         ]);
     }
 }

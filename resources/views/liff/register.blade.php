@@ -19,7 +19,7 @@
                 <div class="mb-5 border-b border-slate-200 pb-4">
                     <p class="text-xs font-black text-teal-700">ShiftHub Mini App</p>
                     <h1 class="mt-1 text-2xl font-black text-slate-950">スタッフ登録</h1>
-                    <p class="mt-2 text-sm leading-6 text-slate-600">{{ $member->name }} さんとしてLINEアカウントを登録します。</p>
+                    <p class="mt-2 text-sm leading-6 text-slate-600">{{ $member->displayName() }} さんとしてLINEアカウントを登録します。</p>
                 </div>
 
                 <dl class="space-y-3 rounded-xl bg-slate-50 p-4 text-sm">
@@ -55,7 +55,7 @@
                 const member = {{ Illuminate\Support\Js::from([
                     'tenant_id' => $member->tenant_id,
                     'store_id' => $member->store_id,
-                    'name' => $member->name,
+                    'name' => $member->displayName(),
                 ]) }};
                 const csrf = document.querySelector('meta[name="csrf-token"]').content;
                 const status = document.querySelector('[data-liff-status]');

@@ -3,12 +3,14 @@
 namespace Tests\Feature;
 
 use App\Models\Member;
+use App\Models\AvailabilityRequest;
 use App\Models\ShiftSchedule;
 use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -16,6 +18,15 @@ use Tests\TestCase;
 class LiffRegistrationTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_employee_profiles_table_is_removed_from_current_schema(): void
+    {
+        $this->assertFalse(Schema::hasTable('employee_profiles'));
+        $this->assertFalse(Schema::hasColumn('shift_assignments', 'employee_profile_id'));
+        $this->assertFalse(Schema::hasColumn('availability_requests', 'employee_profile_id'));
+        $this->assertTrue(Schema::hasColumn('shift_assignments', 'member_id'));
+        $this->assertTrue(Schema::hasColumn('availability_requests', 'member_id'));
+    }
 
     public function test_registration_token_links_line_account_to_temporary_member(): void
     {
@@ -171,6 +182,33 @@ class LiffRegistrationTest extends TestCase
             ->assertSee('シフト管理');
     }
 
+    public function test_line_admin_dashboard_allows_manager_member_with_member_user_role(): void
+    {
+        $tenant = Tenant::factory()->create([
+            'data' => ['path' => 'mim-hd'],
+        ]);
+        $user = User::factory()->create([
+            'tenant_id' => $tenant->id,
+            'role' => User::ROLE_MEMBER,
+        ]);
+        $member = Member::create([
+            'tenant_id' => $tenant->id,
+            'user_id' => $user->id,
+            'name' => '店長 スタッフ',
+            'status' => 'active',
+            'role' => Member::ROLE_MANAGER,
+            'line_id' => 'line-manager-001',
+            'is_linked' => true,
+        ]);
+
+        $this->withSession([
+            'line_id' => 'line-manager-001',
+            'line_member_id' => $member->id,
+        ])->get('/mim-hd/line/admin')
+            ->assertOk()
+            ->assertSee('シフト管理');
+    }
+
     public function test_line_admin_dashboard_rejects_non_admin_member(): void
     {
         $tenant = Tenant::factory()->create([
@@ -237,6 +275,85 @@ class LiffRegistrationTest extends TestCase
         ]);
     }
 
+    public function test_line_manager_can_create_shift_schedule_with_member_user_role(): void
+    {
+        $tenant = Tenant::factory()->create([
+            'data' => ['path' => 'mim-hd'],
+        ]);
+        $store = Store::create([
+            'tenant_id' => $tenant->id,
+            'name' => '本店',
+            'timezone' => 'Asia/Tokyo',
+            'is_active' => true,
+        ]);
+        $user = User::factory()->create([
+            'tenant_id' => $tenant->id,
+            'role' => User::ROLE_MEMBER,
+        ]);
+        $member = Member::create([
+            'tenant_id' => $tenant->id,
+            'user_id' => $user->id,
+            'name' => '店長 スタッフ',
+            'status' => 'active',
+            'role' => Member::ROLE_MANAGER,
+            'line_id' => 'line-manager-001',
+            'is_linked' => true,
+        ]);
+
+        $this->withSession([
+            '_token' => 'csrf-token',
+            'line_id' => 'line-manager-001',
+            'line_member_id' => $member->id,
+        ])->withHeader('X-CSRF-TOKEN', 'csrf-token')
+            ->postJson('/mim-hd/line/admin/api/shift-schedules', [
+                'store_id' => $store->id,
+                'starts_on' => '2026-08-01',
+                'ends_on' => '2026-08-31',
+                'status' => 'draft',
+            ])->assertCreated()
+            ->assertJsonPath('shift_schedule.store_id', $store->id);
+
+        $this->assertDatabaseHas(ShiftSchedule::class, [
+            'tenant_id' => $tenant->id,
+            'store_id' => $store->id,
+            'created_by' => $user->id,
+            'status' => 'draft',
+        ]);
+    }
+
+    public function test_liff_member_can_create_availability_request_without_employee_profile(): void
+    {
+        $tenant = Tenant::factory()->create();
+        $user = User::factory()->create([
+            'tenant_id' => $tenant->id,
+            'role' => User::ROLE_MEMBER,
+        ]);
+        $member = Member::create([
+            'tenant_id' => $tenant->id,
+            'user_id' => $user->id,
+            'display_name' => 'みらい',
+            'name' => '新規 キャスト',
+            'status' => 'active',
+            'role' => Member::ROLE_CAST,
+        ]);
+
+        Sanctum::actingAs($user, ['liff']);
+
+        $this->postJson('/api/liff/availability-requests', [
+            'work_date' => '2026-08-10',
+            'available_from' => '18:00',
+            'available_until' => '23:00',
+            'preference' => 'available',
+        ])->assertOk()
+            ->assertJsonPath('availability_request.member_id', $member->id);
+
+        $this->assertDatabaseHas(AvailabilityRequest::class, [
+            'tenant_id' => $tenant->id,
+            'member_id' => $member->id,
+            'work_date' => '2026-08-10 00:00:00',
+        ]);
+    }
+
     public function test_line_admin_can_create_member_when_cast_role_is_admin(): void
     {
         $tenant = Tenant::factory()->create([
@@ -269,16 +386,20 @@ class LiffRegistrationTest extends TestCase
         ])->withHeader('X-CSRF-TOKEN', 'csrf-token')
             ->postJson('/mim-hd/line/admin/api/members', [
                 'store_id' => $store->id,
-                'name' => '新規 キャスト',
+                'display_name' => 'みらい',
+                'last_name' => '新規',
+                'first_name' => 'キャスト',
                 'status' => 'active',
                 'role' => Member::ROLE_CAST,
                 'is_shift_submitter' => true,
             ])->assertCreated()
+            ->assertJsonPath('member.display_name', 'みらい')
             ->assertJsonPath('member.name', '新規 キャスト');
 
         $this->assertDatabaseHas(Member::class, [
             'tenant_id' => $tenant->id,
             'store_id' => $store->id,
+            'display_name' => 'みらい',
             'name' => '新規 キャスト',
             'role' => Member::ROLE_CAST,
         ]);

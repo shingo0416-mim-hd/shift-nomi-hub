@@ -27,7 +27,7 @@ class EnsureLineAdmin
             ->find($memberId);
 
         $adminUser = $member?->user;
-        if (! $member || ! $member->isCastAdmin() || ! $adminUser?->isAdmin()) {
+        if (! $member || ! $member->canManageShiftSchedules() || ! $adminUser) {
             abort(403, 'このLINEアカウントには管理画面の権限がありません。');
         }
 

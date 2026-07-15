@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[Fillable([
     'tenant_id',
-    'employee_profile_id',
+    'member_id',
     'work_date',
     'available_from',
     'available_until',
@@ -35,8 +35,9 @@ class AvailabilityRequest extends Model
         return $this->belongsTo(Tenant::class);
     }
 
-    public function employeeProfile(): BelongsTo
+    public function member(): BelongsTo
     {
-        return $this->belongsTo(EmployeeProfile::class);
+        return $this->belongsTo(Member::class);
     }
+
 }

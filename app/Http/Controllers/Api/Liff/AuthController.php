@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api\Liff;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Liff\LoginRequest;
-use App\Models\EmployeeProfile;
 use App\Models\Member;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -60,6 +59,7 @@ class AuthController extends Controller
                     'store_id' => $payload['store_id'] ?? null,
                     'user_id' => $user->id,
                     'name' => $payload['display_name'] ?? 'LINE User',
+                    'display_name' => $payload['display_name'] ?? 'LINE User',
                     'line_id' => $payload['line_user_id'],
                     'line_name' => $payload['display_name'] ?? null,
                     'icon_url' => $payload['picture_url'] ?? null,
@@ -68,17 +68,10 @@ class AuthController extends Controller
                     'login_at' => now(),
                     'registered_at' => now(),
                 ]);
-
-                EmployeeProfile::create([
-                    'tenant_id' => $payload['tenant_id'],
-                    'member_id' => $member->id,
-                    'user_id' => $user->id,
-                    'display_name' => $member->name,
-                ]);
             } else {
                 $user = $member->user ?: User::create([
                     'tenant_id' => $member->tenant_id,
-                    'name' => $member->name ?: ($payload['display_name'] ?? 'LINE User'),
+                    'name' => $member->displayName(),
                     'icon_url' => $payload['picture_url'] ?? $member->icon_url,
                     'role' => User::ROLE_MEMBER,
                 ]);
@@ -92,22 +85,12 @@ class AuthController extends Controller
                     'login_at' => now(),
                     'registered_at' => $member->registered_at ?? now(),
                 ]);
-
-                $member->employeeProfile()->updateOrCreate(
-                    ['tenant_id' => $member->tenant_id],
-                    [
-                        'user_id' => $user->id,
-                        'display_name' => $member->name ?: ($payload['display_name'] ?? 'LINE User'),
-                        'email' => $member->email,
-                        'phone' => $member->phone,
-                    ],
-                );
             }
 
             $user->forceFill(['login_at' => now()])->save();
 
             return [
-                'member' => $member->refresh()->load(['store', 'employeeProfile']),
+                'member' => $member->refresh()->load(['store']),
                 'user' => $user->refresh(),
                 'token' => $user->createToken('liff', ['liff'])->plainTextToken,
             ];
