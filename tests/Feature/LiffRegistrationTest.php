@@ -115,6 +115,30 @@ class LiffRegistrationTest extends TestCase
             ->assertJsonStructure(['member', 'registration_url', 'qr_svg']);
     }
 
+    public function test_admin_tenant_settings_autogenerates_line_timeline_url(): void
+    {
+        $tenant = Tenant::factory()->create();
+        $admin = User::factory()->create([
+            'tenant_id' => $tenant->id,
+            'role' => User::ROLE_ADMIN,
+        ]);
+
+        Sanctum::actingAs($admin, ['admin']);
+
+        $this->putJson('/api/admin/tenant/settings', [
+            'setting_type' => 'official',
+            'line_official_line_at_id' => '@838emdnt',
+        ])->assertOk()
+            ->assertJsonPath('tenant.line_official_account.line_at_id', '@838emdnt')
+            ->assertJsonPath('tenant.line_official_account.line_timeline_url', 'https://line.me/R/ti/p/@838emdnt');
+
+        $this->assertDatabaseHas('line_official_accounts', [
+            'tenant_id' => $tenant->id,
+            'line_at_id' => '@838emdnt',
+            'line_timeline_url' => 'https://line.me/R/ti/p/@838emdnt',
+        ]);
+    }
+
     public function test_line_login_callback_links_registration_token_member(): void
     {
         Http::fake([

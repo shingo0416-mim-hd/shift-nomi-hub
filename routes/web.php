@@ -197,11 +197,17 @@ Route::middleware('auth')->group(function (): void {
         }
 
         if ($payload['setting_type'] === 'official') {
+            $lineAtId = trim((string) ($payload['line_official_line_at_id'] ?? ''));
+            if ($lineAtId !== '' && ! str_starts_with($lineAtId, '@')) {
+                $lineAtId = '@'.$lineAtId;
+            }
+            $lineTimelineUrl = $payload['line_official_line_timeline_url']
+                ?? ($lineAtId !== '' ? "https://line.me/R/ti/p/{$lineAtId}" : null);
             $lineOfficialValues = [
                 'channel_id' => $payload['line_official_channel_id'] ?? null,
                 'webhook_url' => $payload['line_official_webhook_url'] ?? null,
                 'line_at_id' => $payload['line_official_line_at_id'] ?? null,
-                'line_timeline_url' => $payload['line_official_line_timeline_url'] ?? null,
+                'line_timeline_url' => $lineTimelineUrl,
                 'is_active' => true,
             ];
             if ($request->filled('line_official_channel_access_token')) {
