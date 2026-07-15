@@ -23,9 +23,12 @@ Route::get('/liff/register/{registrationToken}', [RegistrationController::class,
 Route::post('/two-factor-challenge/reset/email', [TwoFactorResetEmailController::class, 'store'])
     ->middleware('throttle:3,10')
     ->name('two-factor.reset.email');
-Route::get('/two-factor-reset/{user}', [TwoFactorResetEmailController::class, 'reset'])
+Route::get('/two-factor-reset/{user}', [TwoFactorResetEmailController::class, 'show'])
     ->middleware('signed:relative')
     ->name('two-factor.reset');
+Route::post('/two-factor-reset/{user}', [TwoFactorResetEmailController::class, 'reset'])
+    ->middleware('signed:relative')
+    ->name('two-factor.reset.confirm');
 
 Route::prefix('{tenant}')
     ->middleware('tenant.path')
