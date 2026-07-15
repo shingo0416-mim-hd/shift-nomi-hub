@@ -74,15 +74,7 @@
             </label>
         </div>
 
-        <div class="flex flex-col gap-4 pt-1 sm:flex-row sm:items-center sm:justify-between">
-            <div class="min-h-5">
-                @if (Route::has('register'))
-                    <a class="text-sm font-bold text-teal-700 transition-colors hover:text-teal-900 focus:outline-none focus:ring-4 focus:ring-teal-100" href="{{ route('register') }}">
-                        {{ __('管理者アカウントを作成') }}
-                    </a>
-                @endif
-            </div>
-
+        <div class="flex flex-col gap-4 pt-1 sm:flex-row sm:items-center sm:justify-end">
             <button type="submit" class="btn-gradient-primary w-full sm:w-auto" data-loading-text="{{ __('ログイン中...') }}" data-show-success="false">
                 <svg class="hidden h-4 w-4 animate-spin" aria-hidden="true" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
