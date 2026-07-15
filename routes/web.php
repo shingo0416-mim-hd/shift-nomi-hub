@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\LineAuthController;
+use App\Http\Controllers\Auth\TwoFactorResetEmailController;
 use App\Http\Controllers\Api\Admin\MemberController as AdminMemberController;
 use App\Http\Controllers\Api\Admin\ShiftScheduleController as AdminShiftScheduleController;
 use App\Http\Controllers\Api\Admin\StoreController as AdminStoreController;
@@ -19,6 +20,12 @@ Route::redirect('/', '/login');
 Route::redirect('/admin', '/dashboard');
 
 Route::get('/liff/register/{registrationToken}', [RegistrationController::class, 'show'])->name('liff.register');
+Route::post('/two-factor-challenge/reset/email', [TwoFactorResetEmailController::class, 'store'])
+    ->middleware('throttle:3,10')
+    ->name('two-factor.reset.email');
+Route::get('/two-factor-reset/{user}', [TwoFactorResetEmailController::class, 'reset'])
+    ->middleware('signed')
+    ->name('two-factor.reset');
 
 Route::prefix('{tenant}')
     ->middleware('tenant.path')

@@ -1,4 +1,10 @@
 <x-guest-layout>
+    @if (session('status'))
+        <div class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900">
+            {{ session('status') }}
+        </div>
+    @endif
+
     <form method="POST" action="{{ route('two-factor.login') }}" class="space-y-6 text-left">
         @csrf
 
@@ -26,6 +32,7 @@
         <details class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
             <summary class="cursor-pointer text-sm font-black text-slate-700">リカバリーコードを使う</summary>
             <div class="mt-4 space-y-2">
+                <p class="text-sm leading-6 text-slate-600">2段階認証設定時に発行されたリカバリーコードのうち、未使用のコードを1つだけ入力してください。</p>
                 <x-input-label for="recovery_code" :value="__('リカバリーコード')" />
                 <x-text-input
                     id="recovery_code"
@@ -33,9 +40,16 @@
                     type="text"
                     name="recovery_code"
                     autocomplete="one-time-code"
-                    placeholder="xxxx-xxxxxx"
+                    placeholder="8個のうち1つを入力"
                 />
                 <x-input-error :messages="$errors->get('recovery_code')" class="mt-2" />
+                <button
+                    type="submit"
+                    form="two-factor-reset-email-form"
+                    class="mt-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-black text-slate-700 transition hover:border-teal-500 hover:text-teal-800"
+                >
+                    MFA再設定リンクをメール送信
+                </button>
             </div>
         </details>
 
@@ -44,5 +58,9 @@
                 {{ __('認証する') }}
             </button>
         </div>
+    </form>
+
+    <form id="two-factor-reset-email-form" method="POST" action="{{ route('two-factor.reset.email') }}" class="hidden">
+        @csrf
     </form>
 </x-guest-layout>
