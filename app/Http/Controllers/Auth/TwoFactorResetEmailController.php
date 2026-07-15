@@ -44,9 +44,10 @@ class TwoFactorResetEmailController extends Controller
                 'user' => $user->id,
                 'email' => sha1($user->email),
             ],
+            false,
         );
 
-        Mail::to($user->email)->send(new TwoFactorResetMail($resetUrl));
+        Mail::to($user->email)->send(new TwoFactorResetMail(url($resetUrl)));
 
         return back()->with('status', '登録メールアドレス宛に2段階認証の再設定リンクを送信しました。');
     }

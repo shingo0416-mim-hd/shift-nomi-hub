@@ -24,7 +24,7 @@ Route::post('/two-factor-challenge/reset/email', [TwoFactorResetEmailController:
     ->middleware('throttle:3,10')
     ->name('two-factor.reset.email');
 Route::get('/two-factor-reset/{user}', [TwoFactorResetEmailController::class, 'reset'])
-    ->middleware('signed')
+    ->middleware('signed:relative')
     ->name('two-factor.reset');
 
 Route::prefix('{tenant}')

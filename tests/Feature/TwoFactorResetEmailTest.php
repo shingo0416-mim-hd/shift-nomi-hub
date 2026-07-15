@@ -68,7 +68,7 @@ class TwoFactorResetEmailTest extends TestCase
         $url = URL::temporarySignedRoute('two-factor.reset', now()->addMinutes(30), [
             'user' => $user->id,
             'email' => sha1($user->email),
-        ]);
+        ], false);
 
         $this->get($url)
             ->assertRedirect(route('two-factor.settings', absolute: false))
