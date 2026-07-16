@@ -233,6 +233,46 @@ class LiffRegistrationTest extends TestCase
             ->assertSee('シフト管理');
     }
 
+    public function test_line_admin_dashboard_uses_member_store_as_schedule_default(): void
+    {
+        $tenant = Tenant::factory()->create([
+            'data' => ['path' => 'mim-hd'],
+        ]);
+        Store::create([
+            'tenant_id' => $tenant->id,
+            'name' => 'A店',
+            'timezone' => 'Asia/Tokyo',
+            'is_active' => true,
+        ]);
+        $assignedStore = Store::create([
+            'tenant_id' => $tenant->id,
+            'name' => 'B店',
+            'timezone' => 'Asia/Tokyo',
+            'is_active' => true,
+        ]);
+        $admin = User::factory()->create([
+            'tenant_id' => $tenant->id,
+            'role' => User::ROLE_ADMIN,
+        ]);
+        $member = Member::create([
+            'tenant_id' => $tenant->id,
+            'store_id' => $assignedStore->id,
+            'user_id' => $admin->id,
+            'name' => '管理者 スタッフ',
+            'status' => 'active',
+            'role' => Member::ROLE_ADMIN,
+            'line_id' => 'line-admin-001',
+            'is_linked' => true,
+        ]);
+
+        $this->withSession([
+            'line_id' => 'line-admin-001',
+            'line_member_id' => $member->id,
+        ])->get('/mim-hd/line/admin')
+            ->assertOk()
+            ->assertSee("const currentMemberStoreId = {$assignedStore->id};", false);
+    }
+
     public function test_line_admin_dashboard_rejects_non_admin_member(): void
     {
         $tenant = Tenant::factory()->create([
@@ -342,6 +382,156 @@ class LiffRegistrationTest extends TestCase
             'store_id' => $store->id,
             'created_by' => $user->id,
             'status' => 'draft',
+        ]);
+    }
+
+    public function test_line_admin_can_create_shift_schedule_with_daily_stores(): void
+    {
+        $tenant = Tenant::factory()->create([
+            'data' => ['path' => 'mim-hd'],
+        ]);
+        $mainStore = Store::create([
+            'tenant_id' => $tenant->id,
+            'name' => '本店',
+            'timezone' => 'Asia/Tokyo',
+            'is_active' => true,
+        ]);
+        $secondStore = Store::create([
+            'tenant_id' => $tenant->id,
+            'name' => '別館',
+            'timezone' => 'Asia/Tokyo',
+            'is_active' => true,
+        ]);
+        $admin = User::factory()->create([
+            'tenant_id' => $tenant->id,
+            'role' => User::ROLE_ADMIN,
+        ]);
+        $member = Member::create([
+            'tenant_id' => $tenant->id,
+            'store_id' => $mainStore->id,
+            'user_id' => $admin->id,
+            'name' => '管理者 スタッフ',
+            'status' => 'active',
+            'role' => Member::ROLE_ADMIN,
+            'line_id' => 'line-admin-001',
+            'is_linked' => true,
+        ]);
+
+        $this->withSession([
+            '_token' => 'csrf-token',
+            'line_id' => 'line-admin-001',
+            'line_member_id' => $member->id,
+        ])->withHeader('X-CSRF-TOKEN', 'csrf-token')
+            ->postJson('/mim-hd/line/admin/api/shift-schedules', [
+                'store_id' => $mainStore->id,
+                'starts_on' => '2026-08-01',
+                'ends_on' => '2026-08-04',
+                'status' => 'draft',
+                'days' => [
+                    ['scheduled_on' => '2026-08-01', 'store_id' => $mainStore->id],
+                    ['scheduled_on' => '2026-08-02', 'store_id' => $secondStore->id, 'starts_at' => '19:00', 'ends_at' => '23:30'],
+                    ['scheduled_on' => '2026-08-03', 'store_id' => $mainStore->id, 'starts_at' => '18:30', 'ends_at' => '22:00'],
+                    ['scheduled_on' => '2026-08-04', 'is_day_off' => true],
+                ],
+            ])->assertCreated()
+            ->assertJsonPath('shift_schedule.days.1.scheduled_on', '2026-08-02')
+            ->assertJsonPath('shift_schedule.days.1.store_id', $secondStore->id)
+            ->assertJsonPath('shift_schedule.days.1.starts_at', '19:00')
+            ->assertJsonPath('shift_schedule.days.3.is_day_off', true)
+            ->assertJsonPath('shift_schedule.days.3.store_id', null);
+
+        $this->assertDatabaseHas('shift_schedule_days', [
+            'store_id' => $secondStore->id,
+            'scheduled_on' => '2026-08-02',
+            'starts_at' => '19:00',
+            'ends_at' => '23:30',
+        ]);
+        $this->assertDatabaseHas('shift_schedule_days', [
+            'scheduled_on' => '2026-08-04',
+            'is_day_off' => true,
+            'store_id' => null,
+        ]);
+    }
+
+    public function test_line_admin_can_update_shift_schedule_with_daily_stores(): void
+    {
+        $tenant = Tenant::factory()->create([
+            'data' => ['path' => 'mim-hd'],
+        ]);
+        $mainStore = Store::create([
+            'tenant_id' => $tenant->id,
+            'name' => '本店',
+            'timezone' => 'Asia/Tokyo',
+            'is_active' => true,
+        ]);
+        $secondStore = Store::create([
+            'tenant_id' => $tenant->id,
+            'name' => '別館',
+            'timezone' => 'Asia/Tokyo',
+            'is_active' => true,
+        ]);
+        $admin = User::factory()->create([
+            'tenant_id' => $tenant->id,
+            'role' => User::ROLE_ADMIN,
+        ]);
+        $member = Member::create([
+            'tenant_id' => $tenant->id,
+            'store_id' => $mainStore->id,
+            'user_id' => $admin->id,
+            'name' => '管理者 スタッフ',
+            'status' => 'active',
+            'role' => Member::ROLE_ADMIN,
+            'line_id' => 'line-admin-001',
+            'is_linked' => true,
+        ]);
+        $schedule = ShiftSchedule::create([
+            'tenant_id' => $tenant->id,
+            'store_id' => $mainStore->id,
+            'starts_on' => '2026-08-01',
+            'ends_on' => '2026-08-02',
+            'status' => 'draft',
+            'created_by' => $admin->id,
+        ]);
+        $schedule->days()->createMany([
+            ['scheduled_on' => '2026-08-01', 'store_id' => $mainStore->id],
+            ['scheduled_on' => '2026-08-02', 'store_id' => $mainStore->id],
+        ]);
+
+        $this->withSession([
+            '_token' => 'csrf-token',
+            'line_id' => 'line-admin-001',
+            'line_member_id' => $member->id,
+        ])->withHeader('X-CSRF-TOKEN', 'csrf-token')
+            ->putJson("/mim-hd/line/admin/api/shift-schedules/{$schedule->id}", [
+                'store_id' => $secondStore->id,
+                'starts_on' => '2026-08-01',
+                'ends_on' => '2026-08-02',
+                'status' => 'draft',
+                'days' => [
+                    ['scheduled_on' => '2026-08-01', 'store_id' => $secondStore->id, 'starts_at' => '18:00', 'ends_at' => '22:00'],
+                    ['scheduled_on' => '2026-08-02', 'is_day_off' => true],
+                ],
+            ])->assertOk()
+            ->assertJsonPath('shift_schedule.store_id', $secondStore->id)
+            ->assertJsonPath('shift_schedule.days.0.store_id', $secondStore->id)
+            ->assertJsonPath('shift_schedule.days.1.is_day_off', true);
+
+        $this->assertDatabaseHas(ShiftSchedule::class, [
+            'id' => $schedule->id,
+            'store_id' => $secondStore->id,
+        ]);
+        $this->assertDatabaseHas('shift_schedule_days', [
+            'shift_schedule_id' => $schedule->id,
+            'scheduled_on' => '2026-08-01',
+            'store_id' => $secondStore->id,
+            'starts_at' => '18:00',
+            'ends_at' => '22:00',
+        ]);
+        $this->assertDatabaseHas('shift_schedule_days', [
+            'shift_schedule_id' => $schedule->id,
+            'scheduled_on' => '2026-08-02',
+            'is_day_off' => true,
+            'store_id' => null,
         ]);
     }
 

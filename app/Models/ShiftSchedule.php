@@ -28,8 +28,8 @@ class ShiftSchedule extends Model
     protected function casts(): array
     {
         return [
-            'starts_on' => 'date',
-            'ends_on' => 'date',
+            'starts_on' => 'date:Y-m-d',
+            'ends_on' => 'date:Y-m-d',
             'published_at' => 'datetime',
         ];
     }
@@ -57,5 +57,10 @@ class ShiftSchedule extends Model
     public function shiftSlots(): HasMany
     {
         return $this->hasMany(ShiftSlot::class);
+    }
+
+    public function days(): HasMany
+    {
+        return $this->hasMany(ShiftScheduleDay::class)->orderBy('scheduled_on');
     }
 }

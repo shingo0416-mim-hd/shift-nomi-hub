@@ -49,7 +49,8 @@ Route::prefix('{tenant}')
                 Route::post('/api/members', [AdminMemberController::class, 'store'])->name('api.members.store');
                 Route::get('/api/shift-schedules', [AdminShiftScheduleController::class, 'index'])->name('api.shift-schedules.index');
                 Route::post('/api/shift-schedules', [AdminShiftScheduleController::class, 'store'])->name('api.shift-schedules.store');
-                Route::post('/api/shift-schedules/{shiftSchedule}/publish', [AdminShiftScheduleController::class, 'publish'])->name('api.shift-schedules.publish');
+                Route::put('/api/shift-schedules/{shiftSchedule}', [AdminShiftScheduleController::class, 'updateTenant'])->name('api.shift-schedules.update');
+                Route::post('/api/shift-schedules/{shiftSchedule}/publish', [AdminShiftScheduleController::class, 'publishTenant'])->name('api.shift-schedules.publish');
             });
     });
 
@@ -75,7 +76,7 @@ Route::middleware('auth')->group(function (): void {
             ->limit(100)
             ->get();
         $schedules = ShiftSchedule::query()
-            ->with(['store', 'shiftSlots.assignments.member'])
+            ->with(['store', 'days.store', 'shiftSlots.assignments.member'])
             ->where('tenant_id', $user->tenant_id)
             ->latest('starts_on')
             ->limit(100)
@@ -106,6 +107,11 @@ Route::middleware('auth')->group(function (): void {
     Route::get('/dashboard', fn () => $adminPage('overview'))->name('dashboard');
     Route::get('/dashboard/schedules', fn () => $adminPage('schedules'))->name('admin.schedules');
     Route::get('/dashboard/schedules/create', fn () => $adminPage('schedule-create'))->name('admin.schedules.create');
+    Route::get('/dashboard/schedules/{shiftSchedule}/edit', function (ShiftSchedule $shiftSchedule) use ($adminPage) {
+        abort_unless((int) $shiftSchedule->getAttribute('tenant_id') === (int) auth()->user()->tenant_id, 404);
+
+        return $adminPage('schedule-edit')->with('editingSchedule', $shiftSchedule->load(['store', 'days.store']));
+    })->name('admin.schedules.edit');
     Route::get('/dashboard/members', fn () => $adminPage('members'))->name('admin.members');
     Route::get('/dashboard/members/{member}/edit', function (Member $member) use ($adminPage) {
         abort_unless((int) $member->getAttribute('tenant_id') === (int) auth()->user()->tenant_id, 404);

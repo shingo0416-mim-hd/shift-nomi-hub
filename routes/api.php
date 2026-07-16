@@ -26,7 +26,7 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
         Route::apiResource('members', AdminMemberController::class)->only(['index', 'store', 'update']);
         Route::get('/members/{member}/registration-qr', [AdminMemberController::class, 'registrationQr'])
             ->name('members.registration-qr');
-        Route::apiResource('shift-schedules', AdminShiftScheduleController::class)->only(['index', 'store']);
+        Route::apiResource('shift-schedules', AdminShiftScheduleController::class)->only(['index', 'store', 'update']);
         Route::post('/shift-schedules/{shiftSchedule}/publish', [AdminShiftScheduleController::class, 'publish'])
             ->name('shift-schedules.publish');
     });

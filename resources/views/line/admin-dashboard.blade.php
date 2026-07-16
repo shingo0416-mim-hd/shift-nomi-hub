@@ -53,7 +53,19 @@
                                 <input name="ends_on" type="date" required class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
                             </label>
                         </div>
-                        <button class="inline-flex min-h-11 w-full items-center justify-center rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-800">
+                        <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                            <div class="flex items-center justify-between gap-3">
+                                <p class="text-sm font-black text-slate-800">日別店舗</p>
+                                <span class="text-xs font-bold text-slate-500">同じ月内</span>
+                            </div>
+                            <div class="mt-3 max-h-[34rem] overflow-auto pr-1" data-list="schedule-days">
+                                <p class="py-3 text-center text-sm text-slate-500">開始日と終了日を選択してください。</p>
+                            </div>
+                        </div>
+                        <button type="button" class="hidden min-h-11 w-full items-center justify-center rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50" data-action="cancel-schedule-edit">
+                            編集をキャンセル
+                        </button>
+                        <button class="inline-flex min-h-11 w-full items-center justify-center rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-800" data-schedule-submit-label>
                             下書き作成
                         </button>
                     </form>
@@ -149,7 +161,9 @@
                 };
                 const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
                 const canManageMembers = @json($canManageMembers ?? false);
+                const currentMemberStoreId = @json($member?->store_id);
                 const state = { stores: [], members: [], schedules: [] };
+                let editingSchedule = null;
                 const $ = (selector) => document.querySelector(selector);
                 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
                 const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({
@@ -170,6 +184,7 @@
                     manager: 'border-teal-200 bg-teal-50 text-teal-700',
                     cast: 'border-slate-200 bg-slate-50 text-slate-600',
                 }[role] || 'border-slate-200 bg-slate-50 text-slate-600');
+                const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
 
                 const api = async (url, options = {}) => {
                     const response = await fetch(url, {
@@ -209,20 +224,161 @@
                     const klass = status === 'published' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : status === 'archived' ? 'border-slate-200 bg-slate-100 text-slate-500' : 'border-teal-200 bg-teal-50 text-teal-700';
                     return `<span class="inline-flex rounded-full border px-2.5 py-1 text-xs font-black ${klass}">${label}</span>`;
                 };
+                const scheduleMatchesStore = (schedule, storeId) => String(schedule.store_id || '') === storeId
+                    || (schedule.days || []).some((day) => !day.is_day_off && String(day.store_id || '') === storeId);
+                const scheduleStoreSummary = (schedule) => {
+                    const days = schedule.days || [];
+                    if (!days.length) {
+                        return escapeHtml(schedule.store?.name || '-');
+                    }
+
+                    return days.slice(0, 6).map((day) => {
+                        const label = String(day.scheduled_on || '').slice(5, 10).replace('-', '/');
+                        if (day.is_day_off) {
+                            return `${escapeHtml(label)} 休み`;
+                        }
+                        const time = day.starts_at && day.ends_at ? ` ${day.starts_at.slice(0, 5)}-${day.ends_at.slice(0, 5)}` : '';
+                        return `${escapeHtml(label)} ${escapeHtml(day.store?.name || '-')}${escapeHtml(time)}`;
+                    }).join(' / ') + (days.length > 6 ? ' ...' : '');
+                };
 
                 const renderStores = () => {
                     const options = state.stores.map((store) => `<option value="${escapeHtml(store.id)}">${escapeHtml(store.name)}</option>`).join('');
                     $$('select[name="store_id"]').forEach((select) => select.innerHTML = options);
+                    const scheduleStoreSelect = $('[data-form="schedule"] select[name="store_id"]');
+                    if (scheduleStoreSelect && currentMemberStoreId && state.stores.some((store) => String(store.id) === String(currentMemberStoreId))) {
+                        scheduleStoreSelect.value = String(currentMemberStoreId);
+                    }
+                    renderScheduleDayFields();
                     const filter = $('[data-filter="store"]');
                     if (filter) {
                         filter.innerHTML = `<option value="">すべて</option>${options}`;
                     }
                 };
 
+                const parseDate = (value) => {
+                    if (!value) return null;
+                    const date = new Date(`${value}T00:00:00Z`);
+                    return Number.isNaN(date.getTime()) ? null : date;
+                };
+                const formatDate = (date) => date.toISOString().slice(0, 10);
+                const scheduleDayOptions = (selectedStoreId) => state.stores.map((store) => {
+                    const selected = String(store.id) === String(selectedStoreId) ? ' selected' : '';
+                    return `<option value="${escapeHtml(store.id)}"${selected}>${escapeHtml(store.name)}</option>`;
+                }).join('');
+                const renderScheduleDayFields = () => {
+                    const form = $('[data-form="schedule"]');
+                    const list = $('[data-list="schedule-days"]');
+                    if (!form || !list) return;
+
+                    const startsOn = parseDate(form.elements.starts_on?.value || '');
+                    const endsOn = parseDate(form.elements.ends_on?.value || '');
+                    if (!startsOn || !endsOn) {
+                        list.innerHTML = '<p class="py-3 text-center text-sm text-slate-500">開始日と終了日を選択してください。</p>';
+                        return;
+                    }
+                    if (startsOn > endsOn) {
+                        list.innerHTML = '<p class="py-3 text-center text-sm text-red-600">終了日は開始日以降にしてください。</p>';
+                        return;
+                    }
+                    if (startsOn.getUTCFullYear() !== endsOn.getUTCFullYear() || startsOn.getUTCMonth() !== endsOn.getUTCMonth()) {
+                        list.innerHTML = '<p class="py-3 text-center text-sm text-red-600">同じ月内で指定してください。</p>';
+                        return;
+                    }
+
+                    const defaultStoreId = form.elements.store_id?.value || currentMemberStoreId || state.stores[0]?.id || '';
+                    const existingRows = $$('[data-schedule-day-row]');
+                    const existingValues = existingRows.length ? Object.fromEntries(existingRows.map((row) => [row.dataset.scheduleDayRow, {
+                        storeId: row.querySelector('[data-schedule-day-store]')?.value || '',
+                        startsAt: row.querySelector('[data-schedule-day-start]')?.value || '',
+                        endsAt: row.querySelector('[data-schedule-day-end]')?.value || '',
+                        isDayOff: row.querySelector('[data-schedule-day-off]')?.checked || false,
+                    }])) : Object.fromEntries((editingSchedule?.days || []).map((day) => [day.scheduled_on, {
+                        storeId: day.store_id || '',
+                        startsAt: day.starts_at ? day.starts_at.slice(0, 5) : '',
+                        endsAt: day.ends_at ? day.ends_at.slice(0, 5) : '',
+                        isDayOff: Boolean(day.is_day_off),
+                    }]));
+                    const monthStart = new Date(Date.UTC(startsOn.getUTCFullYear(), startsOn.getUTCMonth(), 1));
+                    const monthEnd = new Date(Date.UTC(startsOn.getUTCFullYear(), startsOn.getUTCMonth() + 1, 0));
+                    const cells = weekdays.map((day) => `<div class="py-1 text-center text-xs font-black text-slate-500">${day}</div>`);
+                    for (let index = 0; index < monthStart.getUTCDay(); index += 1) {
+                        cells.push('<div class="min-h-36 rounded-md border border-transparent bg-transparent"></div>');
+                    }
+                    for (const date = new Date(monthStart); date <= monthEnd; date.setUTCDate(date.getUTCDate() + 1)) {
+                        const scheduledOn = formatDate(date);
+                        const isInRange = date >= startsOn && date <= endsOn;
+                        if (!isInRange) {
+                            cells.push(`
+                                <div class="min-h-36 rounded-md border border-slate-100 bg-slate-100/60 p-2 text-xs font-bold text-slate-400">
+                                    ${date.getUTCDate()}
+                                </div>
+                            `);
+                            continue;
+                        }
+                        const values = existingValues[scheduledOn] || {};
+                        const selectedStoreId = values.storeId || defaultStoreId;
+                        const isDayOff = Boolean(values.isDayOff);
+                        cells.push(`
+                            <div class="min-h-36 space-y-2 rounded-md border border-slate-200 bg-white p-2" data-schedule-day-row="${scheduledOn}">
+                                <div class="flex items-center justify-between gap-3">
+                                    <span class="text-sm font-black text-slate-800">${date.getUTCDate()}</span>
+                                    <label class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600">
+                                        <input type="checkbox" class="rounded border-slate-300 text-teal-700 accent-teal-700" data-schedule-day-off ${isDayOff ? 'checked' : ''}>
+                                        休み
+                                    </label>
+                                </div>
+                                <select class="min-h-10 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 disabled:bg-slate-100 disabled:text-slate-400" data-schedule-day-store ${isDayOff ? 'disabled' : ''}>
+                                    ${scheduleDayOptions(selectedStoreId)}
+                                </select>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <input type="time" class="min-h-10 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 disabled:bg-slate-100 disabled:text-slate-400" data-schedule-day-start value="${escapeHtml(values.startsAt || '')}" ${isDayOff ? 'disabled' : ''}>
+                                    <input type="time" class="min-h-10 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 disabled:bg-slate-100 disabled:text-slate-400" data-schedule-day-end value="${escapeHtml(values.endsAt || '')}" ${isDayOff ? 'disabled' : ''}>
+                                </div>
+                            </div>
+                        `);
+                    }
+                    list.innerHTML = `<div class="grid min-w-[760px] grid-cols-7 gap-2">${cells.join('')}</div>`;
+                };
+                const schedulePayload = (form) => ({
+                    ...formPayload(form),
+                    days: $$('[data-schedule-day-row]').map((row) => {
+                        const isDayOff = row.querySelector('[data-schedule-day-off]')?.checked || false;
+
+                        return {
+                            scheduled_on: row.dataset.scheduleDayRow,
+                            is_day_off: isDayOff,
+                            store_id: isDayOff ? null : row.querySelector('[data-schedule-day-store]')?.value,
+                            starts_at: isDayOff ? null : row.querySelector('[data-schedule-day-start]')?.value,
+                            ends_at: isDayOff ? null : row.querySelector('[data-schedule-day-end]')?.value,
+                        };
+                    }),
+                });
+                const setScheduleFormMode = (schedule = null) => {
+                    const form = $('[data-form="schedule"]');
+                    if (!form) return;
+
+                    editingSchedule = schedule;
+                    if (schedule) {
+                        form.dataset.scheduleId = schedule.id;
+                        form.elements.store_id.value = schedule.store_id || '';
+                        form.elements.starts_on.value = schedule.starts_on || '';
+                        form.elements.ends_on.value = schedule.ends_on || '';
+                    } else {
+                        delete form.dataset.scheduleId;
+                        form.reset();
+                    }
+                    $('[data-schedule-submit-label]') && ($('[data-schedule-submit-label]').textContent = schedule ? '下書きを保存' : '下書き作成');
+                    $('[data-action="cancel-schedule-edit"]')?.classList.toggle('hidden', !schedule);
+                    $('[data-action="cancel-schedule-edit"]')?.classList.toggle('inline-flex', Boolean(schedule));
+                    renderScheduleDayFields();
+                    form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                };
+
                 const renderSchedules = () => {
                     const list = $('[data-list="schedules"]');
                     const storeId = $('[data-filter="store"]')?.value || '';
-                    const schedules = storeId ? state.schedules.filter((schedule) => String(schedule.store_id || '') === storeId) : state.schedules;
+                    const schedules = storeId ? state.schedules.filter((schedule) => scheduleMatchesStore(schedule, storeId)) : state.schedules;
 
                     list.innerHTML = schedules.length
                         ? schedules.map((schedule) => `
@@ -231,11 +387,13 @@
                                     <div class="min-w-0">
                                         <h3 class="truncate text-base font-black text-slate-950">${escapeHtml(schedule.store?.name || '-')}</h3>
                                         <p class="mt-1 text-sm text-slate-600">${escapeHtml(schedule.starts_on)} - ${escapeHtml(schedule.ends_on)}</p>
+                                        <p class="mt-1 text-xs leading-5 text-slate-500">${scheduleStoreSummary(schedule)}</p>
                                         <p class="mt-2 text-xs text-slate-500">枠数 ${schedule.shift_slots?.length || 0}</p>
                                     </div>
                                     ${statusBadge(schedule.status)}
                                 </div>
-                                <div class="mt-3 flex justify-end">
+                                <div class="mt-3 flex justify-end gap-2">
+                                    <button type="button" class="rounded-md border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50" data-edit-schedule="${schedule.id}">編集</button>
                                     ${schedule.status === 'published'
                                         ? '<span class="text-xs font-bold text-slate-500">公開済みです</span>'
                                         : `<button type="button" class="rounded-md border border-teal-200 px-3 py-2 text-xs font-bold text-teal-700 transition hover:bg-teal-50" data-publish="${schedule.id}">公開する</button>`}
@@ -286,14 +444,16 @@
 
                 $('[data-form="schedule"]')?.addEventListener('submit', async (event) => {
                     event.preventDefault();
+                    const form = event.currentTarget;
+                    const scheduleId = form.dataset.scheduleId;
                     try {
-                        await api(routes.createSchedule, {
-                            method: 'POST',
-                            body: JSON.stringify({ status: 'draft', ...formPayload(event.currentTarget) }),
+                        await api(scheduleId ? `${routes.publishScheduleBase}/${scheduleId}` : routes.createSchedule, {
+                            method: scheduleId ? 'PUT' : 'POST',
+                            body: JSON.stringify({ status: editingSchedule?.status || 'draft', ...schedulePayload(form) }),
                         });
-                        event.currentTarget.reset();
+                        setScheduleFormMode(null);
                         await refresh();
-                        setNotice('シフト表を作成しました。');
+                        setNotice(scheduleId ? 'シフト表を更新しました。' : 'シフト表を作成しました。');
                     } catch (error) {
                         setNotice(error.message, 'error');
                     }
@@ -301,12 +461,13 @@
 
                 $('[data-form="member"]')?.addEventListener('submit', async (event) => {
                     event.preventDefault();
+                    const form = event.currentTarget;
                     try {
                         await api(routes.createMember, {
                             method: 'POST',
-                            body: JSON.stringify({ status: 'active', is_shift_submitter: true, ...formPayload(event.currentTarget) }),
+                            body: JSON.stringify({ status: 'active', is_shift_submitter: true, ...formPayload(form) }),
                         });
-                        event.currentTarget.reset();
+                        form.reset();
                         await refresh();
                         setNotice('キャストを追加しました。');
                     } catch (error) {
@@ -315,7 +476,34 @@
                 });
 
                 $('[data-filter="store"]')?.addEventListener('change', renderSchedules);
+                $('[data-form="schedule"]')?.addEventListener('input', (event) => {
+                    if (event.target.matches('input[name="starts_on"], input[name="ends_on"]')) {
+                        renderScheduleDayFields();
+                    }
+                });
+                $('[data-form="schedule"] select[name="store_id"]')?.addEventListener('change', renderScheduleDayFields);
+                $('[data-list="schedule-days"]')?.addEventListener('change', (event) => {
+                    if (!event.target.matches('[data-schedule-day-off]')) return;
+                    const row = event.target.closest('[data-schedule-day-row]');
+                    row?.querySelectorAll('[data-schedule-day-store], [data-schedule-day-start], [data-schedule-day-end]').forEach((field) => {
+                        field.disabled = event.target.checked;
+                    });
+                });
                 document.addEventListener('click', async (event) => {
+                    const editButton = event.target.closest('[data-edit-schedule]');
+                    if (editButton) {
+                        const schedule = state.schedules.find((item) => String(item.id) === String(editButton.dataset.editSchedule));
+                        if (schedule) {
+                            setScheduleFormMode(schedule);
+                        }
+                        return;
+                    }
+
+                    if (event.target.closest('[data-action="cancel-schedule-edit"]')) {
+                        setScheduleFormMode(null);
+                        return;
+                    }
+
                     const button = event.target.closest('[data-publish]');
                     if (!button) return;
 
