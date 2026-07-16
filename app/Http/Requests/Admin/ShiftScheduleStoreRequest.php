@@ -89,10 +89,6 @@ class ShiftScheduleStoreRequest extends FormRequest
                         $validator->errors()->add("days.{$index}.starts_at", '終了時刻を指定した場合は開始時刻も指定してください。');
                     }
 
-                    if (! empty($day['starts_at']) && ! empty($day['ends_at']) && $day['starts_at'] >= $day['ends_at']) {
-                        $validator->errors()->add("days.{$index}.ends_at", '終了時刻は開始時刻より後にしてください。');
-                    }
-
                     $seenDates[$date] = true;
                 }
 

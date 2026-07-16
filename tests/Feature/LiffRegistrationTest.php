@@ -508,7 +508,7 @@ class LiffRegistrationTest extends TestCase
                 'ends_on' => '2026-08-02',
                 'status' => 'draft',
                 'days' => [
-                    ['scheduled_on' => '2026-08-01', 'store_id' => $secondStore->id, 'starts_at' => '18:00', 'ends_at' => '22:00'],
+                    ['scheduled_on' => '2026-08-01', 'store_id' => $secondStore->id, 'starts_at' => '21:00', 'ends_at' => '01:00'],
                     ['scheduled_on' => '2026-08-02', 'is_day_off' => true],
                 ],
             ])->assertOk()
@@ -524,8 +524,8 @@ class LiffRegistrationTest extends TestCase
             'shift_schedule_id' => $schedule->id,
             'scheduled_on' => '2026-08-01',
             'store_id' => $secondStore->id,
-            'starts_at' => '18:00',
-            'ends_at' => '22:00',
+            'starts_at' => '21:00',
+            'ends_at' => '01:00',
         ]);
         $this->assertDatabaseHas('shift_schedule_days', [
             'shift_schedule_id' => $schedule->id,

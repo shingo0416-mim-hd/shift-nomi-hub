@@ -505,13 +505,22 @@
                     const form = event.currentTarget;
                     const scheduleId = form.dataset.scheduleId;
                     try {
-                        await api(scheduleId ? `${routes.publishScheduleBase}/${scheduleId}` : routes.createSchedule, {
+                        const data = await api(scheduleId ? `${routes.publishScheduleBase}/${scheduleId}` : routes.createSchedule, {
                             method: 'POST',
                             body: JSON.stringify({ status: editingSchedule?.status || 'draft', ...schedulePayload(form) }),
                         });
-                        setScheduleFormMode(null);
-                        hasAutoLoadedCurrentMonth = false;
-                        await refresh();
+                        if (data.shift_schedule) {
+                            state.schedules = [
+                                data.shift_schedule,
+                                ...state.schedules.filter((schedule) => String(schedule.id) !== String(data.shift_schedule.id)),
+                            ];
+                            renderSchedules();
+                            setScheduleFormMode(data.shift_schedule, { scroll: false });
+                            hasAutoLoadedCurrentMonth = true;
+                        } else {
+                            hasAutoLoadedCurrentMonth = false;
+                            await refresh();
+                        }
                         setNotice(scheduleId ? 'シフト表を更新しました。' : 'シフト表を作成しました。');
                     } catch (error) {
                         setNotice(error.message, 'error');
