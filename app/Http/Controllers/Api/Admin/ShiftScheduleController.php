@@ -41,7 +41,7 @@ class ShiftScheduleController extends Controller
             ]);
 
             $days = ! empty($validated['days'])
-                ? $this->normalizeDays($validated['days'])
+                ? $this->normalizeDays($validated['days'], (int) $validated['store_id'])
                 : $this->defaultDays(
                     $validated['starts_on'],
                     $validated['ends_on'],
@@ -66,7 +66,7 @@ class ShiftScheduleController extends Controller
             $shiftSchedule->update(Arr::except($validated, ['days']));
 
             $days = ! empty($validated['days'])
-                ? $this->normalizeDays($validated['days'])
+                ? $this->normalizeDays($validated['days'], (int) $validated['store_id'])
                 : $this->defaultDays(
                     $validated['starts_on'],
                     $validated['ends_on'],
@@ -107,16 +107,16 @@ class ShiftScheduleController extends Controller
 
     /**
      * @param  array<int, array<string, mixed>>  $days
-     * @return array<int, array{scheduled_on: string, store_id: int|null, is_day_off: bool, starts_at: string|null, ends_at: string|null}>
+     * @return array<int, array{scheduled_on: string, store_id: int, is_day_off: bool, starts_at: string|null, ends_at: string|null}>
      */
-    private function normalizeDays(array $days): array
+    private function normalizeDays(array $days, int $defaultStoreId): array
     {
-        return collect($days)->map(function (array $day): array {
+        return collect($days)->map(function (array $day) use ($defaultStoreId): array {
             $isDayOff = filter_var($day['is_day_off'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
             return [
                 'scheduled_on' => $day['scheduled_on'],
-                'store_id' => $isDayOff ? null : (int) $day['store_id'],
+                'store_id' => $isDayOff ? (int) ($day['store_id'] ?? $defaultStoreId) : (int) $day['store_id'],
                 'is_day_off' => $isDayOff,
                 'starts_at' => $isDayOff ? null : ($day['starts_at'] ?? null),
                 'ends_at' => $isDayOff ? null : ($day['ends_at'] ?? null),

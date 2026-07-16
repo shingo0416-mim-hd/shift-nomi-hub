@@ -36,8 +36,8 @@ class ShiftScheduleStoreRequest extends FormRequest
             'days.*.scheduled_on' => ['required_with:days', 'date'],
             'days.*.store_id' => ['nullable', Rule::exists('stores', 'id')->where('tenant_id', $tenantId)],
             'days.*.is_day_off' => ['nullable', 'boolean'],
-            'days.*.starts_at' => ['nullable', 'date_format:H:i'],
-            'days.*.ends_at' => ['nullable', 'date_format:H:i'],
+            'days.*.starts_at' => ['nullable', 'date_format:H:i', 'regex:/^\d{2}:(00|30)$/'],
+            'days.*.ends_at' => ['nullable', 'date_format:H:i', 'regex:/^\d{2}:(00|30)$/'],
             'status' => ['nullable', Rule::in(['draft', 'published', 'archived'])],
         ];
     }

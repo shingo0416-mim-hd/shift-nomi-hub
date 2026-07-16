@@ -34,8 +34,9 @@
                 <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
                     <div class="flex items-center justify-between gap-3">
                         <div>
-                            <p class="text-xs font-black text-teal-700">Create</p>
-                            <h2 class="mt-1 text-base font-black text-slate-950">シフト表作成</h2>
+                            <p class="text-xs font-black text-teal-700" data-schedule-mode-eyebrow>Create</p>
+                            <h2 class="mt-1 text-base font-black text-slate-950" data-schedule-mode-title>シフト表作成</h2>
+                            <p class="mt-1 hidden text-xs font-bold text-slate-500" data-current-schedule-note></p>
                         </div>
                     </div>
                     <form class="mt-4 space-y-3" data-form="schedule">
@@ -164,6 +165,7 @@
                 const currentMemberStoreId = @json($member?->store_id);
                 const state = { stores: [], members: [], schedules: [] };
                 let editingSchedule = null;
+                let hasAutoLoadedCurrentMonth = false;
                 const $ = (selector) => document.querySelector(selector);
                 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
                 const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({
@@ -197,9 +199,10 @@
                         ...options,
                     });
                     const text = await response.text();
-                    const data = text ? JSON.parse(text) : {};
+                    const contentType = response.headers.get('content-type') || '';
+                    const data = text && contentType.includes('application/json') ? JSON.parse(text) : {};
                     if (!response.ok) {
-                        const message = data.message || Object.values(data.errors || {}).flat().join('\n') || '処理に失敗しました。';
+                        const message = data.message || Object.values(data.errors || {}).flat().join('\n') || `処理に失敗しました。HTTP ${response.status}`;
                         throw new Error(message);
                     }
 
@@ -262,10 +265,42 @@
                     return Number.isNaN(date.getTime()) ? null : date;
                 };
                 const formatDate = (date) => date.toISOString().slice(0, 10);
+                const monthLabel = (value) => {
+                    const date = parseDate(value);
+                    return date ? `${date.getUTCFullYear()}年${date.getUTCMonth() + 1}月` : '';
+                };
+                const currentMonthRange = () => {
+                    const now = new Date();
+                    const startsOn = new Date(Date.UTC(now.getFullYear(), now.getMonth(), 1));
+                    const endsOn = new Date(Date.UTC(now.getFullYear(), now.getMonth() + 1, 0));
+                    return { startsOn, endsOn };
+                };
+                const scheduleOverlapsRange = (schedule, startsOn, endsOn) => {
+                    const scheduleStartsOn = parseDate(schedule.starts_on);
+                    const scheduleEndsOn = parseDate(schedule.ends_on);
+                    return scheduleStartsOn && scheduleEndsOn && scheduleStartsOn <= endsOn && scheduleEndsOn >= startsOn;
+                };
+                const currentMonthSchedule = () => {
+                    const { startsOn, endsOn } = currentMonthRange();
+                    const schedules = state.schedules.filter((schedule) => schedule.status !== 'archived' && scheduleOverlapsRange(schedule, startsOn, endsOn));
+                    return schedules.find((schedule) => currentMemberStoreId && scheduleMatchesStore(schedule, String(currentMemberStoreId))) || schedules[0] || null;
+                };
                 const scheduleDayOptions = (selectedStoreId) => state.stores.map((store) => {
                     const selected = String(store.id) === String(selectedStoreId) ? ' selected' : '';
                     return `<option value="${escapeHtml(store.id)}"${selected}>${escapeHtml(store.name)}</option>`;
                 }).join('');
+                const timeOptions = (selectedTime) => {
+                    const normalized = selectedTime ? selectedTime.slice(0, 5) : '';
+                    const options = ['<option value="">--:--</option>'];
+                    for (let hour = 0; hour < 24; hour += 1) {
+                        for (const minute of ['00', '30']) {
+                            const value = `${String(hour).padStart(2, '0')}:${minute}`;
+                            const selected = value === normalized ? ' selected' : '';
+                            options.push(`<option value="${value}"${selected}>${value}</option>`);
+                        }
+                    }
+                    return options.join('');
+                };
                 const renderScheduleDayFields = () => {
                     const form = $('[data-form="schedule"]');
                     const list = $('[data-list="schedule-days"]');
@@ -332,8 +367,12 @@
                                     ${scheduleDayOptions(selectedStoreId)}
                                 </select>
                                 <div class="grid grid-cols-2 gap-2">
-                                    <input type="time" class="min-h-10 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 disabled:bg-slate-100 disabled:text-slate-400" data-schedule-day-start value="${escapeHtml(values.startsAt || '')}" ${isDayOff ? 'disabled' : ''}>
-                                    <input type="time" class="min-h-10 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 disabled:bg-slate-100 disabled:text-slate-400" data-schedule-day-end value="${escapeHtml(values.endsAt || '')}" ${isDayOff ? 'disabled' : ''}>
+                                    <select class="min-h-10 w-full rounded-xl border border-slate-200 bg-white px-2 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 disabled:bg-slate-100 disabled:text-slate-400" data-schedule-day-start ${isDayOff ? 'disabled' : ''}>
+                                        ${timeOptions(values.startsAt || '')}
+                                    </select>
+                                    <select class="min-h-10 w-full rounded-xl border border-slate-200 bg-white px-2 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 disabled:bg-slate-100 disabled:text-slate-400" data-schedule-day-end ${isDayOff ? 'disabled' : ''}>
+                                        ${timeOptions(values.endsAt || '')}
+                                    </select>
                                 </div>
                             </div>
                         `);
@@ -348,13 +387,13 @@
                         return {
                             scheduled_on: row.dataset.scheduleDayRow,
                             is_day_off: isDayOff,
-                            store_id: isDayOff ? null : row.querySelector('[data-schedule-day-store]')?.value,
+                            store_id: row.querySelector('[data-schedule-day-store]')?.value,
                             starts_at: isDayOff ? null : row.querySelector('[data-schedule-day-start]')?.value,
                             ends_at: isDayOff ? null : row.querySelector('[data-schedule-day-end]')?.value,
                         };
                     }),
                 });
-                const setScheduleFormMode = (schedule = null) => {
+                const setScheduleFormMode = (schedule = null, options = {}) => {
                     const form = $('[data-form="schedule"]');
                     if (!form) return;
 
@@ -368,11 +407,29 @@
                         delete form.dataset.scheduleId;
                         form.reset();
                     }
+                    $('[data-schedule-mode-eyebrow]') && ($('[data-schedule-mode-eyebrow]').textContent = schedule ? 'Current Schedule' : 'Create');
+                    $('[data-schedule-mode-title]') && ($('[data-schedule-mode-title]').textContent = schedule ? '今月のシフト表' : 'シフト表作成');
+                    const note = $('[data-current-schedule-note]');
+                    if (note) {
+                        note.textContent = schedule ? `${monthLabel(schedule.starts_on)}の予定を表示しています。` : '';
+                        note.classList.toggle('hidden', !schedule);
+                    }
                     $('[data-schedule-submit-label]') && ($('[data-schedule-submit-label]').textContent = schedule ? '下書きを保存' : '下書き作成');
                     $('[data-action="cancel-schedule-edit"]')?.classList.toggle('hidden', !schedule);
                     $('[data-action="cancel-schedule-edit"]')?.classList.toggle('inline-flex', Boolean(schedule));
                     renderScheduleDayFields();
-                    form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    if (options.scroll !== false) {
+                        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                };
+                const loadCurrentMonthScheduleIntoForm = () => {
+                    if (hasAutoLoadedCurrentMonth || editingSchedule) return;
+
+                    const schedule = currentMonthSchedule();
+                    if (!schedule) return;
+
+                    hasAutoLoadedCurrentMonth = true;
+                    setScheduleFormMode(schedule, { scroll: false });
                 };
 
                 const renderSchedules = () => {
@@ -440,6 +497,7 @@
                     renderStores();
                     renderSchedules();
                     renderMembers();
+                    loadCurrentMonthScheduleIntoForm();
                 };
 
                 $('[data-form="schedule"]')?.addEventListener('submit', async (event) => {
@@ -448,10 +506,11 @@
                     const scheduleId = form.dataset.scheduleId;
                     try {
                         await api(scheduleId ? `${routes.publishScheduleBase}/${scheduleId}` : routes.createSchedule, {
-                            method: scheduleId ? 'PUT' : 'POST',
+                            method: 'POST',
                             body: JSON.stringify({ status: editingSchedule?.status || 'draft', ...schedulePayload(form) }),
                         });
                         setScheduleFormMode(null);
+                        hasAutoLoadedCurrentMonth = false;
                         await refresh();
                         setNotice(scheduleId ? 'シフト表を更新しました。' : 'シフト表を作成しました。');
                     } catch (error) {

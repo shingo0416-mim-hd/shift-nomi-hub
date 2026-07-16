@@ -438,7 +438,7 @@ class LiffRegistrationTest extends TestCase
             ->assertJsonPath('shift_schedule.days.1.store_id', $secondStore->id)
             ->assertJsonPath('shift_schedule.days.1.starts_at', '19:00')
             ->assertJsonPath('shift_schedule.days.3.is_day_off', true)
-            ->assertJsonPath('shift_schedule.days.3.store_id', null);
+            ->assertJsonPath('shift_schedule.days.3.store_id', $mainStore->id);
 
         $this->assertDatabaseHas('shift_schedule_days', [
             'store_id' => $secondStore->id,
@@ -449,7 +449,7 @@ class LiffRegistrationTest extends TestCase
         $this->assertDatabaseHas('shift_schedule_days', [
             'scheduled_on' => '2026-08-04',
             'is_day_off' => true,
-            'store_id' => null,
+            'store_id' => $mainStore->id,
         ]);
     }
 
@@ -502,7 +502,7 @@ class LiffRegistrationTest extends TestCase
             'line_id' => 'line-admin-001',
             'line_member_id' => $member->id,
         ])->withHeader('X-CSRF-TOKEN', 'csrf-token')
-            ->putJson("/mim-hd/line/admin/api/shift-schedules/{$schedule->id}", [
+            ->postJson("/mim-hd/line/admin/api/shift-schedules/{$schedule->id}", [
                 'store_id' => $secondStore->id,
                 'starts_on' => '2026-08-01',
                 'ends_on' => '2026-08-02',
@@ -531,7 +531,7 @@ class LiffRegistrationTest extends TestCase
             'shift_schedule_id' => $schedule->id,
             'scheduled_on' => '2026-08-02',
             'is_day_off' => true,
-            'store_id' => null,
+            'store_id' => $secondStore->id,
         ]);
     }
 

@@ -1114,9 +1114,10 @@
                     });
 
                     const text = await response.text();
-                    const data = text ? JSON.parse(text) : {};
+                    const contentType = response.headers.get('content-type') || '';
+                    const data = text && contentType.includes('application/json') ? JSON.parse(text) : {};
                     if (!response.ok) {
-                        const message = data.message || Object.values(data.errors || {}).flat().join('\n') || '処理に失敗しました。';
+                        const message = data.message || Object.values(data.errors || {}).flat().join('\n') || `処理に失敗しました。HTTP ${response.status}`;
                         const error = new Error(message);
                         error.validationErrors = data.errors || {};
                         throw error;
@@ -1336,6 +1337,18 @@
                     const selected = String(store.id) === String(selectedStoreId) ? ' selected' : '';
                     return `<option value="${escapeHtml(store.id)}"${selected}>${escapeHtml(store.name)}</option>`;
                 }).join('');
+                const timeOptions = (selectedTime) => {
+                    const normalized = selectedTime ? selectedTime.slice(0, 5) : '';
+                    const options = ['<option value="">--:--</option>'];
+                    for (let hour = 0; hour < 24; hour += 1) {
+                        for (const minute of ['00', '30']) {
+                            const value = `${String(hour).padStart(2, '0')}:${minute}`;
+                            const selected = value === normalized ? ' selected' : '';
+                            options.push(`<option value="${value}"${selected}>${value}</option>`);
+                        }
+                    }
+                    return options.join('');
+                };
                 const renderScheduleDayFields = () => {
                     const form = $('[data-form="schedule"]');
                     const list = $('[data-list="schedule-days"]');
@@ -1402,8 +1415,12 @@
                                     ${scheduleDayOptions(selectedStoreId)}
                                 </select>
                                 <div class="grid grid-cols-2 gap-2">
-                                    <input type="time" class="min-h-10 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 disabled:bg-slate-100 disabled:text-slate-400" data-schedule-day-start value="${escapeHtml(values.startsAt || '')}" ${isDayOff ? 'disabled' : ''}>
-                                    <input type="time" class="min-h-10 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 disabled:bg-slate-100 disabled:text-slate-400" data-schedule-day-end value="${escapeHtml(values.endsAt || '')}" ${isDayOff ? 'disabled' : ''}>
+                                    <select class="min-h-10 w-full rounded-xl border border-slate-200 bg-white px-2 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 disabled:bg-slate-100 disabled:text-slate-400" data-schedule-day-start ${isDayOff ? 'disabled' : ''}>
+                                        ${timeOptions(values.startsAt || '')}
+                                    </select>
+                                    <select class="min-h-10 w-full rounded-xl border border-slate-200 bg-white px-2 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 disabled:bg-slate-100 disabled:text-slate-400" data-schedule-day-end ${isDayOff ? 'disabled' : ''}>
+                                        ${timeOptions(values.endsAt || '')}
+                                    </select>
                                 </div>
                             </div>
                         `);
@@ -1680,7 +1697,7 @@
                         return {
                             scheduled_on: row.dataset.scheduleDayRow,
                             is_day_off: isDayOff,
-                            store_id: isDayOff ? null : row.querySelector('[data-schedule-day-store]')?.value,
+                            store_id: row.querySelector('[data-schedule-day-store]')?.value,
                             starts_at: isDayOff ? null : row.querySelector('[data-schedule-day-start]')?.value,
                             ends_at: isDayOff ? null : row.querySelector('[data-schedule-day-end]')?.value,
                         };

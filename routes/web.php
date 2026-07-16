@@ -50,6 +50,7 @@ Route::prefix('{tenant}')
                 Route::get('/api/shift-schedules', [AdminShiftScheduleController::class, 'index'])->name('api.shift-schedules.index');
                 Route::post('/api/shift-schedules', [AdminShiftScheduleController::class, 'store'])->name('api.shift-schedules.store');
                 Route::put('/api/shift-schedules/{shiftSchedule}', [AdminShiftScheduleController::class, 'updateTenant'])->name('api.shift-schedules.update');
+                Route::post('/api/shift-schedules/{shiftSchedule}', [AdminShiftScheduleController::class, 'updateTenant'])->name('api.shift-schedules.update.post');
                 Route::post('/api/shift-schedules/{shiftSchedule}/publish', [AdminShiftScheduleController::class, 'publishTenant'])->name('api.shift-schedules.publish');
             });
     });
