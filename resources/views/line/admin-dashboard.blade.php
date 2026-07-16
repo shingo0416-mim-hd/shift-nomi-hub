@@ -59,6 +59,28 @@
                                 <p class="text-sm font-black text-slate-800">日別店舗</p>
                                 <span class="text-xs font-bold text-slate-500">同じ月内</span>
                             </div>
+                            <div class="mt-3 rounded-md border border-slate-200 bg-white p-2">
+                                <p class="text-xs font-black text-slate-600">一括設定</p>
+                                <div class="mt-2 grid grid-cols-[1fr_1fr_auto] gap-2">
+                                    <select class="min-h-10 rounded-xl border border-slate-200 bg-white px-2 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500" data-bulk-start></select>
+                                    <select class="min-h-10 rounded-xl border border-slate-200 bg-white px-2 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500" data-bulk-end></select>
+                                    <button type="button" class="rounded-md bg-slate-800 px-3 py-2 text-xs font-bold text-white transition hover:bg-slate-950" data-action="apply-bulk-time">適用</button>
+                                </div>
+                                <div class="mt-3 border-t border-slate-100 pt-3">
+                                    <div class="flex flex-wrap gap-2" data-bulk-weekdays>
+                                        @foreach (['日', '月', '火', '水', '木', '金', '土'] as $index => $weekday)
+                                            <label class="inline-flex items-center gap-1 rounded-md border border-slate-200 px-2 py-1 text-xs font-bold text-slate-600">
+                                                <input type="checkbox" class="rounded border-slate-300 text-teal-700 accent-teal-700" value="{{ $index }}" data-bulk-weekday>
+                                                {{ $weekday }}
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                    <div class="mt-2 grid grid-cols-2 gap-2">
+                                        <button type="button" class="rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50" data-action="apply-bulk-day-off">休みにする</button>
+                                        <button type="button" class="rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50" data-action="clear-bulk-day-off">休み解除</button>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="mt-3 max-h-[34rem] overflow-auto pr-1" data-list="schedule-days">
                                 <p class="py-3 text-center text-sm text-slate-500">開始日と終了日を選択してください。</p>
                             </div>
@@ -166,6 +188,7 @@
                 const state = { stores: [], members: [], schedules: [] };
                 let editingSchedule = null;
                 let hasAutoLoadedCurrentMonth = false;
+                let hasInitializedScheduleFilter = false;
                 const $ = (selector) => document.querySelector(selector);
                 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
                 const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({
@@ -210,9 +233,11 @@
                 };
 
                 const formPayload = (form) => Object.fromEntries(new FormData(form).entries());
+                let noticeTimer = null;
                 const setNotice = (message, type = 'success') => {
                     const notice = $('[data-notice]');
                     if (!notice) return;
+                    window.clearTimeout(noticeTimer);
                     notice.textContent = message;
                     notice.classList.remove('hidden', 'border-emerald-200', 'bg-emerald-50', 'text-emerald-700', 'border-red-200', 'bg-red-50', 'text-red-700');
                     notice.classList.add(
@@ -220,6 +245,13 @@
                             ? ['border-red-200', 'bg-red-50', 'text-red-700']
                             : ['border-emerald-200', 'bg-emerald-50', 'text-emerald-700'])
                     );
+                    notice.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    if (type !== 'error') {
+                        noticeTimer = window.setTimeout(() => {
+                            notice.classList.add('hidden');
+                            notice.textContent = '';
+                        }, 3500);
+                    }
                 };
 
                 const statusBadge = (status) => {
@@ -255,7 +287,14 @@
                     renderScheduleDayFields();
                     const filter = $('[data-filter="store"]');
                     if (filter) {
+                        const selectedStoreId = filter.value;
                         filter.innerHTML = `<option value="">すべて</option>${options}`;
+                        if (!hasInitializedScheduleFilter && currentMemberStoreId && state.stores.some((store) => String(store.id) === String(currentMemberStoreId))) {
+                            filter.value = String(currentMemberStoreId);
+                            hasInitializedScheduleFilter = true;
+                        } else {
+                            filter.value = selectedStoreId;
+                        }
                     }
                 };
 
@@ -265,6 +304,68 @@
                     return Number.isNaN(date.getTime()) ? null : date;
                 };
                 const formatDate = (date) => date.toISOString().slice(0, 10);
+                const holidayCache = new Map();
+                const nthMonday = (year, monthIndex, nth) => {
+                    const first = new Date(Date.UTC(year, monthIndex, 1));
+                    const day = 1 + ((8 - first.getUTCDay()) % 7) + ((nth - 1) * 7);
+                    return new Date(Date.UTC(year, monthIndex, day));
+                };
+                const japaneseHolidaySet = (year) => {
+                    if (holidayCache.has(year)) return holidayCache.get(year);
+
+                    const holidays = new Set();
+                    const originalHolidays = [];
+                    const addHoliday = (date) => {
+                        holidays.add(formatDate(date));
+                        originalHolidays.push(date);
+                    };
+                    addHoliday(new Date(Date.UTC(year, 0, 1)));
+                    addHoliday(nthMonday(year, 0, 2));
+                    addHoliday(new Date(Date.UTC(year, 1, 11)));
+                    addHoliday(new Date(Date.UTC(year, 1, 23)));
+                    addHoliday(new Date(Date.UTC(year, 2, Math.floor(20.8431 + (0.242194 * (year - 1980)) - Math.floor((year - 1980) / 4)))));
+                    addHoliday(new Date(Date.UTC(year, 3, 29)));
+                    addHoliday(new Date(Date.UTC(year, 4, 3)));
+                    addHoliday(new Date(Date.UTC(year, 4, 4)));
+                    addHoliday(new Date(Date.UTC(year, 4, 5)));
+                    addHoliday(nthMonday(year, 6, 3));
+                    addHoliday(new Date(Date.UTC(year, 7, 11)));
+                    addHoliday(nthMonday(year, 8, 3));
+                    addHoliday(new Date(Date.UTC(year, 8, Math.floor(23.2488 + (0.242194 * (year - 1980)) - Math.floor((year - 1980) / 4)))));
+                    addHoliday(nthMonday(year, 9, 2));
+                    addHoliday(new Date(Date.UTC(year, 10, 3)));
+                    addHoliday(new Date(Date.UTC(year, 10, 23)));
+
+                    originalHolidays.forEach((holiday) => {
+                        if (holiday.getUTCDay() !== 0) return;
+                        const substitute = new Date(holiday);
+                        do {
+                            substitute.setUTCDate(substitute.getUTCDate() + 1);
+                        } while (holidays.has(formatDate(substitute)));
+                        holidays.add(formatDate(substitute));
+                    });
+
+                    for (let month = 0; month < 12; month += 1) {
+                        const lastDay = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+                        for (let day = 2; day < lastDay; day += 1) {
+                            const date = new Date(Date.UTC(year, month, day));
+                            const previous = new Date(Date.UTC(year, month, day - 1));
+                            const next = new Date(Date.UTC(year, month, day + 1));
+                            if (date.getUTCDay() !== 0 && holidays.has(formatDate(previous)) && holidays.has(formatDate(next))) {
+                                holidays.add(formatDate(date));
+                            }
+                        }
+                    }
+
+                    holidayCache.set(year, holidays);
+                    return holidays;
+                };
+                const isJapaneseHoliday = (date) => japaneseHolidaySet(date.getUTCFullYear()).has(formatDate(date));
+                const calendarDateClass = (date) => {
+                    if (date.getUTCDay() === 0 || isJapaneseHoliday(date)) return 'text-red-600';
+                    if (date.getUTCDay() === 6) return 'text-blue-600';
+                    return 'text-slate-800';
+                };
                 const monthLabel = (value) => {
                     const date = parseDate(value);
                     return date ? `${date.getUTCFullYear()}年${date.getUTCMonth() + 1}月` : '';
@@ -285,6 +386,27 @@
                     const schedules = state.schedules.filter((schedule) => schedule.status !== 'archived' && scheduleOverlapsRange(schedule, startsOn, endsOn));
                     return schedules.find((schedule) => currentMemberStoreId && scheduleMatchesStore(schedule, String(currentMemberStoreId))) || schedules[0] || null;
                 };
+                const dedupeSchedulesByPeriod = (schedules) => {
+                    const preferredStoreId = currentMemberStoreId ? String(currentMemberStoreId) : '';
+                    const grouped = new Map();
+
+                    schedules.forEach((schedule) => {
+                        const key = `${schedule.starts_on || ''}|${schedule.ends_on || ''}`;
+                        const existing = grouped.get(key);
+                        if (!existing) {
+                            grouped.set(key, schedule);
+                            return;
+                        }
+
+                        const scheduleMatchesPreferred = preferredStoreId && scheduleMatchesStore(schedule, preferredStoreId);
+                        const existingMatchesPreferred = preferredStoreId && scheduleMatchesStore(existing, preferredStoreId);
+                        if ((scheduleMatchesPreferred && !existingMatchesPreferred) || (scheduleMatchesPreferred === existingMatchesPreferred && Number(schedule.id) > Number(existing.id))) {
+                            grouped.set(key, schedule);
+                        }
+                    });
+
+                    return Array.from(grouped.values());
+                };
                 const scheduleDayOptions = (selectedStoreId) => state.stores.map((store) => {
                     const selected = String(store.id) === String(selectedStoreId) ? ' selected' : '';
                     return `<option value="${escapeHtml(store.id)}"${selected}>${escapeHtml(store.name)}</option>`;
@@ -300,6 +422,45 @@
                         }
                     }
                     return options.join('');
+                };
+                const renderBulkTimeOptions = () => {
+                    $$('[data-bulk-start], [data-bulk-end]').forEach((select) => {
+                        const current = select.value || '';
+                        select.innerHTML = timeOptions(current);
+                        select.value = current;
+                    });
+                };
+                const applyBulkTime = () => {
+                    const startsAt = $('[data-bulk-start]')?.value || '';
+                    const endsAt = $('[data-bulk-end]')?.value || '';
+
+                    $$('[data-schedule-day-row]').forEach((row) => {
+                        if (row.querySelector('[data-schedule-day-off]')?.checked) return;
+
+                        const startSelect = row.querySelector('[data-schedule-day-start]');
+                        const endSelect = row.querySelector('[data-schedule-day-end]');
+                        if (startSelect) startSelect.value = startsAt;
+                        if (endSelect) endSelect.value = endsAt;
+                    });
+                };
+                const setDayOffRow = (row, isDayOff) => {
+                    const checkbox = row.querySelector('[data-schedule-day-off]');
+                    if (checkbox) checkbox.checked = isDayOff;
+                    row.querySelectorAll('[data-schedule-day-store], [data-schedule-day-start], [data-schedule-day-end]').forEach((field) => {
+                        field.disabled = isDayOff;
+                    });
+                };
+                const selectedBulkWeekdays = () => $$('[data-bulk-weekday]:checked').map((checkbox) => Number(checkbox.value));
+                const applyBulkDayOff = (isDayOff) => {
+                    const selectedWeekdays = selectedBulkWeekdays();
+                    if (!selectedWeekdays.length) return;
+
+                    $$('[data-schedule-day-row]').forEach((row) => {
+                        const date = parseDate(row.dataset.scheduleDayRow);
+                        if (!date || !selectedWeekdays.includes(date.getUTCDay())) return;
+
+                        setDayOffRow(row, isDayOff);
+                    });
                 };
                 const renderScheduleDayFields = () => {
                     const form = $('[data-form="schedule"]');
@@ -336,7 +497,7 @@
                     }]));
                     const monthStart = new Date(Date.UTC(startsOn.getUTCFullYear(), startsOn.getUTCMonth(), 1));
                     const monthEnd = new Date(Date.UTC(startsOn.getUTCFullYear(), startsOn.getUTCMonth() + 1, 0));
-                    const cells = weekdays.map((day) => `<div class="py-1 text-center text-xs font-black text-slate-500">${day}</div>`);
+                    const cells = weekdays.map((day, index) => `<div class="py-1 text-center text-xs font-black ${index === 0 ? 'text-red-600' : index === 6 ? 'text-blue-600' : 'text-slate-500'}">${day}</div>`);
                     for (let index = 0; index < monthStart.getUTCDay(); index += 1) {
                         cells.push('<div class="min-h-36 rounded-md border border-transparent bg-transparent"></div>');
                     }
@@ -345,7 +506,7 @@
                         const isInRange = date >= startsOn && date <= endsOn;
                         if (!isInRange) {
                             cells.push(`
-                                <div class="min-h-36 rounded-md border border-slate-100 bg-slate-100/60 p-2 text-xs font-bold text-slate-400">
+                                <div class="min-h-36 rounded-md border border-slate-100 bg-slate-100/60 p-2 text-xs font-bold ${calendarDateClass(date)} opacity-50">
                                     ${date.getUTCDate()}
                                 </div>
                             `);
@@ -357,7 +518,7 @@
                         cells.push(`
                             <div class="min-h-36 space-y-2 rounded-md border border-slate-200 bg-white p-2" data-schedule-day-row="${scheduledOn}">
                                 <div class="flex items-center justify-between gap-3">
-                                    <span class="text-sm font-black text-slate-800">${date.getUTCDate()}</span>
+                                    <span class="text-sm font-black ${calendarDateClass(date)}">${date.getUTCDate()}</span>
                                     <label class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600">
                                         <input type="checkbox" class="rounded border-slate-300 text-teal-700 accent-teal-700" data-schedule-day-off ${isDayOff ? 'checked' : ''}>
                                         休み
@@ -379,6 +540,7 @@
                     }
                     list.innerHTML = `<div class="grid min-w-[760px] grid-cols-7 gap-2">${cells.join('')}</div>`;
                 };
+                renderBulkTimeOptions();
                 const schedulePayload = (form) => ({
                     ...formPayload(form),
                     days: $$('[data-schedule-day-row]').map((row) => {
@@ -435,7 +597,8 @@
                 const renderSchedules = () => {
                     const list = $('[data-list="schedules"]');
                     const storeId = $('[data-filter="store"]')?.value || '';
-                    const schedules = storeId ? state.schedules.filter((schedule) => scheduleMatchesStore(schedule, storeId)) : state.schedules;
+                    const filteredSchedules = storeId ? state.schedules.filter((schedule) => scheduleMatchesStore(schedule, storeId)) : state.schedules;
+                    const schedules = dedupeSchedulesByPeriod(filteredSchedules);
 
                     list.innerHTML = schedules.length
                         ? schedules.map((schedule) => `
@@ -553,11 +716,24 @@
                 $('[data-list="schedule-days"]')?.addEventListener('change', (event) => {
                     if (!event.target.matches('[data-schedule-day-off]')) return;
                     const row = event.target.closest('[data-schedule-day-row]');
-                    row?.querySelectorAll('[data-schedule-day-store], [data-schedule-day-start], [data-schedule-day-end]').forEach((field) => {
-                        field.disabled = event.target.checked;
-                    });
+                    if (row) setDayOffRow(row, event.target.checked);
                 });
                 document.addEventListener('click', async (event) => {
+                    if (event.target.closest('[data-action="apply-bulk-time"]')) {
+                        applyBulkTime();
+                        return;
+                    }
+
+                    if (event.target.closest('[data-action="apply-bulk-day-off"]')) {
+                        applyBulkDayOff(true);
+                        return;
+                    }
+
+                    if (event.target.closest('[data-action="clear-bulk-day-off"]')) {
+                        applyBulkDayOff(false);
+                        return;
+                    }
+
                     const editButton = event.target.closest('[data-edit-schedule]');
                     if (editButton) {
                         const schedule = state.schedules.find((item) => String(item.id) === String(editButton.dataset.editSchedule));
