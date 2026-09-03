@@ -338,7 +338,7 @@
                         @endif
 
                         @if (in_array($page, ['schedule-create', 'schedule-edit'], true))
-                        <section class="max-w-xl rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+                        <section class="w-full rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
                             <div class="mb-5 flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-center sm:justify-between">
                                 <div>
                                     <p class="text-xs font-black text-teal-700">{{ $page === 'schedule-edit' ? 'Edit Schedule' : 'Create Schedule' }}</p>
