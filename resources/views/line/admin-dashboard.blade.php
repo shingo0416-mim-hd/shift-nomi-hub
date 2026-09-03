@@ -61,6 +61,10 @@
                             </div>
                             <div class="mt-3 rounded-md border border-slate-200 bg-white p-2">
                                 <p class="text-xs font-black text-slate-600">一括設定</p>
+                                <div class="mt-2 grid grid-cols-[1fr_auto] gap-2">
+                                    <select aria-label="一括設定する店舗" class="min-h-10 rounded-xl border border-slate-200 bg-white px-2 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500" data-bulk-store></select>
+                                    <button type="button" class="rounded-md bg-slate-800 px-3 py-2 text-xs font-bold text-white transition hover:bg-slate-950" data-action="apply-bulk-store">全日に適用</button>
+                                </div>
                                 <div class="mt-2 grid grid-cols-[1fr_1fr_auto] gap-2">
                                     <select class="min-h-10 rounded-xl border border-slate-200 bg-white px-2 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500" data-bulk-start></select>
                                     <select class="min-h-10 rounded-xl border border-slate-200 bg-white px-2 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500" data-bulk-end></select>
@@ -284,6 +288,7 @@
                     if (scheduleStoreSelect && currentMemberStoreId && state.stores.some((store) => String(store.id) === String(currentMemberStoreId))) {
                         scheduleStoreSelect.value = String(currentMemberStoreId);
                     }
+                    renderBulkStoreOptions();
                     renderScheduleDayFields();
                     const filter = $('[data-filter="store"]');
                     if (filter) {
@@ -428,6 +433,23 @@
                         const current = select.value || '';
                         select.innerHTML = timeOptions(current);
                         select.value = current;
+                    });
+                };
+                const renderBulkStoreOptions = () => {
+                    const select = $('[data-bulk-store]');
+                    if (!select) return;
+
+                    const defaultStoreId = $('[data-form="schedule"] select[name="store_id"]')?.value || currentMemberStoreId || state.stores[0]?.id || '';
+                    const current = select.value || defaultStoreId;
+                    select.innerHTML = scheduleDayOptions(current);
+                    select.value = current;
+                };
+                const applyBulkStore = () => {
+                    const storeId = $('[data-bulk-store]')?.value || '';
+                    if (!storeId) return;
+
+                    $$('[data-schedule-day-store]').forEach((select) => {
+                        select.value = storeId;
                     });
                 };
                 const applyBulkTime = () => {
@@ -719,6 +741,11 @@
                     if (row) setDayOffRow(row, event.target.checked);
                 });
                 document.addEventListener('click', async (event) => {
+                    if (event.target.closest('[data-action="apply-bulk-store"]')) {
+                        applyBulkStore();
+                        return;
+                    }
+
                     if (event.target.closest('[data-action="apply-bulk-time"]')) {
                         applyBulkTime();
                         return;
