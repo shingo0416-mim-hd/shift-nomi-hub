@@ -38,6 +38,11 @@ class MemberStoreRequest extends FormRequest
             'is_remind_disabled' => ['nullable', 'boolean'],
             'tags' => ['nullable', 'array'],
             'remarks' => ['nullable', 'string'],
+            'attendance_score' => ['nullable', 'integer', 'between:0,100'],
+            'popularity_score' => ['nullable', 'integer', 'between:0,100'],
+            'priority_points' => ['nullable', 'integer', 'between:-1000,1000'],
+            'newcomer_priority_until' => ['nullable', 'date'],
+            'scheduling_admin_notes' => ['nullable', 'string', 'max:2000'],
         ];
     }
 

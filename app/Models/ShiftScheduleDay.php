@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'is_day_off',
     'starts_at',
     'ends_at',
+    'required_headcount',
 ])]
 class ShiftScheduleDay extends Model
 {
@@ -27,6 +28,7 @@ class ShiftScheduleDay extends Model
         return [
             'scheduled_on' => 'date:Y-m-d',
             'is_day_off' => 'boolean',
+            'required_headcount' => 'integer',
         ];
     }
 

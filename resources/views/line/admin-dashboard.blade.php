@@ -50,6 +50,18 @@
                             <input name="starts_on" type="hidden">
                             <input name="ends_on" type="hidden">
                         </label>
+                        <label class="block text-sm font-bold text-slate-700">
+                            シフト提出期限
+                            <input name="submission_deadline_at" type="datetime-local" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
+                        </label>
+                        <label class="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-3">
+                            <input type="hidden" name="auto_schedule_enabled" value="0">
+                            <input type="checkbox" name="auto_schedule_enabled" value="1" checked class="rounded border-slate-300 text-teal-700 accent-teal-700">
+                            <span>
+                                <span class="block text-sm font-bold text-slate-800">期限後に自動編成・LINE通知</span>
+                                <span class="mt-1 block text-xs text-slate-500">希望提出と非公開評価から割り当てます。</span>
+                            </span>
+                        </label>
                         <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
                             <div class="flex items-center justify-between gap-3">
                                 <p class="text-sm font-black text-slate-800">日別店舗</p>
@@ -280,7 +292,10 @@
                     const slots = schedule.shift_slots || [];
                     const activeAssignments = slots.flatMap((slot) => (slot.assignments || []).filter((assignment) => assignment.member && assignment.status !== 'cancelled'));
                     const members = Array.from(new Map(activeAssignments.map((assignment) => [String(assignment.member.id), assignment.member])).values());
-                    const unassignedSlotCount = slots.filter((slot) => !(slot.assignments || []).some((assignment) => assignment.member && assignment.status !== 'cancelled')).length;
+                    const unassignedSlotCount = slots.reduce((total, slot) => {
+                        const assignedCount = (slot.assignments || []).filter((assignment) => assignment.member && assignment.status !== 'cancelled').length;
+                        return total + Math.max(0, Number(slot.required_headcount || 1) - assignedCount);
+                    }, 0);
 
                     if (!members.length) {
                         return '<span class="font-bold text-amber-700">未割り当て</span>';
@@ -288,7 +303,7 @@
 
                     const memberBadges = members.map((member) => `<span class="inline-flex rounded-full border border-teal-200 bg-teal-50 px-2 py-0.5 text-xs font-bold text-teal-700">${escapeHtml(memberDisplayName(member))}</span>`);
                     if (unassignedSlotCount > 0) {
-                        memberBadges.push(`<span class="inline-flex rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-bold text-amber-700">未割り当て ${unassignedSlotCount}枠</span>`);
+                        memberBadges.push(`<span class="inline-flex rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-xs font-bold text-red-700">人員不足 ${unassignedSlotCount}名</span>`);
                     }
 
                     return `<span class="flex flex-wrap gap-1.5">${memberBadges.join('')}</span>`;
@@ -322,6 +337,12 @@
                     return Number.isNaN(date.getTime()) ? null : date;
                 };
                 const formatDate = (date) => date.toISOString().slice(0, 10);
+                const toDateTimeLocal = (value) => {
+                    if (!value) return '';
+                    const date = new Date(value);
+                    const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+                    return localDate.toISOString().slice(0, 16);
+                };
                 const setScheduleMonth = (form, month) => {
                     const monthInput = form?.querySelector('[data-schedule-month]');
                     const monthStart = parseDate(`${month}-01`);
@@ -492,7 +513,7 @@
                 const setDayOffRow = (row, isDayOff) => {
                     const checkbox = row.querySelector('[data-schedule-day-off]');
                     if (checkbox) checkbox.checked = isDayOff;
-                    row.querySelectorAll('[data-schedule-day-store], [data-schedule-day-start], [data-schedule-day-end]').forEach((field) => {
+                    row.querySelectorAll('[data-schedule-day-store], [data-schedule-day-start], [data-schedule-day-end], [data-schedule-day-headcount]').forEach((field) => {
                         field.disabled = isDayOff;
                     });
                 };
@@ -534,11 +555,13 @@
                         storeId: row.querySelector('[data-schedule-day-store]')?.value || '',
                         startsAt: row.querySelector('[data-schedule-day-start]')?.value || '',
                         endsAt: row.querySelector('[data-schedule-day-end]')?.value || '',
+                        requiredHeadcount: row.querySelector('[data-schedule-day-headcount]')?.value || '1',
                         isDayOff: row.querySelector('[data-schedule-day-off]')?.checked || false,
                     }])) : Object.fromEntries((editingSchedule?.days || []).map((day) => [day.scheduled_on, {
                         storeId: day.store_id || '',
                         startsAt: day.starts_at ? day.starts_at.slice(0, 5) : '',
                         endsAt: day.ends_at ? day.ends_at.slice(0, 5) : '',
+                        requiredHeadcount: day.required_headcount || 1,
                         isDayOff: Boolean(day.is_day_off),
                     }]));
                     const monthStart = new Date(Date.UTC(startsOn.getUTCFullYear(), startsOn.getUTCMonth(), 1));
@@ -581,6 +604,10 @@
                                         ${timeOptions(values.endsAt || '')}
                                     </select>
                                 </div>
+                                <label class="block text-xs font-bold text-slate-600">
+                                    必要人数
+                                    <input type="number" min="1" max="50" value="${escapeHtml(values.requiredHeadcount || 1)}" class="mt-1 min-h-9 w-full rounded-xl border border-slate-200 bg-white px-2 py-1 text-sm text-slate-900 outline-none transition focus:border-teal-500 disabled:bg-slate-100" data-schedule-day-headcount ${isDayOff ? 'disabled' : ''}>
+                                </label>
                             </div>
                         `);
                     }
@@ -598,6 +625,7 @@
                             store_id: row.querySelector('[data-schedule-day-store]')?.value,
                             starts_at: isDayOff ? null : row.querySelector('[data-schedule-day-start]')?.value,
                             ends_at: isDayOff ? null : row.querySelector('[data-schedule-day-end]')?.value,
+                            required_headcount: isDayOff ? 1 : Number(row.querySelector('[data-schedule-day-headcount]')?.value || 1),
                         };
                     }),
                 });
@@ -609,6 +637,8 @@
                     if (schedule) {
                         form.dataset.scheduleId = schedule.id;
                         form.elements.store_id.value = schedule.store_id || '';
+                        form.elements.submission_deadline_at.value = toDateTimeLocal(schedule.submission_deadline_at);
+                        form.elements.auto_schedule_enabled.checked = Boolean(schedule.auto_schedule_enabled);
                         setScheduleMonth(form, String(schedule.starts_on || '').slice(0, 7));
                     } else {
                         delete form.dataset.scheduleId;
@@ -652,6 +682,8 @@
                                     <div class="min-w-0">
                                         <h3 class="truncate text-base font-black text-slate-950">${escapeHtml(schedule.store?.name || '-')}</h3>
                                         <p class="mt-1 text-sm text-slate-600">${escapeHtml(schedule.starts_on)} - ${escapeHtml(schedule.ends_on)}</p>
+                                        ${schedule.submission_deadline_at ? `<p class="mt-1 text-xs font-bold text-slate-500">提出期限 ${escapeHtml(toDateTimeLocal(schedule.submission_deadline_at).replace('T', ' '))}</p>` : ''}
+                                        ${schedule.auto_scheduled_at ? `<p class="mt-1 text-xs font-bold ${schedule.notification_sent_at ? 'text-emerald-700' : 'text-amber-700'}">${schedule.notification_sent_at ? '自動編成・LINE通知済み' : '自動編成済み・LINE通知待ち'}</p>` : ''}
                                         <p class="mt-1 text-xs leading-5 text-slate-500">${scheduleStoreSummary(schedule)}</p>
                                         <div class="mt-2 text-xs text-slate-500"><span class="mr-2 font-bold text-slate-700">担当メンバー</span>${scheduleMemberSummary(schedule)}</div>
                                         <p class="mt-2 text-xs text-slate-500">枠数 ${schedule.shift_slots?.length || 0}</p>

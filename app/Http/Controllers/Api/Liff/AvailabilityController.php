@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Liff\AvailabilityRequest;
 use App\Models\AvailabilityRequest as Availability;
 use App\Models\Member;
+use App\Models\ShiftSchedule;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class AvailabilityController extends Controller
 {
@@ -29,11 +31,32 @@ class AvailabilityController extends Controller
     public function store(AvailabilityRequest $request): JsonResponse
     {
         $member = $this->member($request);
+        $workDate = $request->validated('work_date');
+
+        $submissionClosed = ShiftSchedule::query()
+            ->where('tenant_id', $request->user()->tenant_id)
+            ->where('auto_schedule_enabled', true)
+            ->whereNotNull('submission_deadline_at')
+            ->where('submission_deadline_at', '<=', now())
+            ->whereDate('starts_on', '<=', $workDate)
+            ->whereDate('ends_on', '>=', $workDate)
+            ->where(fn ($query) => $query
+                ->where('store_id', $member->store_id)
+                ->orWhereHas('days', fn ($dayQuery) => $dayQuery
+                    ->whereDate('scheduled_on', $workDate)
+                    ->where('store_id', $member->store_id)))
+            ->exists();
+
+        if ($submissionClosed) {
+            throw ValidationException::withMessages([
+                'work_date' => ['この月のシフト提出期限を過ぎています。管理者へ連絡してください。'],
+            ]);
+        }
 
         $availability = Availability::updateOrCreate(
             [
                 'member_id' => $member->id,
-                'work_date' => $request->validated('work_date'),
+                'work_date' => $workDate,
             ],
             [
                 'tenant_id' => $request->user()->tenant_id,

@@ -5,12 +5,14 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ShiftScheduleStoreRequest;
 use App\Models\ShiftSchedule;
+use App\Models\ShiftSlot;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class ShiftScheduleController extends Controller
 {
@@ -105,6 +107,42 @@ class ShiftScheduleController extends Controller
         return $this->publish($request, $shiftSchedule);
     }
 
+    public function updateAssignments(Request $request, ShiftSlot $shiftSlot): JsonResponse
+    {
+        $shiftSlot->loadMissing('shiftSchedule');
+        abort_unless((int) $shiftSlot->shiftSchedule->tenant_id === (int) $request->user()->tenant_id, 404);
+
+        $validated = $request->validate([
+            'member_ids' => ['present', 'array'],
+            'member_ids.*' => [
+                'integer',
+                'distinct',
+                Rule::exists('members', 'id')->where('tenant_id', $request->user()->tenant_id),
+            ],
+        ]);
+        $memberIds = collect($validated['member_ids'])->map(fn ($memberId) => (int) $memberId)->values();
+
+        DB::transaction(function () use ($shiftSlot, $memberIds): void {
+            if ($memberIds->isEmpty()) {
+                $shiftSlot->assignments()->delete();
+            } else {
+                $shiftSlot->assignments()->whereNotIn('member_id', $memberIds)->delete();
+            }
+
+            $memberIds->each(fn (int $memberId) => $shiftSlot->assignments()->updateOrCreate(
+                ['member_id' => $memberId],
+                ['status' => 'assigned'],
+            ));
+        });
+
+        return response()->json(['shift_slot' => $shiftSlot->refresh()->load('assignments.member')]);
+    }
+
+    public function updateAssignmentsTenant(Request $request, string $tenant, ShiftSlot $shiftSlot): JsonResponse
+    {
+        return $this->updateAssignments($request, $shiftSlot);
+    }
+
     /**
      * @param  array<int, array<string, mixed>>  $days
      * @return array<int, array{scheduled_on: string, store_id: int, is_day_off: bool, starts_at: string|null, ends_at: string|null}>
@@ -120,6 +158,7 @@ class ShiftScheduleController extends Controller
                 'is_day_off' => $isDayOff,
                 'starts_at' => $isDayOff ? null : ($day['starts_at'] ?? null),
                 'ends_at' => $isDayOff ? null : ($day['ends_at'] ?? null),
+                'required_headcount' => $isDayOff ? 1 : (int) ($day['required_headcount'] ?? 1),
             ];
         })->all();
     }
@@ -138,6 +177,7 @@ class ShiftScheduleController extends Controller
             'is_day_off' => false,
             'starts_at' => null,
             'ends_at' => null,
+            'required_headcount' => 1,
         ])->all();
     }
 }

@@ -29,6 +29,8 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
         Route::apiResource('shift-schedules', AdminShiftScheduleController::class)->only(['index', 'store', 'update']);
         Route::post('/shift-schedules/{shiftSchedule}/publish', [AdminShiftScheduleController::class, 'publish'])
             ->name('shift-schedules.publish');
+        Route::put('/shift-slots/{shiftSlot}/assignments', [AdminShiftScheduleController::class, 'updateAssignments'])
+            ->name('shift-slots.assignments.update');
     });
 });
 

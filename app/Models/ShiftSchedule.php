@@ -13,6 +13,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'store_id',
     'starts_on',
     'ends_on',
+    'submission_deadline_at',
+    'auto_schedule_enabled',
+    'auto_scheduled_at',
+    'notification_sent_at',
     'status',
     'created_by',
     'published_by',
@@ -30,6 +34,10 @@ class ShiftSchedule extends Model
         return [
             'starts_on' => 'date:Y-m-d',
             'ends_on' => 'date:Y-m-d',
+            'submission_deadline_at' => 'datetime',
+            'auto_schedule_enabled' => 'boolean',
+            'auto_scheduled_at' => 'datetime',
+            'notification_sent_at' => 'datetime',
             'published_at' => 'datetime',
         ];
     }

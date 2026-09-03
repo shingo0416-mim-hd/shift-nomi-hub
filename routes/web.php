@@ -1,10 +1,10 @@
 <?php
 
-use App\Http\Controllers\Auth\LineAuthController;
-use App\Http\Controllers\Auth\TwoFactorResetEmailController;
 use App\Http\Controllers\Api\Admin\MemberController as AdminMemberController;
 use App\Http\Controllers\Api\Admin\ShiftScheduleController as AdminShiftScheduleController;
 use App\Http\Controllers\Api\Admin\StoreController as AdminStoreController;
+use App\Http\Controllers\Auth\LineAuthController;
+use App\Http\Controllers\Auth\TwoFactorResetEmailController;
 use App\Http\Controllers\Liff\RegistrationController;
 use App\Http\Controllers\LineAdminController;
 use App\Models\Member;
@@ -52,6 +52,7 @@ Route::prefix('{tenant}')
                 Route::put('/api/shift-schedules/{shiftSchedule}', [AdminShiftScheduleController::class, 'updateTenant'])->name('api.shift-schedules.update');
                 Route::post('/api/shift-schedules/{shiftSchedule}', [AdminShiftScheduleController::class, 'updateTenant'])->name('api.shift-schedules.update.post');
                 Route::post('/api/shift-schedules/{shiftSchedule}/publish', [AdminShiftScheduleController::class, 'publishTenant'])->name('api.shift-schedules.publish');
+                Route::put('/api/shift-slots/{shiftSlot}/assignments', [AdminShiftScheduleController::class, 'updateAssignmentsTenant'])->name('api.shift-slots.assignments.update');
             });
     });
 
@@ -71,7 +72,7 @@ Route::middleware('auth')->group(function (): void {
             ->orderBy('name')
             ->get();
         $members = Member::query()
-            ->with(['store'])
+            ->with(['store', 'schedulingProfile'])
             ->where('tenant_id', $user->tenant_id)
             ->orderBy('name')
             ->limit(100)
@@ -117,7 +118,7 @@ Route::middleware('auth')->group(function (): void {
     Route::get('/dashboard/members/{member}/edit', function (Member $member) use ($adminPage) {
         abort_unless((int) $member->getAttribute('tenant_id') === (int) auth()->user()->tenant_id, 404);
 
-        return $adminPage('member-edit')->with('editingMember', $member->load(['store']));
+        return $adminPage('member-edit')->with('editingMember', $member->load(['store', 'schedulingProfile']));
     })->name('admin.members.edit');
     Route::get('/dashboard/stores', fn () => $adminPage('stores'))->name('admin.stores');
     Route::get('/dashboard/stores/create', fn () => $adminPage('store-create'))->name('admin.stores.create');

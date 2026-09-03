@@ -360,6 +360,20 @@
                                     <input name="starts_on" type="hidden">
                                     <input name="ends_on" type="hidden">
                                 </div>
+                                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                    <div>
+                                        <label class="block text-sm font-bold text-slate-700">シフト提出期限</label>
+                                        <input name="submission_deadline_at" type="datetime-local" value="{{ $page === 'schedule-edit' ? $editingSchedule->submission_deadline_at?->format('Y-m-d\TH:i') : '' }}" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
+                                    </div>
+                                    <label class="flex items-center gap-3 self-end rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                                        <input type="hidden" name="auto_schedule_enabled" value="0">
+                                        <input type="checkbox" name="auto_schedule_enabled" value="1" @checked($page !== 'schedule-edit' || $editingSchedule->auto_schedule_enabled) class="rounded border-slate-300 text-teal-700 accent-teal-700">
+                                        <span>
+                                            <span class="block text-sm font-bold text-slate-800">期限後に自動編成・LINE通知</span>
+                                            <span class="mt-1 block text-xs text-slate-500">希望提出と非公開評価から割り当てます。</span>
+                                        </span>
+                                    </label>
+                                </div>
                                 @if ($page === 'schedule-edit')
                                     @php
                                         $assignedMembers = $editingSchedule->shiftSlots
@@ -367,9 +381,10 @@
                                             ->filter(fn ($assignment) => $assignment->member && $assignment->status !== 'cancelled')
                                             ->pluck('member')
                                             ->unique('id');
-                                        $unassignedSlotCount = $editingSchedule->shiftSlots
-                                            ->filter(fn ($slot) => ! $slot->assignments->contains(fn ($assignment) => $assignment->member && $assignment->status !== 'cancelled'))
-                                            ->count();
+                                        $unassignedSlotCount = $editingSchedule->shiftSlots->sum(fn ($slot) => max(
+                                            0,
+                                            $slot->required_headcount - $slot->assignments->filter(fn ($assignment) => $assignment->member && $assignment->status !== 'cancelled')->count(),
+                                        ));
                                     @endphp
                                     <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
                                         <p class="text-xs font-black text-slate-600">現在の担当メンバー</p>
@@ -380,7 +395,7 @@
                                                 <span class="text-sm font-bold text-amber-700">担当メンバーは未設定です</span>
                                             @endforelse
                                             @if ($unassignedSlotCount > 0)
-                                                <span class="inline-flex rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-700">未割り当て {{ $unassignedSlotCount }}枠</span>
+                                                <span class="inline-flex rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-700">人員不足 {{ $unassignedSlotCount }}名</span>
                                             @endif
                                         </div>
                                         @if ($editingSchedule->shiftSlots->isNotEmpty())
@@ -392,20 +407,44 @@
                                                             ->pluck('member')
                                                             ->unique('id');
                                                     @endphp
-                                                    <div class="flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:justify-between">
-                                                        <div>
+                                                    <div class="p-3" data-shift-slot-assignment="{{ $shiftSlot->id }}">
+                                                        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                                            <div>
                                                             <p class="text-sm font-bold text-slate-800">{{ $shiftSlot->title ?: 'シフト' }}</p>
                                                             <p class="mt-0.5 text-xs text-slate-500">
                                                                 {{ $shiftSlot->starts_at?->format('n/j H:i') ?: '--:--' }}〜{{ $shiftSlot->ends_at?->format('H:i') ?: '--:--' }}
                                                             </p>
-                                                        </div>
-                                                        <div class="flex flex-wrap gap-1.5">
+                                                            </div>
+                                                            <div class="flex flex-wrap gap-1.5">
                                                             @forelse ($slotMembers as $slotMember)
-                                                                <span class="inline-flex rounded-full border border-teal-200 bg-teal-50 px-2 py-0.5 text-xs font-bold text-teal-700">{{ $slotMember->displayName() }}</span>
-                                                            @empty
-                                                                <span class="inline-flex rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-bold text-amber-700">未割り当て</span>
+                                                                    <span class="inline-flex rounded-full border border-teal-200 bg-teal-50 px-2 py-0.5 text-xs font-bold text-teal-700">{{ $slotMember->displayName() }}</span>
+                                                                @empty
+                                                                    <span class="inline-flex rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-bold text-amber-700">未割り当て</span>
                                                             @endforelse
+                                                            @if ($slotMembers->count() < $shiftSlot->required_headcount)
+                                                                <span class="inline-flex rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-xs font-bold text-red-700">不足 {{ $shiftSlot->required_headcount - $slotMembers->count() }}名</span>
+                                                            @endif
+                                                            </div>
                                                         </div>
+                                                        <details class="mt-3 rounded-md border border-slate-200 bg-slate-50">
+                                                            <summary class="cursor-pointer px-3 py-2 text-xs font-bold text-teal-700">担当メンバーを選択・変更</summary>
+                                                            <div class="border-t border-slate-200 p-3">
+                                                                <div class="grid max-h-52 grid-cols-1 gap-2 overflow-y-auto sm:grid-cols-2">
+                                                                    @foreach (($initialData['members'] ?? collect()) as $selectableMember)
+                                                                        <label class="flex cursor-pointer items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 hover:border-teal-300">
+                                                                            <input type="checkbox" value="{{ $selectableMember->id }}" class="rounded border-slate-300 text-teal-700 accent-teal-700" data-shift-slot-member @checked($slotMembers->contains('id', $selectableMember->id))>
+                                                                            <span class="min-w-0">
+                                                                                <span class="block truncate font-bold">{{ $selectableMember->displayName() }}</span>
+                                                                                <span class="block truncate text-xs text-slate-500">{{ $selectableMember->store?->name ?: '店舗未設定' }}</span>
+                                                                            </span>
+                                                                        </label>
+                                                                    @endforeach
+                                                                </div>
+                                                                <div class="mt-3 flex justify-end">
+                                                                    <button type="button" class="rounded-md bg-teal-700 px-3 py-2 text-xs font-bold text-white transition hover:bg-teal-800 disabled:opacity-50" data-action="save-shift-slot-members">担当を保存</button>
+                                                                </div>
+                                                            </div>
+                                                        </details>
                                                     </div>
                                                 @endforeach
                                             </div>
@@ -572,6 +611,37 @@
                                         </span>
                                     </label>
                                 </div>
+                                <section class="rounded-lg border border-amber-200 bg-amber-50/60 p-4">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div>
+                                            <p class="text-sm font-black text-slate-800">自動シフト編成評価</p>
+                                            <p class="mt-1 text-xs font-bold text-amber-700">管理者専用・メンバーには表示されません</p>
+                                        </div>
+                                        <span class="rounded-full border border-amber-200 bg-white px-2.5 py-1 text-xs font-black text-amber-700">非公開</span>
+                                    </div>
+                                    <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                        <div>
+                                            <label class="block text-sm font-bold text-slate-700">勤怠評価（0〜100）</label>
+                                            <input name="attendance_score" type="number" min="0" max="100" value="{{ old('attendance_score', $editingMember->schedulingProfile?->attendance_score ?? 50) }}" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-slate-700">人気度・接客評価（0〜100）</label>
+                                            <input name="popularity_score" type="number" min="0" max="100" value="{{ old('popularity_score', $editingMember->schedulingProfile?->popularity_score ?? 50) }}" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-slate-700">優先ポイント（-1000〜1000）</label>
+                                            <input name="priority_points" type="number" min="-1000" max="1000" value="{{ old('priority_points', $editingMember->schedulingProfile?->priority_points ?? 0) }}" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-slate-700">新人優先期限</label>
+                                            <input name="newcomer_priority_until" type="date" value="{{ old('newcomer_priority_until', $editingMember->schedulingProfile?->newcomer_priority_until?->format('Y-m-d')) }}" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500">
+                                        </div>
+                                    </div>
+                                    <div class="mt-3">
+                                        <label class="block text-sm font-bold text-slate-700">編成用の管理者メモ</label>
+                                        <textarea name="scheduling_admin_notes" rows="2" class="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500">{{ old('scheduling_admin_notes', $editingMember->schedulingProfile?->admin_notes) }}</textarea>
+                                    </div>
+                                </section>
                                 <div>
                                     <label class="block text-sm font-bold text-slate-700">備考</label>
                                     <textarea name="remarks" rows="3" class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">{{ old('remarks', $editingMember->remarks) }}</textarea>
@@ -1407,6 +1477,8 @@
                     if (!form || !editingSchedule || form.dataset.initialized === 'true') return;
 
                     form.elements.store_id.value = editingSchedule.store_id || '';
+                    form.elements.submission_deadline_at.value = toDateTimeLocal(editingSchedule.submission_deadline_at);
+                    form.elements.auto_schedule_enabled.checked = Boolean(editingSchedule.auto_schedule_enabled);
                     setScheduleMonth(form, String(editingSchedule.starts_on || '').slice(0, 7));
                     form.dataset.initialized = 'true';
                 };
@@ -1417,6 +1489,12 @@
                     return Number.isNaN(date.getTime()) ? null : date;
                 };
                 const formatDate = (date) => date.toISOString().slice(0, 10);
+                const toDateTimeLocal = (value) => {
+                    if (!value) return '';
+                    const date = new Date(value);
+                    const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+                    return localDate.toISOString().slice(0, 16);
+                };
                 const setScheduleMonth = (form, month) => {
                     const monthInput = form?.querySelector('[data-schedule-month]');
                     const monthStart = parseDate(`${month}-01`);
@@ -1546,7 +1624,7 @@
                 const setDayOffRow = (row, isDayOff) => {
                     const checkbox = row.querySelector('[data-schedule-day-off]');
                     if (checkbox) checkbox.checked = isDayOff;
-                    row.querySelectorAll('[data-schedule-day-store], [data-schedule-day-start], [data-schedule-day-end]').forEach((field) => {
+                    row.querySelectorAll('[data-schedule-day-store], [data-schedule-day-start], [data-schedule-day-end], [data-schedule-day-headcount]').forEach((field) => {
                         field.disabled = isDayOff;
                     });
                 };
@@ -1588,11 +1666,13 @@
                         storeId: row.querySelector('[data-schedule-day-store]')?.value || '',
                         startsAt: row.querySelector('[data-schedule-day-start]')?.value || '',
                         endsAt: row.querySelector('[data-schedule-day-end]')?.value || '',
+                        requiredHeadcount: row.querySelector('[data-schedule-day-headcount]')?.value || '1',
                         isDayOff: row.querySelector('[data-schedule-day-off]')?.checked || false,
                     }])) : Object.fromEntries((editingSchedule?.days || []).map((day) => [day.scheduled_on, {
                         storeId: day.store_id || '',
                         startsAt: day.starts_at ? day.starts_at.slice(0, 5) : '',
                         endsAt: day.ends_at ? day.ends_at.slice(0, 5) : '',
+                        requiredHeadcount: day.required_headcount || 1,
                         isDayOff: Boolean(day.is_day_off),
                     }]));
                     const monthStart = new Date(Date.UTC(startsOn.getUTCFullYear(), startsOn.getUTCMonth(), 1));
@@ -1635,6 +1715,10 @@
                                         ${timeOptions(values.endsAt || '')}
                                     </select>
                                 </div>
+                                <label class="block text-xs font-bold text-slate-600">
+                                    必要人数
+                                    <input type="number" min="1" max="50" value="${escapeHtml(values.requiredHeadcount || 1)}" class="mt-1 min-h-9 w-full rounded-xl border border-slate-200 bg-white px-2 py-1 text-sm text-slate-900 outline-none transition focus:border-teal-500 disabled:bg-slate-100" data-schedule-day-headcount ${isDayOff ? 'disabled' : ''}>
+                                </label>
                             </div>
                         `);
                     }
@@ -1741,7 +1825,10 @@
                     const slots = schedule.shift_slots || [];
                     const activeAssignments = slots.flatMap((slot) => (slot.assignments || []).filter((assignment) => assignment.member && assignment.status !== 'cancelled'));
                     const members = Array.from(new Map(activeAssignments.map((assignment) => [String(assignment.member.id), assignment.member])).values());
-                    const unassignedSlotCount = slots.filter((slot) => !(slot.assignments || []).some((assignment) => assignment.member && assignment.status !== 'cancelled')).length;
+                    const unassignedSlotCount = slots.reduce((total, slot) => {
+                        const assignedCount = (slot.assignments || []).filter((assignment) => assignment.member && assignment.status !== 'cancelled').length;
+                        return total + Math.max(0, Number(slot.required_headcount || 1) - assignedCount);
+                    }, 0);
 
                     if (!members.length) {
                         return '<span class="font-bold text-amber-700">未割り当て</span>';
@@ -1749,7 +1836,7 @@
 
                     const memberBadges = members.map((member) => `<span class="inline-flex rounded-full border border-teal-200 bg-teal-50 px-2 py-0.5 text-xs font-bold text-teal-700">${escapeHtml(memberDisplayName(member))}</span>`);
                     if (unassignedSlotCount > 0) {
-                        memberBadges.push(`<span class="inline-flex rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-bold text-amber-700">未割り当て ${unassignedSlotCount}枠</span>`);
+                        memberBadges.push(`<span class="inline-flex rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-xs font-bold text-red-700">人員不足 ${unassignedSlotCount}名</span>`);
                     }
 
                     return `<div class="flex min-w-40 flex-wrap gap-1.5">${memberBadges.join('')}</div>`;
@@ -1771,7 +1858,11 @@
                                     <div class="font-black text-slate-950">${escapeHtml(schedule.store?.name || '-')}</div>
                                     <div class="mt-1 max-w-md text-xs leading-5 text-slate-500">${scheduleStoreSummary(schedule)}</div>
                                 </td>
-                                <td class="px-4 py-3 text-slate-700">${escapeHtml(schedule.starts_on)} - ${escapeHtml(schedule.ends_on)}</td>
+                                <td class="px-4 py-3 text-slate-700">
+                                    <span class="block">${escapeHtml(schedule.starts_on)} - ${escapeHtml(schedule.ends_on)}</span>
+                                    ${schedule.submission_deadline_at ? `<span class="mt-1 block text-xs text-slate-500">提出期限 ${escapeHtml(toDateTimeLocal(schedule.submission_deadline_at).replace('T', ' '))}</span>` : ''}
+                                    ${schedule.auto_scheduled_at ? `<span class="mt-1 block text-xs font-bold ${schedule.notification_sent_at ? 'text-emerald-700' : 'text-amber-700'}">${schedule.notification_sent_at ? '自動編成・LINE通知済み' : '自動編成済み・LINE通知待ち'}</span>` : ''}
+                                </td>
                                 <td class="px-4 py-3">${badge(schedule.status)}</td>
                                 <td class="px-4 py-3">${scheduleMemberSummary(schedule)}</td>
                                 <td class="px-4 py-3 text-slate-700">${schedule.shift_slots?.length || 0}</td>
@@ -1932,6 +2023,7 @@
                             store_id: row.querySelector('[data-schedule-day-store]')?.value,
                             starts_at: isDayOff ? null : row.querySelector('[data-schedule-day-start]')?.value,
                             ends_at: isDayOff ? null : row.querySelector('[data-schedule-day-end]')?.value,
+                            required_headcount: isDayOff ? 1 : Number(row.querySelector('[data-schedule-day-headcount]')?.value || 1),
                         };
                     }),
                 });
@@ -2084,6 +2176,26 @@
                 });
 
                 document.addEventListener('click', async (event) => {
+                    const saveAssignmentsButton = event.target.closest('[data-action="save-shift-slot-members"]');
+                    if (saveAssignmentsButton) {
+                        const assignmentPanel = saveAssignmentsButton.closest('[data-shift-slot-assignment]');
+                        const memberIds = Array.from(assignmentPanel.querySelectorAll('[data-shift-slot-member]:checked')).map((checkbox) => Number(checkbox.value));
+                        saveAssignmentsButton.disabled = true;
+                        saveAssignmentsButton.textContent = '保存中...';
+                        try {
+                            await api(`/api/admin/shift-slots/${assignmentPanel.dataset.shiftSlotAssignment}/assignments`, {
+                                method: 'PUT',
+                                body: JSON.stringify({ member_ids: memberIds }),
+                            });
+                            window.location.reload();
+                        } catch (error) {
+                            saveAssignmentsButton.disabled = false;
+                            saveAssignmentsButton.textContent = '担当を保存';
+                            setMessage('[data-alert]', error.message);
+                        }
+                        return;
+                    }
+
                     if (event.target.closest('[data-action="apply-bulk-store"]')) {
                         applyBulkStore();
                         return;

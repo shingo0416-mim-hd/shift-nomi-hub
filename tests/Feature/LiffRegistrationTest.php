@@ -2,9 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Models\Member;
 use App\Models\AvailabilityRequest;
+use App\Models\Member;
 use App\Models\ShiftSchedule;
+use App\Models\ShiftSlot;
 use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\User;
@@ -337,6 +338,210 @@ class LiffRegistrationTest extends TestCase
             'created_by' => $admin->id,
             'status' => 'draft',
         ]);
+    }
+
+    public function test_admin_can_assign_members_to_a_shift_slot(): void
+    {
+        $tenant = Tenant::factory()->create();
+        $admin = User::factory()->create([
+            'tenant_id' => $tenant->id,
+            'role' => User::ROLE_ADMIN,
+        ]);
+        $store = Store::create([
+            'tenant_id' => $tenant->id,
+            'name' => '本店',
+            'timezone' => 'Asia/Tokyo',
+            'is_active' => true,
+        ]);
+        $schedule = ShiftSchedule::create([
+            'tenant_id' => $tenant->id,
+            'store_id' => $store->id,
+            'starts_on' => '2026-09-01',
+            'ends_on' => '2026-09-30',
+            'status' => 'draft',
+            'created_by' => $admin->id,
+        ]);
+        $slot = ShiftSlot::create([
+            'shift_schedule_id' => $schedule->id,
+            'title' => '早番',
+            'starts_at' => '2026-09-01 18:00:00',
+            'ends_at' => '2026-09-01 23:00:00',
+            'required_headcount' => 2,
+            'status' => 'open',
+        ]);
+        $members = collect(['山田 花子', '佐藤 太郎'])->map(fn (string $name) => Member::create([
+            'tenant_id' => $tenant->id,
+            'store_id' => $store->id,
+            'name' => $name,
+            'status' => 'active',
+        ]));
+
+        Sanctum::actingAs($admin, ['admin']);
+
+        $this->putJson("/api/admin/shift-slots/{$slot->id}/assignments", [
+            'member_ids' => $members->pluck('id')->all(),
+        ])->assertOk()
+            ->assertJsonCount(2, 'shift_slot.assignments');
+
+        $this->putJson("/api/admin/shift-slots/{$slot->id}/assignments", [
+            'member_ids' => [$members->last()->id],
+        ])->assertOk()
+            ->assertJsonCount(1, 'shift_slot.assignments')
+            ->assertJsonPath('shift_slot.assignments.0.member_id', $members->last()->id);
+
+        $this->assertDatabaseMissing('shift_assignments', [
+            'shift_slot_id' => $slot->id,
+            'member_id' => $members->first()->id,
+        ]);
+    }
+
+    public function test_admin_can_manage_private_member_scheduling_scores(): void
+    {
+        $tenant = Tenant::factory()->create();
+        $admin = User::factory()->create([
+            'tenant_id' => $tenant->id,
+            'role' => User::ROLE_ADMIN,
+        ]);
+        $store = Store::create([
+            'tenant_id' => $tenant->id,
+            'name' => '本店',
+            'timezone' => 'Asia/Tokyo',
+            'is_active' => true,
+        ]);
+        $member = Member::create([
+            'tenant_id' => $tenant->id,
+            'store_id' => $store->id,
+            'display_name' => '評価対象スタッフ',
+            'email' => 'staff@example.com',
+            'status' => 'active',
+        ]);
+
+        Sanctum::actingAs($admin, ['admin']);
+
+        $this->putJson("/api/admin/members/{$member->id}", [
+            'store_id' => $store->id,
+            'display_name' => '評価対象スタッフ',
+            'email' => 'staff@example.com',
+            'attendance_score' => 85,
+            'popularity_score' => 72,
+            'priority_points' => 40,
+            'newcomer_priority_until' => '2026-12-31',
+            'scheduling_admin_notes' => '新人研修を優先する',
+        ])->assertOk()
+            ->assertJsonPath('member.scheduling_profile.attendance_score', 85)
+            ->assertJsonPath('member.scheduling_profile.priority_points', 40);
+
+        $this->assertDatabaseHas('member_scheduling_profiles', [
+            'tenant_id' => $tenant->id,
+            'member_id' => $member->id,
+            'attendance_score' => 85,
+            'popularity_score' => 72,
+            'priority_points' => 40,
+            'admin_notes' => '新人研修を優先する',
+        ]);
+
+        $this->assertArrayNotHasKey('scheduling_profile', $member->fresh()->toArray());
+    }
+
+    public function test_due_schedule_is_automatically_assigned_and_sent_by_line(): void
+    {
+        $this->travelTo('2026-09-20 12:00:00');
+        Http::fake([
+            'https://api.line.me/v2/bot/message/push' => Http::response([], 200),
+        ]);
+
+        $tenant = Tenant::factory()->create();
+        $tenant->lineOfficialAccount()->create([
+            'channel_access_token' => 'line-channel-token',
+            'is_active' => true,
+        ]);
+        $admin = User::factory()->create([
+            'tenant_id' => $tenant->id,
+            'role' => User::ROLE_ADMIN,
+        ]);
+        $store = Store::create([
+            'tenant_id' => $tenant->id,
+            'name' => '本店',
+            'timezone' => 'Asia/Tokyo',
+            'is_active' => true,
+        ]);
+        $memberUser = User::factory()->create([
+            'tenant_id' => $tenant->id,
+            'role' => User::ROLE_MEMBER,
+        ]);
+        $preferredMember = Member::create([
+            'tenant_id' => $tenant->id,
+            'store_id' => $store->id,
+            'user_id' => $memberUser->id,
+            'display_name' => '優先スタッフ',
+            'line_id' => 'line-preferred-member',
+            'status' => 'active',
+            'is_shift_submitter' => true,
+        ]);
+        $preferredMember->schedulingProfile()->create([
+            'tenant_id' => $tenant->id,
+            'attendance_score' => 90,
+            'popularity_score' => 80,
+            'priority_points' => 30,
+            'newcomer_priority_until' => '2026-12-31',
+        ]);
+        $otherMember = Member::create([
+            'tenant_id' => $tenant->id,
+            'store_id' => $store->id,
+            'display_name' => '通常スタッフ',
+            'line_id' => 'line-other-member',
+            'status' => 'active',
+            'is_shift_submitter' => true,
+        ]);
+        foreach ([$preferredMember, $otherMember] as $member) {
+            AvailabilityRequest::create([
+                'tenant_id' => $tenant->id,
+                'member_id' => $member->id,
+                'work_date' => '2026-10-01',
+                'available_from' => '18:00',
+                'available_until' => '23:00',
+                'preference' => 'available',
+            ]);
+        }
+        $schedule = ShiftSchedule::create([
+            'tenant_id' => $tenant->id,
+            'store_id' => $store->id,
+            'starts_on' => '2026-10-01',
+            'ends_on' => '2026-10-31',
+            'submission_deadline_at' => now()->subMinute(),
+            'auto_schedule_enabled' => true,
+            'status' => 'draft',
+            'created_by' => $admin->id,
+        ]);
+        $schedule->days()->create([
+            'store_id' => $store->id,
+            'scheduled_on' => '2026-10-01',
+            'is_day_off' => false,
+            'starts_at' => '18:00',
+            'ends_at' => '23:00',
+            'required_headcount' => 1,
+        ]);
+
+        $this->artisan('shifts:auto-finalize')->assertSuccessful();
+
+        $this->assertDatabaseHas('shift_assignments', [
+            'member_id' => $preferredMember->id,
+            'status' => 'assigned',
+        ]);
+        $this->assertSame('published', $schedule->refresh()->status);
+        $this->assertNotNull($schedule->auto_scheduled_at);
+        $this->assertNotNull($schedule->notification_sent_at);
+        Http::assertSent(fn ($request) => $request->url() === 'https://api.line.me/v2/bot/message/push'
+            && $request['to'] === 'line-preferred-member');
+
+        Sanctum::actingAs($memberUser, ['liff']);
+        $this->postJson('/api/liff/availability-requests', [
+            'work_date' => '2026-10-02',
+            'available_from' => '18:00',
+            'available_until' => '23:00',
+            'preference' => 'available',
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors('work_date');
     }
 
     public function test_line_manager_can_create_shift_schedule_with_member_user_role(): void

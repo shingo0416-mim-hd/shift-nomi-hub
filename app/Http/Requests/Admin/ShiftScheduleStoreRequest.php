@@ -32,12 +32,15 @@ class ShiftScheduleStoreRequest extends FormRequest
             'store_id' => ['required', Rule::exists('stores', 'id')->where('tenant_id', $tenantId)],
             'starts_on' => ['required', 'date'],
             'ends_on' => ['required', 'date', 'after_or_equal:starts_on'],
+            'submission_deadline_at' => ['nullable', 'required_if:auto_schedule_enabled,1,true', 'date', 'before:starts_on'],
+            'auto_schedule_enabled' => ['nullable', 'boolean'],
             'days' => ['nullable', 'array'],
             'days.*.scheduled_on' => ['required_with:days', 'date'],
             'days.*.store_id' => ['nullable', Rule::exists('stores', 'id')->where('tenant_id', $tenantId)],
             'days.*.is_day_off' => ['nullable', 'boolean'],
             'days.*.starts_at' => ['nullable', 'date_format:H:i', 'regex:/^\d{2}:(00|30)$/'],
             'days.*.ends_at' => ['nullable', 'date_format:H:i', 'regex:/^\d{2}:(00|30)$/'],
+            'days.*.required_headcount' => ['nullable', 'integer', 'between:1,50'],
             'status' => ['nullable', Rule::in(['draft', 'published', 'archived'])],
         ];
     }
@@ -87,6 +90,10 @@ class ShiftScheduleStoreRequest extends FormRequest
 
                     if (empty($day['starts_at']) && ! empty($day['ends_at'])) {
                         $validator->errors()->add("days.{$index}.starts_at", '終了時刻を指定した場合は開始時刻も指定してください。');
+                    }
+
+                    if ($this->boolean('auto_schedule_enabled') && (empty($day['starts_at']) || empty($day['ends_at']))) {
+                        $validator->errors()->add("days.{$index}.starts_at", '自動編成を有効にする場合は勤務時間を指定してください。');
                     }
 
                     $seenDates[$date] = true;
