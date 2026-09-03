@@ -353,20 +353,16 @@
                                     <label class="block text-sm font-bold text-slate-700">店舗</label>
                                     <select name="store_id" required class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white"></select>
                                 </div>
-                                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                    <div>
-                                        <label class="block text-sm font-bold text-slate-700">開始日</label>
-                                        <input name="starts_on" type="date" required class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-bold text-slate-700">終了日</label>
-                                        <input name="ends_on" type="date" required class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
-                                    </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-slate-700">対象月</label>
+                                    <input type="month" required class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white" data-schedule-month>
+                                    <input name="starts_on" type="hidden">
+                                    <input name="ends_on" type="hidden">
                                 </div>
                                 <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
                                     <div class="flex items-center justify-between gap-3">
                                         <p class="text-sm font-black text-slate-800">日別店舗</p>
-                                        <span class="text-xs font-bold text-slate-500">同じ月内</span>
+                                        <span class="text-xs font-bold text-slate-500">1日〜月末</span>
                                     </div>
                                     <div class="mt-3 rounded-md border border-slate-200 bg-white p-3">
                                         <p class="text-xs font-black text-slate-600">一括設定</p>
@@ -1358,10 +1354,8 @@
                     if (!form || !editingSchedule || form.dataset.initialized === 'true') return;
 
                     form.elements.store_id.value = editingSchedule.store_id || '';
-                    form.elements.starts_on.value = editingSchedule.starts_on || '';
-                    form.elements.ends_on.value = editingSchedule.ends_on || '';
+                    setScheduleMonth(form, String(editingSchedule.starts_on || '').slice(0, 7));
                     form.dataset.initialized = 'true';
-                    renderScheduleDayFields();
                 };
 
                 const parseDate = (value) => {
@@ -1370,6 +1364,17 @@
                     return Number.isNaN(date.getTime()) ? null : date;
                 };
                 const formatDate = (date) => date.toISOString().slice(0, 10);
+                const setScheduleMonth = (form, month) => {
+                    const monthInput = form?.querySelector('[data-schedule-month]');
+                    const monthStart = parseDate(`${month}-01`);
+                    if (!monthInput || !monthStart || !/^\d{4}-\d{2}$/.test(month)) return;
+
+                    const monthEnd = new Date(Date.UTC(monthStart.getUTCFullYear(), monthStart.getUTCMonth() + 1, 0));
+                    monthInput.value = month;
+                    form.elements.starts_on.value = formatDate(monthStart);
+                    form.elements.ends_on.value = formatDate(monthEnd);
+                    renderScheduleDayFields();
+                };
                 const holidayCache = new Map();
                 const nthMonday = (year, monthIndex, nth) => {
                     const first = new Date(Date.UTC(year, monthIndex, 1));
@@ -1971,8 +1976,8 @@
                 });
 
                 $('[data-form="schedule"]')?.addEventListener('input', (event) => {
-                    if (event.target.matches('input[name="starts_on"], input[name="ends_on"]')) {
-                        renderScheduleDayFields();
+                    if (event.target.matches('[data-schedule-month]')) {
+                        setScheduleMonth(event.currentTarget, event.target.value);
                     }
                 });
                 $('[data-form="schedule"] select[name="store_id"]')?.addEventListener('change', renderScheduleDayFields);
