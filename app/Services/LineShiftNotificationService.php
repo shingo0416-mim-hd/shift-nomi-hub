@@ -37,6 +37,7 @@ class LineShiftNotificationService
             $alreadySent = DB::table('shift_notification_deliveries')
                 ->where('shift_schedule_id', $schedule->id)
                 ->where('member_id', $member->id)
+                ->where('notification_type', 'shift_confirmed')
                 ->where('status', 'sent')
                 ->exists();
             if ($alreadySent) {
@@ -49,10 +50,10 @@ class LineShiftNotificationService
                 $slot->ends_at->format('H:i'),
                 $slot->notes ? " {$slot->notes}" : '',
             ));
-            $message = "{$member->displayName()}さん\nシフトが確定しました。\n\n".$lines->implode("\n");
+            $message = "{$member->displayName()}さん\nシフトが確定しました。\n\n" . $lines->implode("\n");
 
             $response = Http::withToken($account->channel_access_token)
-                ->post(rtrim(config('services.messaging-api.base_url'), '/').'/v2/bot/message/push', [
+                ->post(rtrim(config('services.messaging-api.base_url'), '/') . '/v2/bot/message/push', [
                     'to' => $member->line_id,
                     'messages' => [['type' => 'text', 'text' => $message]],
                 ]);
@@ -60,7 +61,7 @@ class LineShiftNotificationService
             if ($response->failed()) {
                 $allSent = false;
                 DB::table('shift_notification_deliveries')->updateOrInsert(
-                    ['shift_schedule_id' => $schedule->id, 'member_id' => $member->id],
+                    ['shift_schedule_id' => $schedule->id, 'member_id' => $member->id, 'notification_type' => 'shift_confirmed'],
                     [
                         'tenant_id' => $schedule->tenant_id,
                         'status' => 'failed',
@@ -77,7 +78,7 @@ class LineShiftNotificationService
                 ]);
             } else {
                 DB::table('shift_notification_deliveries')->updateOrInsert(
-                    ['shift_schedule_id' => $schedule->id, 'member_id' => $member->id],
+                    ['shift_schedule_id' => $schedule->id, 'member_id' => $member->id, 'notification_type' => 'shift_confirmed'],
                     [
                         'tenant_id' => $schedule->tenant_id,
                         'status' => 'sent',

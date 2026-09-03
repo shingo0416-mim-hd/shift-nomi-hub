@@ -493,6 +493,14 @@ class LiffRegistrationTest extends TestCase
             'status' => 'active',
             'is_shift_submitter' => true,
         ]);
+        $pendingMember = Member::create([
+            'tenant_id' => $tenant->id,
+            'store_id' => $store->id,
+            'display_name' => '未提出スタッフ',
+            'line_id' => 'line-pending-member',
+            'status' => 'active',
+            'is_shift_submitter' => true,
+        ]);
         foreach ([$preferredMember, $otherMember] as $member) {
             AvailabilityRequest::create([
                 'tenant_id' => $tenant->id,
@@ -508,7 +516,7 @@ class LiffRegistrationTest extends TestCase
             'store_id' => $store->id,
             'starts_on' => '2026-10-01',
             'ends_on' => '2026-10-31',
-            'submission_deadline_at' => now()->subMinute(),
+            'submission_deadline_at' => now()->addHours(23),
             'auto_schedule_enabled' => true,
             'status' => 'draft',
             'created_by' => $admin->id,
@@ -522,6 +530,13 @@ class LiffRegistrationTest extends TestCase
             'required_headcount' => 1,
         ]);
 
+        $this->artisan('shifts:send-reminders')->assertSuccessful();
+        $this->artisan('shifts:send-reminders')->assertSuccessful();
+        Http::assertSentCount(1);
+        Http::assertSent(fn ($request) => $request['to'] === $pendingMember->line_id
+            && str_contains($request['messages'][0]['text'], '提出期限まであと1日'));
+
+        $schedule->update(['submission_deadline_at' => now()->subMinute()]);
         $this->artisan('shifts:auto-finalize')->assertSuccessful();
 
         $this->assertDatabaseHas('shift_assignments', [
@@ -533,6 +548,7 @@ class LiffRegistrationTest extends TestCase
         $this->assertNotNull($schedule->notification_sent_at);
         Http::assertSent(fn ($request) => $request->url() === 'https://api.line.me/v2/bot/message/push'
             && $request['to'] === 'line-preferred-member');
+        Http::assertSentCount(2);
 
         Sanctum::actingAs($memberUser, ['liff']);
         $this->postJson('/api/liff/availability-requests', [

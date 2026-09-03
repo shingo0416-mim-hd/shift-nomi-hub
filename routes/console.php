@@ -11,3 +11,7 @@ Artisan::command('inspire', function () {
 Schedule::command('shifts:auto-finalize')
     ->everyMinute()
     ->withoutOverlapping();
+
+Schedule::command('shifts:send-reminders')
+    ->hourly()
+    ->withoutOverlapping();
