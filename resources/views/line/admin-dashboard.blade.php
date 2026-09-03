@@ -276,6 +276,23 @@
                         return `${escapeHtml(label)} ${escapeHtml(day.store?.name || '-')}${escapeHtml(time)}`;
                     }).join(' / ') + (days.length > 6 ? ' ...' : '');
                 };
+                const scheduleMemberSummary = (schedule) => {
+                    const slots = schedule.shift_slots || [];
+                    const activeAssignments = slots.flatMap((slot) => (slot.assignments || []).filter((assignment) => assignment.member && assignment.status !== 'cancelled'));
+                    const members = Array.from(new Map(activeAssignments.map((assignment) => [String(assignment.member.id), assignment.member])).values());
+                    const unassignedSlotCount = slots.filter((slot) => !(slot.assignments || []).some((assignment) => assignment.member && assignment.status !== 'cancelled')).length;
+
+                    if (!members.length) {
+                        return '<span class="font-bold text-amber-700">未割り当て</span>';
+                    }
+
+                    const memberBadges = members.map((member) => `<span class="inline-flex rounded-full border border-teal-200 bg-teal-50 px-2 py-0.5 text-xs font-bold text-teal-700">${escapeHtml(memberDisplayName(member))}</span>`);
+                    if (unassignedSlotCount > 0) {
+                        memberBadges.push(`<span class="inline-flex rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-bold text-amber-700">未割り当て ${unassignedSlotCount}枠</span>`);
+                    }
+
+                    return `<span class="flex flex-wrap gap-1.5">${memberBadges.join('')}</span>`;
+                };
 
                 const renderStores = () => {
                     const options = state.stores.map((store) => `<option value="${escapeHtml(store.id)}">${escapeHtml(store.name)}</option>`).join('');
@@ -636,6 +653,7 @@
                                         <h3 class="truncate text-base font-black text-slate-950">${escapeHtml(schedule.store?.name || '-')}</h3>
                                         <p class="mt-1 text-sm text-slate-600">${escapeHtml(schedule.starts_on)} - ${escapeHtml(schedule.ends_on)}</p>
                                         <p class="mt-1 text-xs leading-5 text-slate-500">${scheduleStoreSummary(schedule)}</p>
+                                        <div class="mt-2 text-xs text-slate-500"><span class="mr-2 font-bold text-slate-700">担当メンバー</span>${scheduleMemberSummary(schedule)}</div>
                                         <p class="mt-2 text-xs text-slate-500">枠数 ${schedule.shift_slots?.length || 0}</p>
                                     </div>
                                     ${statusBadge(schedule.status)}

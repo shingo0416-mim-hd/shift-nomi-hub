@@ -53,7 +53,7 @@ class ShiftScheduleController extends Controller
             return $schedule;
         });
 
-        return response()->json(['shift_schedule' => $schedule->load(['store', 'days.store'])], 201);
+        return response()->json(['shift_schedule' => $schedule->load(['store', 'days.store', 'shiftSlots.assignments.member'])], 201);
     }
 
     public function update(ShiftScheduleStoreRequest $request, ShiftSchedule $shiftSchedule): JsonResponse
@@ -79,7 +79,7 @@ class ShiftScheduleController extends Controller
             return $shiftSchedule;
         });
 
-        return response()->json(['shift_schedule' => $schedule->refresh()->load(['store', 'days.store'])]);
+        return response()->json(['shift_schedule' => $schedule->refresh()->load(['store', 'days.store', 'shiftSlots.assignments.member'])]);
     }
 
     public function updateTenant(ShiftScheduleStoreRequest $request, string $tenant, ShiftSchedule $shiftSchedule): JsonResponse
@@ -97,7 +97,7 @@ class ShiftScheduleController extends Controller
             'published_at' => now(),
         ]);
 
-        return response()->json(['shift_schedule' => $shiftSchedule->refresh()->load(['store', 'days.store'])]);
+        return response()->json(['shift_schedule' => $shiftSchedule->refresh()->load(['store', 'days.store', 'shiftSlots.assignments.member'])]);
     }
 
     public function publishTenant(Request $request, string $tenant, ShiftSchedule $shiftSchedule): JsonResponse

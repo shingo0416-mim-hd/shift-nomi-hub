@@ -111,7 +111,7 @@ Route::middleware('auth')->group(function (): void {
     Route::get('/dashboard/schedules/{shiftSchedule}/edit', function (ShiftSchedule $shiftSchedule) use ($adminPage) {
         abort_unless((int) $shiftSchedule->getAttribute('tenant_id') === (int) auth()->user()->tenant_id, 404);
 
-        return $adminPage('schedule-edit')->with('editingSchedule', $shiftSchedule->load(['store', 'days.store']));
+        return $adminPage('schedule-edit')->with('editingSchedule', $shiftSchedule->load(['store', 'days.store', 'shiftSlots.assignments.member']));
     })->name('admin.schedules.edit');
     Route::get('/dashboard/members', fn () => $adminPage('members'))->name('admin.members');
     Route::get('/dashboard/members/{member}/edit', function (Member $member) use ($adminPage) {

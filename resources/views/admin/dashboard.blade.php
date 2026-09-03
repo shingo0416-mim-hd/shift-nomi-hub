@@ -327,6 +327,7 @@
                                                     <th class="px-4 py-3">店舗</th>
                                                     <th class="px-4 py-3">期間</th>
                                                     <th class="px-4 py-3">状態</th>
+                                                    <th class="px-4 py-3">担当メンバー</th>
                                                     <th class="px-4 py-3">枠数</th>
                                                     <th class="px-4 py-3 text-right">操作</th>
                                                 </tr>
@@ -359,6 +360,58 @@
                                     <input name="starts_on" type="hidden">
                                     <input name="ends_on" type="hidden">
                                 </div>
+                                @if ($page === 'schedule-edit')
+                                    @php
+                                        $assignedMembers = $editingSchedule->shiftSlots
+                                            ->flatMap->assignments
+                                            ->filter(fn ($assignment) => $assignment->member && $assignment->status !== 'cancelled')
+                                            ->pluck('member')
+                                            ->unique('id');
+                                        $unassignedSlotCount = $editingSchedule->shiftSlots
+                                            ->filter(fn ($slot) => ! $slot->assignments->contains(fn ($assignment) => $assignment->member && $assignment->status !== 'cancelled'))
+                                            ->count();
+                                    @endphp
+                                    <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                                        <p class="text-xs font-black text-slate-600">現在の担当メンバー</p>
+                                        <div class="mt-2 flex flex-wrap gap-2">
+                                            @forelse ($assignedMembers as $assignedMember)
+                                                <span class="inline-flex rounded-full border border-teal-200 bg-teal-50 px-2.5 py-1 text-xs font-bold text-teal-700">{{ $assignedMember->displayName() }}</span>
+                                            @empty
+                                                <span class="text-sm font-bold text-amber-700">担当メンバーは未設定です</span>
+                                            @endforelse
+                                            @if ($unassignedSlotCount > 0)
+                                                <span class="inline-flex rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-700">未割り当て {{ $unassignedSlotCount }}枠</span>
+                                            @endif
+                                        </div>
+                                        @if ($editingSchedule->shiftSlots->isNotEmpty())
+                                            <div class="mt-3 divide-y divide-slate-200 rounded-md border border-slate-200 bg-white">
+                                                @foreach ($editingSchedule->shiftSlots->sortBy('starts_at') as $shiftSlot)
+                                                    @php
+                                                        $slotMembers = $shiftSlot->assignments
+                                                            ->filter(fn ($assignment) => $assignment->member && $assignment->status !== 'cancelled')
+                                                            ->pluck('member')
+                                                            ->unique('id');
+                                                    @endphp
+                                                    <div class="flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:justify-between">
+                                                        <div>
+                                                            <p class="text-sm font-bold text-slate-800">{{ $shiftSlot->title ?: 'シフト' }}</p>
+                                                            <p class="mt-0.5 text-xs text-slate-500">
+                                                                {{ $shiftSlot->starts_at?->format('n/j H:i') ?: '--:--' }}〜{{ $shiftSlot->ends_at?->format('H:i') ?: '--:--' }}
+                                                            </p>
+                                                        </div>
+                                                        <div class="flex flex-wrap gap-1.5">
+                                                            @forelse ($slotMembers as $slotMember)
+                                                                <span class="inline-flex rounded-full border border-teal-200 bg-teal-50 px-2 py-0.5 text-xs font-bold text-teal-700">{{ $slotMember->displayName() }}</span>
+                                                            @empty
+                                                                <span class="inline-flex rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-bold text-amber-700">未割り当て</span>
+                                                            @endforelse
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        @endif
+                                    </div>
+                                @endif
                                 <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
                                     <div class="flex items-center justify-between gap-3">
                                         <p class="text-sm font-black text-slate-800">日別店舗</p>
@@ -1684,6 +1737,23 @@
                         return `${escapeHtml(label)} ${escapeHtml(day.store?.name || '-')}${escapeHtml(time)}`;
                     }).join(' / ') + (days.length > 8 ? ' ...' : '');
                 };
+                const scheduleMemberSummary = (schedule) => {
+                    const slots = schedule.shift_slots || [];
+                    const activeAssignments = slots.flatMap((slot) => (slot.assignments || []).filter((assignment) => assignment.member && assignment.status !== 'cancelled'));
+                    const members = Array.from(new Map(activeAssignments.map((assignment) => [String(assignment.member.id), assignment.member])).values());
+                    const unassignedSlotCount = slots.filter((slot) => !(slot.assignments || []).some((assignment) => assignment.member && assignment.status !== 'cancelled')).length;
+
+                    if (!members.length) {
+                        return '<span class="font-bold text-amber-700">未割り当て</span>';
+                    }
+
+                    const memberBadges = members.map((member) => `<span class="inline-flex rounded-full border border-teal-200 bg-teal-50 px-2 py-0.5 text-xs font-bold text-teal-700">${escapeHtml(memberDisplayName(member))}</span>`);
+                    if (unassignedSlotCount > 0) {
+                        memberBadges.push(`<span class="inline-flex rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-bold text-amber-700">未割り当て ${unassignedSlotCount}枠</span>`);
+                    }
+
+                    return `<div class="flex min-w-40 flex-wrap gap-1.5">${memberBadges.join('')}</div>`;
+                };
 
                 const renderSchedules = () => {
                     const list = $('[data-list="schedules"]');
@@ -1703,6 +1773,7 @@
                                 </td>
                                 <td class="px-4 py-3 text-slate-700">${escapeHtml(schedule.starts_on)} - ${escapeHtml(schedule.ends_on)}</td>
                                 <td class="px-4 py-3">${badge(schedule.status)}</td>
+                                <td class="px-4 py-3">${scheduleMemberSummary(schedule)}</td>
                                 <td class="px-4 py-3 text-slate-700">${schedule.shift_slots?.length || 0}</td>
                                 <td class="px-4 py-3 text-right">
                                     <div class="flex justify-end gap-2">
@@ -1714,7 +1785,7 @@
                                 </td>
                             </tr>
                         `).join('')
-                        : '<tr><td colspan="5" class="px-4 py-8 text-center text-sm text-slate-500">シフト表がまだありません。</td></tr>';
+                        : '<tr><td colspan="6" class="px-4 py-8 text-center text-sm text-slate-500">シフト表がまだありません。</td></tr>';
                 };
 
                 const renderDashboard = () => {
