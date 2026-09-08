@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+        <x-favicon />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="ShiftHubは、シフト希望の収集から自動割当、LINEでの確定通知までをつなぐ店舗向けシフト管理システムです。">
@@ -52,7 +53,7 @@
         <div class="benefit-strip container"><p>シフト管理の「手間」を、<br><strong>ひとつずつ、シンプルに。</strong></p><div><span>01</span> 希望をまとめて収集</div><div><span>02</span> 条件に合わせて自動割当</div><div><span>03</span> 確定シフトをLINE通知</div></div>
         <section class="section about container" id="about">
             <div class="section-heading"><p class="eyebrow">ABOUT SHIFTHUB</p><h2>人とお店に、<br class="mobile-break">ちょうどいいシフト管理。</h2><p>バラバラに届く希望、何度も見直すシフト表。<br>ShiftHubは、そんな店舗運営の日常を支えるサービスです。</p></div>
-            <div class="about-grid"><article><span class="line-icon" aria-hidden="true">▤</span><h3>情報がまとまる</h3><p>キャストの情報も、店舗のシフトも。<br>ひとつの管理画面で整理できます。</p></article><article><span class="line-icon" aria-hidden="true">✧</span><h3>作成がスムーズに</h3><p>提出された希望と必要人数をもとに、<br>日々の割当作業をサポートします。</p></article><article><span class="line-icon" aria-hidden="true">↗</span><h3>連絡がつながる</h3><p>提出のリマインドから確定通知まで。<br>いつものLINEでやりとりできます。</p></article></div>
+            <div class="about-grid"><article><img class="line-icon reference-feature-icon" src="{{ asset('images/rshift/members.png') }}" alt=""><h3>情報がまとまる</h3><p>キャストの情報も、店舗のシフトも。<br>ひとつの管理画面で整理できます。</p></article><article><img class="line-icon reference-feature-icon" src="{{ asset('images/rshift/schedule.png') }}" alt=""><h3>作成がスムーズに</h3><p>提出された希望と必要人数をもとに、<br>日々の割当作業をサポートします。</p></article><article><img class="line-icon reference-feature-icon" src="{{ asset('images/rshift/mail.svg') }}" alt=""><h3>連絡がつながる</h3><p>提出のリマインドから確定通知まで。<br>いつものLINEでやりとりできます。</p></article></div>
         </section>
         <section class="section features" id="features"><div class="container">
             <div class="section-heading"><p class="eyebrow">FEATURES</p><h2>毎月のシフト業務を、<br class="mobile-break">これひとつで。</h2><p>集める・つくる・届ける。必要な機能を、使いやすく。</p></div>

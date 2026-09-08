@@ -109,6 +109,18 @@ Route::middleware('auth')->group(function (): void {
     };
 
     Route::get('/dashboard', fn () => $adminPage('overview'))->name('dashboard');
+    Route::get('/dashboard/analytics', function () use ($adminPage) {
+        $validated = request()->validate(['year' => ['nullable', 'integer', 'between:2000,2100']]);
+        $view = $adminPage('analytics');
+        if (! $view instanceof \Illuminate\View\View) {
+            return $view;
+        }
+
+        return $view->with('analyticsData', app(\App\Services\ShiftAnalytics::class)->forYear(
+            (int) auth()->user()->tenant_id,
+            (int) ($validated['year'] ?? now()->year),
+        ));
+    })->name('admin.analytics');
     Route::get('/dashboard/schedules', fn () => $adminPage('schedules'))->name('admin.schedules');
     Route::get('/dashboard/schedules/create', fn () => $adminPage('schedule-create'))->name('admin.schedules.create');
     Route::get('/dashboard/schedules/{shiftSchedule}/edit', function (ShiftSchedule $shiftSchedule) use ($adminPage) {

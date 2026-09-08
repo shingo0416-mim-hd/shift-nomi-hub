@@ -12,12 +12,21 @@
                 ],
                 [
                     'label' => 'シフト管理',
+                    'iconAsset' => 'schedule.png',
                     'href' => route('admin.schedules'),
                     'active' => in_array($page, ['schedules', 'schedule-create', 'schedule-edit'], true),
                     'icon' => 'M8 7V3m8 4V3M5 11h14M6 5h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2z',
                 ],
                 [
+                    'label' => 'シフト分析',
+                    'href' => route('admin.analytics'),
+                    'active' => $page === 'analytics',
+                    'iconAsset' => 'diagnosis.png',
+                    'icon' => '',
+                ],
+                [
                     'label' => 'キャスト管理',
+                    'iconAsset' => 'members.png',
                     'href' => route('admin.members'),
                     'active' => in_array($page, ['members', 'member-edit'], true),
                     'icon' => 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
@@ -61,6 +70,7 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
+        <x-favicon />
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -143,9 +153,13 @@
                     <nav class="space-y-2 px-4 py-5 sm:px-6" aria-label="管理メニュー">
                         @foreach ($sidebarItems as $item)
                             <a href="{{ $item['href'] }}" class="flex items-center gap-4 rounded-lg px-4 py-4 text-base font-semibold transition {{ $item['active'] ? 'bg-green-50 text-green-700' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900' }}" @if ($item['active']) aria-current="page" @endif data-sidebar-link data-action="close-mobile-sidebar">
-                                <svg class="size-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                @if (isset($item['iconAsset']))
+                                    <img src="{{ asset('images/rshift/'.$item['iconAsset']) }}" class="hub-reference-nav-icon" alt="" aria-hidden="true">
+                                @else
+                                    <svg class="size-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}" />
                                 </svg>
+                                @endif
                                 <span>{{ $item['label'] }}</span>
                             </a>
                         @endforeach
@@ -166,9 +180,13 @@
                     <nav class="mt-8 flex w-full flex-col items-center gap-3 px-1" aria-label="管理メニュー">
                         @foreach ($sidebarItems as $item)
                             <a href="{{ $item['href'] }}" class="flex size-10 items-center justify-center rounded-lg transition {{ $item['active'] ? 'bg-green-50 text-green-700' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900' }}" @if ($item['active']) aria-current="page" @endif data-sidebar-link aria-label="{{ $item['label'] }}" title="{{ $item['label'] }}">
-                                <svg class="size-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                @if (isset($item['iconAsset']))
+                                    <img src="{{ asset('images/rshift/'.$item['iconAsset']) }}" class="hub-reference-nav-icon" alt="" aria-hidden="true">
+                                @else
+                                    <svg class="size-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}" />
                                 </svg>
+                                @endif
                             </a>
                         @endforeach
                     </nav>
@@ -186,9 +204,13 @@
                     <nav class="space-y-2 px-6 pb-8 pt-3" aria-label="管理メニュー">
                         @foreach ($sidebarItems as $item)
                             <a href="{{ $item['href'] }}" class="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold leading-tight transition {{ $item['active'] ? 'bg-green-50 text-green-700' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900' }}" @if ($item['active']) aria-current="page" @endif data-sidebar-link>
-                                <svg class="size-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                @if (isset($item['iconAsset']))
+                                    <img src="{{ asset('images/rshift/'.$item['iconAsset']) }}" class="hub-reference-nav-icon" alt="" aria-hidden="true">
+                                @else
+                                    <svg class="size-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}" />
                                 </svg>
+                                @endif
                                 <span class="min-w-0 whitespace-nowrap">{{ $item['label'] }}</span>
                             </a>
                         @endforeach
@@ -206,6 +228,10 @@
                             <div class="mb-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
                                 {{ $errors->first() }}
                             </div>
+                        @endif
+
+                        @if ($page === 'analytics')
+                            @include('admin.analytics')
                         @endif
 
                         @if ($page === 'overview')
@@ -226,6 +252,11 @@
                                     <a href="{{ route('admin.schedules.create') }}" class="inline-flex items-center justify-center rounded-full bg-teal-700 px-4 py-2 text-sm font-bold text-white transition hover:bg-teal-800">＋ 月間シフトを作成</a>
                                 </div>
                             </div>
+                        </section>
+
+                        <section class="shift-calendar-panel" aria-label="シフトカレンダー" data-shift-calendar>
+                            <script type="application/json" data-calendar-source>{}</script>
+                            <div data-calendar-content></div>
                         </section>
 
                         <div class="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -1627,6 +1658,7 @@
                     });
                 };
                 const setDayOffRow = (row, isDayOff) => {
+                    row.dataset.dayOff = String(isDayOff);
                     const checkbox = row.querySelector('[data-schedule-day-off]');
                     if (checkbox) checkbox.checked = isDayOff;
                     row.querySelectorAll('[data-schedule-day-store], [data-schedule-day-start], [data-schedule-day-end], [data-schedule-day-headcount]').forEach((field) => {
@@ -1682,16 +1714,16 @@
                     }]));
                     const monthStart = new Date(Date.UTC(startsOn.getUTCFullYear(), startsOn.getUTCMonth(), 1));
                     const monthEnd = new Date(Date.UTC(startsOn.getUTCFullYear(), startsOn.getUTCMonth() + 1, 0));
-                    const cells = weekdays.map((day, index) => `<div class="py-1 text-center text-xs font-black ${index === 0 ? 'text-red-600' : index === 6 ? 'text-blue-600' : 'text-slate-500'}">${day}</div>`);
+                    const cells = weekdays.map((day, index) => `<div class="shift-editor-weekday py-1 text-center text-xs font-black ${index === 0 ? 'text-red-600' : index === 6 ? 'text-blue-600' : 'text-slate-500'}">${day}</div>`);
                     for (let index = 0; index < monthStart.getUTCDay(); index += 1) {
-                        cells.push('<div class="min-h-36 rounded-md border border-transparent bg-transparent"></div>');
+                        cells.push('<div class="shift-editor-empty" aria-hidden="true"></div>');
                     }
                     for (const date = new Date(monthStart); date <= monthEnd; date.setUTCDate(date.getUTCDate() + 1)) {
                         const scheduledOn = formatDate(date);
                         const isInRange = date >= startsOn && date <= endsOn;
                         if (!isInRange) {
                             cells.push(`
-                                <div class="min-h-36 rounded-md border border-slate-100 bg-slate-100/60 p-2 text-xs font-bold ${calendarDateClass(date)} opacity-50">
+                                <div class="shift-editor-outside min-h-36 rounded-md border border-slate-100 bg-slate-100/60 p-2 text-xs font-bold ${calendarDateClass(date)} opacity-50">
                                     ${date.getUTCDate()}
                                 </div>
                             `);
@@ -1701,7 +1733,7 @@
                         const selectedStoreId = values.storeId || defaultStoreId;
                         const isDayOff = Boolean(values.isDayOff);
                         cells.push(`
-                            <div class="min-h-36 space-y-2 rounded-md border border-slate-200 bg-white p-2" data-schedule-day-row="${scheduledOn}">
+                            <div class="shift-editor-day min-h-36 space-y-2 rounded-md border border-slate-200 bg-white p-2" id="schedule-day-${scheduledOn}" data-schedule-day-row="${scheduledOn}" data-day-off="${isDayOff}" data-weekday="${date.getUTCDay()}">
                                 <div class="flex items-center justify-between gap-3">
                                     <span class="text-sm font-black ${calendarDateClass(date)}">${date.getUTCDate()}</span>
                                     <label class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600">
@@ -1709,14 +1741,14 @@
                                         休み
                                     </label>
                                 </div>
-                                <select class="min-h-10 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 disabled:bg-slate-100 disabled:text-slate-400" data-schedule-day-store ${isDayOff ? 'disabled' : ''}>
+                                <select class="min-h-10 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 disabled:bg-slate-100 disabled:text-slate-400" aria-label="${scheduledOn} 店舗" data-schedule-day-store ${isDayOff ? 'disabled' : ''}>
                                     ${scheduleDayOptions(selectedStoreId)}
                                 </select>
                                 <div class="grid grid-cols-2 gap-2">
-                                    <select class="min-h-10 w-full rounded-xl border border-slate-200 bg-white px-2 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 disabled:bg-slate-100 disabled:text-slate-400" data-schedule-day-start ${isDayOff ? 'disabled' : ''}>
+                                    <select class="min-h-10 w-full rounded-xl border border-slate-200 bg-white px-2 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 disabled:bg-slate-100 disabled:text-slate-400" aria-label="${scheduledOn} 開始時刻" data-schedule-day-start ${isDayOff ? 'disabled' : ''}>
                                         ${timeOptions(values.startsAt || '')}
                                     </select>
-                                    <select class="min-h-10 w-full rounded-xl border border-slate-200 bg-white px-2 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 disabled:bg-slate-100 disabled:text-slate-400" data-schedule-day-end ${isDayOff ? 'disabled' : ''}>
+                                    <select class="min-h-10 w-full rounded-xl border border-slate-200 bg-white px-2 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 disabled:bg-slate-100 disabled:text-slate-400" aria-label="${scheduledOn} 終了時刻" data-schedule-day-end ${isDayOff ? 'disabled' : ''}>
                                         ${timeOptions(values.endsAt || '')}
                                     </select>
                                 </div>
@@ -1727,7 +1759,7 @@
                             </div>
                         `);
                     }
-                    list.innerHTML = `<div class="grid min-w-[920px] grid-cols-7 gap-2">${cells.join('')}</div>`;
+                    list.innerHTML = `<div class="shift-editor-grid">${cells.join('')}</div>`;
                 };
 
                 const renderStores = () => {
@@ -1936,6 +1968,26 @@
                     const schedules = storeId
                         ? state.schedules.filter((schedule) => scheduleMatchesStore(schedule, storeId))
                         : state.schedules;
+                    const calendarSource = $('[data-calendar-source]');
+                    if (calendarSource) {
+                        calendarSource.textContent = JSON.stringify({
+                            schedules: schedules.map((schedule) => ({
+                                id: schedule.id,
+                                starts_on: schedule.starts_on,
+                                ends_on: schedule.ends_on,
+                                submission_deadline_at: schedule.submission_deadline_at,
+                                status: schedule.status,
+                                store: schedule.store?.name || '店舗未設定',
+                                days: (schedule.days || []).map((day) => ({
+                                    scheduled_on: day.scheduled_on, is_day_off: day.is_day_off,
+                                    starts_at: day.starts_at, ends_at: day.ends_at,
+                                    required_headcount: day.required_headcount,
+                                })),
+                            })),
+                            editBase: routes.schedulesBase,
+                        });
+                        document.dispatchEvent(new Event('shift-calendar:update'));
+                    }
                     const unsubmitted = schedules.reduce((total, schedule) => total + scheduleOperations(schedule).unsubmitted_members, 0);
                     const shortage = schedules.filter((schedule) => ['reviewing', 'published'].includes(scheduleOperations(schedule).stage)).reduce((total, schedule) => total + scheduleOperations(schedule).shortage_headcount, 0);
                     $('[data-stat="unsubmitted"]') && ($('[data-stat="unsubmitted"]').textContent = unsubmitted);

@@ -1,0 +1,65 @@
+.hub-reference-nav-icon { width: 28px; height: 28px; object-fit: contain; flex-shrink: 0; }
+.marketing .reference-feature-icon { width: 85px; height: 75px; object-fit: contain; margin: 0 auto 8px; }
+.hub-theme .shift-diagnosis-link { display: block; text-align: center; }
+.hub-theme .shift-diagnosis-link img { width: 70px; height: 60px; object-fit: contain; margin: 0 auto 10px; }
+.hub-theme .shift-diagnosis-link span { display: inline-block; padding: 5px 22px; border-radius: 30px; background: #00818c; color: white; margin-top: 12px; font-size: 12px; }
+.hub-theme .shift-analysis { background: white; border: 1px solid #bce4e7; padding: 26px; box-shadow: 0 3px 3px #00a3af18; }
+.hub-theme .analysis-heading { display: flex; align-items: center; gap: 16px; }
+.hub-theme .analysis-heading > img { width: 70px; height: 60px; object-fit: contain; }
+.hub-theme .analysis-heading h1 { font-size: 23px; font-weight: 700; }
+.hub-theme .analysis-heading p { font-size: 12px; color: #64797b; margin-top: 5px; }
+.hub-theme .analysis-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin: 26px 0 10px; font-size: 12px; }
+.hub-theme .analysis-controls label { display: flex; align-items: center; gap: 8px; }
+.hub-theme .analysis-controls :is(input,select) { border: 1px solid #d2dfe0; border-radius: 0; min-height: 35px; padding: 6px 8px; background: #fafcfc; max-width: 180px; }
+.hub-theme .analysis-controls input { width: 90px; }
+.hub-theme .analysis-controls button { display: flex; align-items: center; gap: 6px; border: 1px solid #00a3af; padding: 6px 12px; color: #007b85; cursor: pointer; background: white; }
+.hub-theme .analysis-controls button:hover { background: #e8f7f8; }
+.hub-theme .analysis-controls button img { width: 16px; height: 18px; object-fit: contain; }
+.hub-theme .analysis-source-note { font-size: 10px; color: #64797b; }
+.hub-theme .analysis-kpis { display: grid; grid-template-columns: repeat(4,1fr); gap: 1px; border: 1px solid #d6e9eb; background: #d6e9eb; margin: 22px 0 28px; }
+.hub-theme .analysis-kpis article { background: #f5fbfb; padding: 16px; }
+.hub-theme .analysis-kpis article > span { font-size: 11px; }
+.hub-theme .analysis-kpis strong { display: block; margin-top: 7px; font-size: 26px; font-weight: 600; }
+.hub-theme .analysis-kpis small { font-size: 11px; margin-left: 5px; font-weight: 400; }
+.hub-theme .analysis-kpis .metric-shortage { background: #fff0ee; }
+.hub-theme .analysis-kpis .metric-excess { background: #edf6ff; }
+.hub-theme .analysis-section-title { display: flex; align-items: baseline; justify-content: space-between; gap: 15px; flex-wrap: wrap; margin: 20px 0 12px; }
+.hub-theme .shift-analysis h2 { font-size: 17px; font-weight: 600; }
+.hub-theme .shift-analysis h2 span { font-size: 12px; font-weight: 400; }
+.hub-theme .analysis-section-title :is(p,span) { font-size: 11px; color: #64797b; }
+.hub-theme .analysis-table-scroll { overflow-x: auto; }
+.hub-theme .shift-analysis table { width: 100%; border-collapse: collapse; font-size: 12px; white-space: nowrap; }
+.hub-theme .shift-analysis :is(th,td) { border: 1px solid #dbe5e6; padding: 9px 12px; text-align: center; }
+.hub-theme .shift-analysis thead { background: #009fac; color: white; }
+.hub-theme .shift-analysis th { font-weight: 500; }
+.hub-theme .shift-analysis tbody th { background: #f4fafa; }
+.hub-theme .shift-analysis tbody td:first-child { text-align: left; }
+.hub-theme .analysis-month-table { min-width: 810px; }
+.hub-theme .analysis-month-table thead th { padding: 0; }
+.hub-theme .analysis-month-table thead th:first-child { padding: 8px; }
+.hub-theme .analysis-month-table button { display: block; width: 100%; padding: 10px 6px; cursor: pointer; }
+.hub-theme .analysis-month-table button[aria-pressed=true] { background: #006d78; box-shadow: inset 0 -3px 0 #f4d77b; }
+.hub-theme .analysis-month-table button:hover { background: #00818c; }
+.hub-theme .analysis-chart-title { margin-top: 30px; }
+.hub-theme .analysis-legend { display: flex; justify-content: center; gap: 25px; margin: 14px 0 0; font-size: 12px; }
+.hub-theme .analysis-legend i { display: inline-block; width: 27px; height: 9px; margin-right: 8px; background: #2164ce; }
+.hub-theme .analysis-legend .comparison { background: #afb9ba; }
+.hub-theme .analysis-chart-scroll { overflow-x: auto; }
+.hub-theme .analysis-chart-scroll svg { width: 100%; min-width: 620px; }
+.hub-theme .analysis-chart-scroll text { font-size: 12px; fill: #637276; }
+.hub-theme .analysis-chart-scroll circle { cursor: pointer; }
+.hub-theme .analysis-chart-scroll circle:focus { outline: 2px solid #26484b; outline-offset: 3px; }
+.hub-theme .analysis-warning { background: #fff8e4; color: #775819; padding: 10px 14px; font-size: 12px; }
+.hub-theme .analysis-empty { text-align: center; padding: 18px; background: #f3f8f8; color: #64797b; font-size: 13px; }
+.hub-theme .shift-analysis .has-shortage { background: #f6c8c3; color: #7a302b; }
+.hub-theme .shift-analysis .has-excess { background: #d0e8fa; color: #275a80; }
+.hub-theme .shift-analysis td a { color: #007b85; text-decoration: underline; text-underline-offset: 3px; }
+.hub-theme .analysis-ranking { margin-top: 30px; }
+.hub-theme .analysis-ranking h2 { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.hub-theme .analysis-ranking h2 img { width: 48px; height: 42px; object-fit: contain; }
+.hub-theme .analysis-definitions { border-top: 1px solid #dbe5e6; margin-top: 28px; padding-top: 16px; font-size: 12px; line-height: 1.9; }
+.hub-theme .analysis-definitions summary { cursor: pointer; color: #007b85; font-weight: 600; }
+.hub-theme .analysis-definitions > div { margin-top: 12px; color: #64797b; }
+.hub-theme .analysis-definitions ul { padding-left: 20px; list-style: disc; margin: 10px 0; }
+@media(max-width: 640px) { .hub-theme .shift-analysis { padding: 16px; } .hub-theme .analysis-heading h1 { font-size: 18px; } .hub-theme .analysis-heading > img { width: 48px; } .hub-theme .analysis-kpis { grid-template-columns: repeat(2,1fr); } .hub-theme .analysis-controls { gap: 10px; } .hub-theme .analysis-ranking h2 { flex-wrap: wrap; } }
+.marketing .reference-feature-icon[src$="mail.svg"] { width: 75px; padding: 23px; background: #00a3af; border-radius: 12px; }

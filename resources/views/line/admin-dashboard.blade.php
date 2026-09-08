@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
+        <x-favicon />
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="robots" content="noindex">
@@ -511,6 +512,7 @@
                     });
                 };
                 const setDayOffRow = (row, isDayOff) => {
+                    row.dataset.dayOff = String(isDayOff);
                     const checkbox = row.querySelector('[data-schedule-day-off]');
                     if (checkbox) checkbox.checked = isDayOff;
                     row.querySelectorAll('[data-schedule-day-store], [data-schedule-day-start], [data-schedule-day-end], [data-schedule-day-headcount]').forEach((field) => {
@@ -566,16 +568,16 @@
                     }]));
                     const monthStart = new Date(Date.UTC(startsOn.getUTCFullYear(), startsOn.getUTCMonth(), 1));
                     const monthEnd = new Date(Date.UTC(startsOn.getUTCFullYear(), startsOn.getUTCMonth() + 1, 0));
-                    const cells = weekdays.map((day, index) => `<div class="py-1 text-center text-xs font-black ${index === 0 ? 'text-red-600' : index === 6 ? 'text-blue-600' : 'text-slate-500'}">${day}</div>`);
+                    const cells = weekdays.map((day, index) => `<div class="shift-editor-weekday py-1 text-center text-xs font-black ${index === 0 ? 'text-red-600' : index === 6 ? 'text-blue-600' : 'text-slate-500'}">${day}</div>`);
                     for (let index = 0; index < monthStart.getUTCDay(); index += 1) {
-                        cells.push('<div class="min-h-36 rounded-md border border-transparent bg-transparent"></div>');
+                        cells.push('<div class="shift-editor-empty" aria-hidden="true"></div>');
                     }
                     for (const date = new Date(monthStart); date <= monthEnd; date.setUTCDate(date.getUTCDate() + 1)) {
                         const scheduledOn = formatDate(date);
                         const isInRange = date >= startsOn && date <= endsOn;
                         if (!isInRange) {
                             cells.push(`
-                                <div class="min-h-36 rounded-md border border-slate-100 bg-slate-100/60 p-2 text-xs font-bold ${calendarDateClass(date)} opacity-50">
+                                <div class="shift-editor-outside min-h-36 rounded-md border border-slate-100 bg-slate-100/60 p-2 text-xs font-bold ${calendarDateClass(date)} opacity-50">
                                     ${date.getUTCDate()}
                                 </div>
                             `);
@@ -585,7 +587,7 @@
                         const selectedStoreId = values.storeId || defaultStoreId;
                         const isDayOff = Boolean(values.isDayOff);
                         cells.push(`
-                            <div class="min-h-36 space-y-2 rounded-md border border-slate-200 bg-white p-2" data-schedule-day-row="${scheduledOn}">
+                            <div class="shift-editor-day min-h-36 space-y-2 rounded-md border border-slate-200 bg-white p-2" id="schedule-day-${scheduledOn}" data-schedule-day-row="${scheduledOn}" data-day-off="${isDayOff}" data-weekday="${date.getUTCDay()}">
                                 <div class="flex items-center justify-between gap-3">
                                     <span class="text-sm font-black ${calendarDateClass(date)}">${date.getUTCDate()}</span>
                                     <label class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600">
@@ -593,14 +595,14 @@
                                         休み
                                     </label>
                                 </div>
-                                <select class="min-h-10 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 disabled:bg-slate-100 disabled:text-slate-400" data-schedule-day-store ${isDayOff ? 'disabled' : ''}>
+                                <select class="min-h-10 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 disabled:bg-slate-100 disabled:text-slate-400" aria-label="${scheduledOn} 店舗" data-schedule-day-store ${isDayOff ? 'disabled' : ''}>
                                     ${scheduleDayOptions(selectedStoreId)}
                                 </select>
                                 <div class="grid grid-cols-2 gap-2">
-                                    <select class="min-h-10 w-full rounded-xl border border-slate-200 bg-white px-2 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 disabled:bg-slate-100 disabled:text-slate-400" data-schedule-day-start ${isDayOff ? 'disabled' : ''}>
+                                    <select class="min-h-10 w-full rounded-xl border border-slate-200 bg-white px-2 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 disabled:bg-slate-100 disabled:text-slate-400" aria-label="${scheduledOn} 開始時刻" data-schedule-day-start ${isDayOff ? 'disabled' : ''}>
                                         ${timeOptions(values.startsAt || '')}
                                     </select>
-                                    <select class="min-h-10 w-full rounded-xl border border-slate-200 bg-white px-2 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 disabled:bg-slate-100 disabled:text-slate-400" data-schedule-day-end ${isDayOff ? 'disabled' : ''}>
+                                    <select class="min-h-10 w-full rounded-xl border border-slate-200 bg-white px-2 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 disabled:bg-slate-100 disabled:text-slate-400" aria-label="${scheduledOn} 終了時刻" data-schedule-day-end ${isDayOff ? 'disabled' : ''}>
                                         ${timeOptions(values.endsAt || '')}
                                     </select>
                                 </div>
@@ -611,7 +613,7 @@
                             </div>
                         `);
                     }
-                    list.innerHTML = `<div class="grid min-w-[760px] grid-cols-7 gap-2">${cells.join('')}</div>`;
+                    list.innerHTML = `<div class="shift-editor-grid">${cells.join('')}</div>`;
                 };
                 renderBulkTimeOptions();
                 const schedulePayload = (form) => ({

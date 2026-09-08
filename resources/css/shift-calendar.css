@@ -1,0 +1,61 @@
+.hub-theme .shift-calendar-panel { margin-top: 24px; }
+.hub-theme .shift-today-bar { padding: 14px; background: white; color: #00818c; text-align: center; font-size: 21px; font-weight: 600; letter-spacing: 2px; box-shadow: 0 4px 6px #00a3af15; }
+.hub-theme .shift-today-bar span { font-size: 14px; }
+.hub-theme .shift-calendar-layout { display: grid; grid-template-columns: 1.6fr 1fr; gap: 24px; margin-top: 24px; }
+.hub-theme .shift-calendar-main { background: white; padding: 22px; box-shadow: 0 4px 6px #00a3af15; }
+.hub-theme .shift-calendar-main h2 { text-align: center; font-size: 18px; font-weight: 600; }
+.hub-theme .shift-calendar-main h2 span, .hub-theme .shift-month-link span { font-size: 12px; margin-left: 4px; }
+.hub-theme .shift-month-controls { display: flex; align-items: center; justify-content: space-between; margin: 12px 0 0; }
+.hub-theme .shift-month-controls button { min-width: 36px; min-height: 36px; cursor: pointer; color: #64797b; font-size: 24px; }
+.hub-theme .shift-month-controls button:nth-child(2) { font-size: 11px; }
+.hub-theme .shift-month-controls button:hover { background: #eaf8f9; color: #00818c; }
+.hub-theme .shift-month-pair { display: grid; grid-template-columns: 1fr 1fr; }
+.hub-theme .shift-mini-month { min-width: 0; padding: 0 10px; }
+.hub-theme .shift-mini-month + .shift-mini-month { border-left: 1px solid #e2eaea; }
+.hub-theme .shift-mini-month h3 { text-align: center; font-size: 15px; font-weight: 600; margin: 6px 0 12px; }
+.hub-theme .shift-mini-month table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 13px; }
+.hub-theme .shift-mini-month thead { background: white; }
+.hub-theme .shift-mini-month th { height: 30px; }
+.hub-theme .shift-mini-month td { height: 34px; text-align: center; padding: 0; }
+.hub-theme .shift-mini-month tbody tr:hover { background: transparent; }
+.hub-theme .shift-mini-month td button { display: inline-grid; place-items: center; width: 30px; height: 30px; max-width: 100%; border-radius: 50%; border: 1px solid transparent; cursor: pointer; }
+.hub-theme .shift-mini-month .has-schedule { background: #e8f7f8; }
+.hub-theme .shift-mini-month .is-sunday { color: #c75359; }
+.hub-theme .shift-mini-month .is-saturday { color: #337fb3; }
+.hub-theme .shift-mini-month .is-today button { border-color: #00a3af; color: #00818c; }
+.hub-theme .shift-mini-month .is-deadline button { background: #00818c; color: white; }
+.hub-theme .shift-mini-month .is-selected button { outline: 2px solid #28484b; outline-offset: 1px; font-weight: 700; }
+.hub-theme .shift-mini-month button:hover { background: #ccecee; color: #245a60; }
+.hub-theme .shift-calendar-legend { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 14px; margin-top: 15px; font-size: 10px; color: #64797b; }
+.hub-theme .shift-calendar-legend span { display: flex; align-items: center; gap: 5px; }
+.hub-theme .shift-calendar-legend i { display: inline-block; width: 12px; height: 12px; }
+.hub-theme .legend-period { background: #e8f7f8; border: 1px solid #ccecee; }
+.hub-theme .legend-deadline { background: #00818c; border-radius: 50%; }
+.hub-theme .legend-today { border: 1px solid #00a3af; border-radius: 50%; }
+.hub-theme .shift-calendar-shortcuts { display: flex; flex-direction: column; gap: 16px; }
+.hub-theme .shift-month-link { background: white; color: #466367; padding: 25px 12px; font-size: 22px; cursor: pointer; box-shadow: 0 4px 6px #00a3af15; }
+.hub-theme .shift-month-link.primary { background: #008f9b; color: white; }
+.hub-theme .shift-month-link:hover { background: #e4f6f7; color: #006c77; }
+.hub-theme .shift-month-link.primary:hover { background: #007580; color: white; }
+.hub-theme .shift-calendar-guide { border: 2px solid #00a3af; padding: 20px; background: white; }
+.hub-theme .shift-calendar-guide strong { font-size: 14px; }
+.hub-theme .shift-calendar-guide p { margin-top: 8px; font-size: 12px; line-height: 1.9; color: #64797b; }
+.hub-theme .shift-calendar-results { background: white; margin-top: 24px; padding: 20px 24px; box-shadow: 0 4px 6px #00a3af15; }
+.hub-theme .shift-calendar-results h3 { border-left: 5px solid #00a3af; padding-left: 12px; font-size: 15px; font-weight: 600; margin-bottom: 12px; }
+.hub-theme .shift-calendar-result { display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 12px 0; border-top: 1px solid #e2ecec; font-size: 13px; }
+.hub-theme .shift-calendar-result p { font-size: 12px; color: #64797b; margin-top: 4px; }
+.hub-theme .shift-calendar-result > span { color: #00818c; white-space: nowrap; font-size: 11px; }
+.hub-theme .shift-calendar-result b { margin-left: 12px; font-size: 20px; }
+.hub-theme .shift-calendar-result:hover { background: #f1fafa; }
+.hub-theme .shift-calendar-empty { font-size: 13px; color: #64797b; padding: 10px 0; }
+.hub-theme .shift-editor-grid { display: grid; grid-template-columns: repeat(7, minmax(135px, 1fr)); min-width: 945px; gap: 1px; background: #cddfe1; border: 1px solid #cddfe1; }
+.hub-theme .shift-editor-weekday { background: #edf9fa; padding: 10px 0; font-size: 13px; }
+.hub-theme .shift-editor-day, .hub-theme .shift-editor-outside { border: 0; border-radius: 0; scroll-margin-top: 95px; }
+.hub-theme .shift-editor-empty { background: #f6f9f9; min-height: 144px; }
+.hub-theme .shift-editor-day[data-weekday="0"] { border-top: 3px solid #ebc1c2; }
+.hub-theme .shift-editor-day[data-weekday="6"] { border-top: 3px solid #c1dfed; }
+.hub-theme .shift-editor-day[data-day-off="true"] { background: #f0f4f4; }
+.hub-theme .shift-editor-day:target { outline: 3px solid #00a3af; outline-offset: -3px; }
+.hub-theme .shift-editor-day :is(select, input[type=number]) { border-radius: 3px; padding-inline: 5px; font-size: 12px; }
+@media (max-width: 1100px) { .hub-theme .shift-calendar-layout { grid-template-columns: 1fr; } .hub-theme .shift-calendar-shortcuts { display: grid; grid-template-columns: 1fr 1fr; } .hub-theme .shift-calendar-guide { grid-column: 1 / -1; } }
+@media (max-width: 540px) { .hub-theme .shift-calendar-main { padding: 14px 8px; } .hub-theme .shift-month-pair { grid-template-columns: 1fr; gap: 20px; } .hub-theme .shift-mini-month + .shift-mini-month { border-left: 0; border-top: 1px solid #e2eaea; padding-top: 15px; } .hub-theme .shift-mini-month td { height: 40px; } .hub-theme .shift-mini-month td button { height: 36px; width: 36px; } .hub-theme .shift-month-link { font-size: 17px; padding: 18px 6px; } .hub-theme .shift-month-link span { display: block; } .hub-theme .shift-today-bar { font-size: 17px; } }
