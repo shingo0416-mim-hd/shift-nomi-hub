@@ -19,6 +19,7 @@ return new class extends Migration
             $table->boolean('is_day_off')->default(false);
             $table->time('starts_at')->nullable();
             $table->time('ends_at')->nullable();
+            $table->unsignedSmallInteger('required_headcount')->default(1);
             $table->timestamps();
 
             $table->unique(['shift_schedule_id', 'scheduled_on']);

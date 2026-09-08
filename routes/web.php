@@ -12,11 +12,12 @@ use App\Models\ShiftSchedule;
 use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\ShiftScheduleOperations;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 
-Route::redirect('/', '/login');
+Route::view('/', 'welcome')->name('home');
 Route::redirect('/admin', '/dashboard');
 
 Route::get('/liff/register/{registrationToken}', [RegistrationController::class, 'show'])->name('liff.register');
@@ -83,6 +84,7 @@ Route::middleware('auth')->group(function (): void {
             ->latest('starts_on')
             ->limit(100)
             ->get();
+        app(ShiftScheduleOperations::class)->enrich($schedules);
 
         $userRelations = ['tenant'];
         if (Schema::hasTable('line_login_settings')) {
@@ -112,7 +114,10 @@ Route::middleware('auth')->group(function (): void {
     Route::get('/dashboard/schedules/{shiftSchedule}/edit', function (ShiftSchedule $shiftSchedule) use ($adminPage) {
         abort_unless((int) $shiftSchedule->getAttribute('tenant_id') === (int) auth()->user()->tenant_id, 404);
 
-        return $adminPage('schedule-edit')->with('editingSchedule', $shiftSchedule->load(['store', 'days.store', 'shiftSlots.assignments.member']));
+        $shiftSchedule->load(['store', 'days.store', 'shiftSlots.assignments.member']);
+        app(ShiftScheduleOperations::class)->enrich(collect([$shiftSchedule]));
+
+        return $adminPage('schedule-edit')->with('editingSchedule', $shiftSchedule);
     })->name('admin.schedules.edit');
     Route::get('/dashboard/members', fn () => $adminPage('members'))->name('admin.members');
     Route::get('/dashboard/members/{member}/edit', function (Member $member) use ($adminPage) {

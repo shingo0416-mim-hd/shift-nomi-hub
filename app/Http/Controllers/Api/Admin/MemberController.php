@@ -79,7 +79,7 @@ class MemberController extends Controller
         }
 
         $url = $this->registrationUrl($member);
-        $renderer = new ImageRenderer(new RendererStyle(320, 2), new SvgImageBackEnd);
+        $renderer = new ImageRenderer(new RendererStyle(320, 2), new SvgImageBackEnd());
         $qrSvg = (new Writer($renderer))->writeString($url);
 
         return response()->json([
@@ -110,7 +110,7 @@ class MemberController extends Controller
     /** @return array<int, string> */
     private function schedulingProfileFields(): array
     {
-        return ['attendance_score', 'popularity_score', 'priority_points', 'newcomer_priority_until', 'scheduling_admin_notes'];
+        return ['attendance_score', 'popularity_score', 'priority_points', 'scheduling_admin_notes'];
     }
 
     /** @param array<string, mixed> $validated */
@@ -125,7 +125,6 @@ class MemberController extends Controller
             'attendance_score' => $validated['attendance_score'] ?? 50,
             'popularity_score' => $validated['popularity_score'] ?? 50,
             'priority_points' => $validated['priority_points'] ?? 0,
-            'newcomer_priority_until' => $validated['newcomer_priority_until'] ?? null,
             'admin_notes' => $validated['scheduling_admin_notes'] ?? null,
         ]);
     }

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ShiftScheduleStoreRequest;
 use App\Models\ShiftSchedule;
 use App\Models\ShiftSlot;
+use App\Services\ShiftScheduleOperations;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\JsonResponse;
@@ -16,6 +17,8 @@ use Illuminate\Validation\Rule;
 
 class ShiftScheduleController extends Controller
 {
+    public function __construct(private readonly ShiftScheduleOperations $operations) {}
+
     public function index(Request $request): JsonResponse
     {
         $schedules = ShiftSchedule::query()
@@ -26,6 +29,8 @@ class ShiftScheduleController extends Controller
                 ->orWhereHas('days', fn ($dayQuery) => $dayQuery->where('store_id', $storeId))))
             ->latest('starts_on')
             ->paginate((int) $request->query('per_page', 20));
+
+        $this->operations->enrich($schedules->getCollection());
 
         return response()->json($schedules);
     }

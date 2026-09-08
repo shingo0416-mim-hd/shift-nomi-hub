@@ -17,6 +17,10 @@ return new class extends Migration
             $table->foreignId('store_id')->constrained()->cascadeOnDelete();
             $table->date('starts_on');
             $table->date('ends_on');
+            $table->dateTime('submission_deadline_at')->nullable();
+            $table->boolean('auto_schedule_enabled')->default(true);
+            $table->dateTime('auto_scheduled_at')->nullable();
+            $table->dateTime('notification_sent_at')->nullable();
             $table->string('status')->default('draft');
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('published_by')->nullable()->constrained('users')->nullOnDelete();

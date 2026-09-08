@@ -425,7 +425,7 @@ class LiffRegistrationTest extends TestCase
             'attendance_score' => 85,
             'popularity_score' => 72,
             'priority_points' => 40,
-            'newcomer_priority_until' => '2026-12-31',
+            'joined_on' => '2026-09-01',
             'scheduling_admin_notes' => '新人研修を優先する',
         ])->assertOk()
             ->assertJsonPath('member.scheduling_profile.attendance_score', 85)
@@ -439,6 +439,12 @@ class LiffRegistrationTest extends TestCase
             'priority_points' => 40,
             'admin_notes' => '新人研修を優先する',
         ]);
+        $this->assertDatabaseHas('members', [
+            'id' => $member->id,
+            'joined_on' => '2026-09-01',
+        ]);
+        $this->assertTrue($member->fresh()->isNewcomerOn('2026-11-30'));
+        $this->assertFalse($member->fresh()->isNewcomerOn('2026-12-01'));
 
         $this->assertArrayNotHasKey('scheduling_profile', $member->fresh()->toArray());
     }
@@ -477,13 +483,13 @@ class LiffRegistrationTest extends TestCase
             'line_id' => 'line-preferred-member',
             'status' => 'active',
             'is_shift_submitter' => true,
+            'joined_on' => '2026-08-01',
         ]);
         $preferredMember->schedulingProfile()->create([
             'tenant_id' => $tenant->id,
             'attendance_score' => 90,
             'popularity_score' => 80,
             'priority_points' => 30,
-            'newcomer_priority_until' => '2026-12-31',
         ]);
         $otherMember = Member::create([
             'tenant_id' => $tenant->id,

@@ -1,0 +1,1742 @@
+.marketing {
+    --aqua: #00a3af;
+    --ink: #28484b;
+    --muted: #64797b;
+    --pale: #effafa;
+    margin: 0;
+    background: #fff;
+    color: var(--ink);
+    font-family: "Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.8;
+}
+
+.marketing * {
+    box-sizing: border-box;
+}
+
+.marketing a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.marketing button,
+.marketing summary,
+.marketing a {
+    -webkit-tap-highlight-color: transparent;
+}
+
+.marketing a:focus-visible,
+.marketing summary:focus-visible {
+    outline: 3px solid #bf5c29;
+    outline-offset: 5px;
+}
+
+.marketing h1,
+.marketing h2,
+.marketing h3,
+.marketing p {
+    margin: 0;
+}
+
+.marketing .container {
+    max-width: 1200px;
+    margin-inline: auto;
+    padding-inline: 32px;
+}
+
+.marketing section[id] {
+    scroll-margin-top: 105px;
+}
+
+.marketing .skip-link {
+    position: fixed;
+    top: -100px;
+    left: 12px;
+    background: white;
+    padding: 12px;
+    z-index: 100;
+}
+
+.marketing .skip-link:focus {
+    top: 12px;
+}
+
+.marketing .site-header {
+    height: 96px;
+    padding: 0 3.2%;
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    background: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    border-bottom: 1px solid #eaf1f1;
+}
+
+.marketing .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -1.2px;
+    line-height: 1.15;
+    flex-shrink: 0;
+}
+
+.marketing .brand small {
+    display: block;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.1px;
+    color: var(--muted);
+    margin-top: 7px;
+}
+
+.marketing .brand-accent {
+    color: var(--aqua);
+}
+
+.marketing .brand-symbol {
+    display: grid;
+    grid-template-columns: repeat(2,12px);
+    gap: 4px;
+    transform: rotate(-8deg);
+}
+
+.marketing .brand-symbol i {
+    width: 12px;
+    height: 15px;
+    border-radius: 3px;
+    background: var(--aqua);
+}
+
+.marketing .brand-symbol i:nth-child(2) {
+    opacity: .45;
+}
+
+.marketing .brand-symbol i:nth-child(3) {
+    opacity: .7;
+}
+
+.marketing .desktop-nav {
+    margin-left: auto;
+    display: flex;
+    gap: 28px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.marketing .desktop-nav a:hover,
+.marketing .site-footer a:hover {
+    color: var(--aqua);
+}
+
+.marketing .button {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 28px;
+    padding: 17px 26px;
+    border-radius: 50px;
+    background: var(--aqua);
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+    border: 1px solid var(--aqua);
+    box-shadow: 0 5px 0 #008e990c;
+    transition: background .2s,transform .2s;
+    white-space: nowrap;
+}
+
+.marketing .button:hover {
+    background: #008590;
+    transform: translateY(-2px);
+}
+
+.marketing .button-small {
+    font-size: 12px;
+    padding: 12px 22px;
+    gap: 20px;
+}
+
+.marketing .button-outline {
+    background: #fff;
+    color: #008590;
+}
+
+.marketing .button-outline:hover {
+    background: #e2f7f8;
+}
+
+.marketing .mobile-nav {
+    display: none;
+}
+
+.marketing .hero {
+    background: linear-gradient(110deg,#fff 0%,#f2fbfb 31%,#c8ecef 68%,#77c9cf 100%);
+    overflow: hidden;
+    position: relative;
+}
+
+.marketing .hero-inner {
+    min-height: 635px;
+    display: grid;
+    grid-template-columns: 1fr 1.08fr;
+    align-items: center;
+    gap: 15px;
+}
+
+.marketing .hero-copy {
+    position: relative;
+    z-index: 2;
+    padding: 56px 0 70px;
+}
+
+.marketing .eyebrow {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #008590;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.marketing .eyebrow>span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--aqua);
+}
+
+.marketing h1 {
+    font-size: clamp(35px,4vw,54px);
+    font-weight: 800;
+    letter-spacing: 1px;
+    line-height: 1.55;
+    margin: 22px 0;
+}
+
+.marketing h1 em {
+    font-style: normal;
+    color: #0095a1;
+}
+
+.marketing .hero-description {
+    font-size: 14px;
+    line-height: 2.2;
+    color: #4e6b6d;
+    letter-spacing: .5px;
+}
+
+.marketing .hero-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 30px;
+}
+
+.marketing .hero-note {
+    font-size: 10px;
+    color: #5c7b7e;
+    margin-top: 20px;
+    letter-spacing: .8px;
+}
+
+.marketing .hero-note b {
+    font-weight: 400;
+    color: #8db4b7;
+    margin: 0 8px;
+}
+
+.marketing .hero-visual {
+    position: relative;
+    width: 100%;
+    height: 465px;
+    isolation: isolate;
+}
+
+.marketing .orbit {
+    position: absolute;
+    border: 1px solid #ffffff90;
+    border-radius: 50%;
+    z-index: -1;
+}
+
+.marketing .orbit-one {
+    width: 540px;
+    height: 540px;
+    top: -40px;
+    left: 30px;
+}
+
+.marketing .orbit-two {
+    width: 680px;
+    height: 680px;
+    top: -110px;
+    left: -40px;
+}
+
+.marketing .visual-label {
+    position: absolute;
+    top: 12px;
+    left: 60px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    transform: rotate(-5deg);
+    border-bottom: 2px solid #fff;
+    padding: 7px;
+}
+
+.marketing .screen {
+    position: absolute;
+    width: 550px;
+    top: 78px;
+    left: 2px;
+    border: 7px solid #fff;
+    border-radius: 13px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 22px 55px #21626725;
+    transform: rotate(-4deg);
+}
+
+.marketing .screen-bar {
+    height: 39px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 15px;
+    border-bottom: 1px solid #edf0f0;
+    font-size: 9px;
+}
+
+.marketing .screen-bar strong {
+    font-size: 12px;
+}
+
+.marketing .screen-mark {
+    color: var(--aqua);
+    font-size: 18px;
+    vertical-align: middle;
+}
+
+.marketing .screen-bar>span {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.marketing .screen-bar i {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #dbe9e8;
+}
+
+.marketing .screen-body {
+    display: flex;
+    background: #f7fafa;
+}
+
+.marketing .screen-side {
+    width: 40px;
+    flex-shrink: 0;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 17px;
+    padding-top: 16px;
+    color: #8aa7a9;
+}
+
+.marketing .screen-side .selected {
+    background: #d9f3f4;
+    color: var(--aqua);
+    padding: 0 8px;
+    border-radius: 4px;
+}
+
+.marketing .side-dot {
+    width: 15px;
+    height: 4px;
+    background: #bed4d5;
+    border-radius: 2px;
+}
+
+.marketing .screen-content {
+    padding: 20px 15px;
+    width: calc(100% - 40px);
+}
+
+.marketing .screen-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.marketing .screen-title small {
+    font-size: 6px;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+}
+
+.marketing .screen-title h2 {
+    font-size: 17px;
+    line-height: 1.4;
+}
+
+.marketing .status {
+    font-size: 7px;
+    background: #daf3eb;
+    color: #287b66;
+    border-radius: 20px;
+    padding: 3px 9px;
+}
+
+.marketing .screen-toolbar {
+    display: flex;
+    justify-content: space-between;
+    margin: 15px 0 8px;
+    font-size: 8px;
+}
+
+.marketing .screen-toolbar>span:first-child {
+    background: #fff;
+    border: 1px solid #dae6e6;
+    padding: 2px 8px;
+    width: 80px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.marketing .demo-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    font-size: 6px;
+    table-layout: fixed;
+}
+
+.marketing .demo-table th,
+.marketing .demo-table td {
+    border: 1px solid #e8eeee;
+    padding: 5px 3px;
+    text-align: center;
+}
+
+.marketing .demo-table thead {
+    background: #edf5f5;
+}
+
+.marketing .demo-table th:first-child {
+    width: 72px;
+}
+
+.marketing .demo-table tbody th {
+    font-weight: 500;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.marketing .avatar {
+    display: inline-grid;
+    place-items: center;
+    width: 15px;
+    height: 15px;
+    background: #d8eeee;
+    border-radius: 50%;
+    margin-right: 4px;
+    color: #478080;
+}
+
+.marketing .avatar-1 {
+    background: #f4e7da;
+    color: #9c7a56;
+}
+
+.marketing .avatar-2 {
+    background: #e7e2f4;
+    color: #8c77a7;
+}
+
+.marketing .shift {
+    display: block;
+    border-radius: 3px;
+    background: #d7edf7;
+    color: #4b7d91;
+    padding: 4px 0;
+    white-space: nowrap;
+}
+
+.marketing .shift-1 {
+    background: #d7eee5;
+    color: #4d8b78;
+}
+
+.marketing .shift-2 {
+    background: #ece4f6;
+    color: #927caf;
+}
+
+.marketing .shift-off {
+    color: #a4b1b2;
+}
+
+.marketing .screen-footer {
+    display: flex;
+    justify-content: space-between;
+    font-size: 7px;
+    color: #769395;
+    margin-top: 13px;
+}
+
+.marketing .screen-footer i {
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    background: #53b4a2;
+    border-radius: 50%;
+    margin-right: 4px;
+}
+
+.marketing .phone {
+    position: absolute;
+    right: -35px;
+    top: 167px;
+    width: 160px;
+    height: 286px;
+    border: 5px solid #fcfefe;
+    border-radius: 25px;
+    background: #e7f0f2;
+    box-shadow: 0 15px 35px #205d6633;
+    transform: rotate(7deg);
+    overflow: hidden;
+}
+
+.marketing .phone-camera {
+    position: absolute;
+    top: 5px;
+    left: 54px;
+    height: 9px;
+    width: 40px;
+    background: #254b4e;
+    border-radius: 10px;
+}
+
+.marketing .phone-top {
+    display: flex;
+    justify-content: space-between;
+    padding: 11px 10px 6px;
+    font-size: 7px;
+    background: #fff;
+}
+
+.marketing .phone-header {
+    background: #fff;
+    padding: 8px;
+    font-size: 7px;
+}
+
+.marketing .phone-chat {
+    display: flex;
+    gap: 5px;
+    padding: 20px 7px;
+    font-size: 6px;
+}
+
+.marketing .chat-avatar {
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    background: var(--aqua);
+    color: white;
+    font-size: 7px;
+    font-weight: bold;
+}
+
+.marketing .chat-bubble {
+    background: white;
+    padding: 9px 7px;
+    border-radius: 0 8px 8px;
+    margin-top: 4px;
+    line-height: 1.8;
+    color: #466066;
+}
+
+.marketing .chat-time {
+    display: block;
+    text-align: right;
+    font-size: 5px;
+    margin-top: 3px;
+}
+
+.marketing .phone-bottom {
+    position: absolute;
+    bottom: 0;
+    background: #fff;
+    width: 100%;
+    padding: 9px 6px;
+    display: flex;
+    gap: 7px;
+    align-items: center;
+    font-size: 10px;
+}
+
+.marketing .phone-bottom span {
+    font-size: 5px;
+    background: #eff3f3;
+    border-radius: 15px;
+    padding: 4px 9px;
+}
+
+.marketing .floating-note {
+    position: absolute;
+    bottom: 5px;
+    left: 53px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #fff;
+    border-radius: 10px;
+    padding: 12px 20px;
+    box-shadow: 0 10px 30px #2c707c14;
+    font-size: 12px;
+    font-weight: 700;
+    transform: rotate(-3deg);
+}
+
+.marketing .floating-note>span {
+    width: 29px;
+    height: 29px;
+    display: grid;
+    place-items: center;
+    background: #e0f6eb;
+    color: #389f76;
+    border-radius: 50%;
+}
+
+.marketing .floating-note small {
+    display: block;
+    color: #78918f;
+    font-size: 9px;
+    font-weight: 400;
+}
+
+.marketing .visual-disclaimer {
+    position: absolute;
+    bottom: -32px;
+    left: 95px;
+    font-size: 8px;
+    color: #517d80;
+}
+
+.marketing .benefit-strip {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1.2fr 1.1fr;
+    align-items: center;
+    gap: 24px;
+    min-height: 126px;
+    border-bottom: 1px solid #e3eded;
+    font-size: 12px;
+}
+
+.marketing .benefit-strip p {
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+.marketing .benefit-strip strong {
+    font-size: 14px;
+}
+
+.marketing .benefit-strip>div {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 700;
+}
+
+.marketing .benefit-strip>div span {
+    font-size: 25px;
+    color: #74bec4;
+    font-weight: 500;
+}
+
+.marketing .section {
+    padding-block: 95px;
+}
+
+.marketing .section-heading {
+    text-align: center;
+    margin-bottom: 48px;
+}
+
+.marketing .section-heading .eyebrow {
+    justify-content: center;
+    font-size: 11px;
+    letter-spacing: 2.5px;
+    margin-bottom: 14px;
+}
+
+.marketing .section-heading h2 {
+    font-size: 31px;
+    letter-spacing: 1.2px;
+    line-height: 1.6;
+    font-weight: 750;
+}
+
+.marketing .section-heading>p:last-child:not(.eyebrow) {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 2;
+    margin-top: 20px;
+}
+
+.marketing .about-grid {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 35px;
+    text-align: center;
+}
+
+.marketing .about-grid article+article {
+    border-left: 1px solid #e1eeee;
+}
+
+.marketing .line-icon {
+    font-size: 41px;
+    color: var(--aqua);
+    height: 75px;
+    display: block;
+    line-height: 1.5;
+}
+
+.marketing h3 {
+    font-size: 19px;
+    font-weight: 700;
+}
+
+.marketing .about-grid p {
+    font-size: 12px;
+    line-height: 2;
+    color: var(--muted);
+    margin-top: 15px;
+}
+
+.marketing .features {
+    background: var(--pale);
+}
+
+.marketing .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 25px;
+}
+
+.marketing .feature-card {
+    overflow: hidden;
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #e4f0f0;
+}
+
+.marketing .feature-art {
+    height: 200px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #dbf0f0;
+    padding: 25px;
+}
+
+.marketing .feature-text {
+    padding: 25px 25px 30px;
+}
+
+.marketing .feature-number {
+    color: var(--aqua);
+    font-size: 25px;
+    font-weight: 600;
+    margin-bottom: 12px!important;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.marketing .feature-number span {
+    font-size: 9px;
+    letter-spacing: 2px;
+}
+
+.marketing .feature-text h3 {
+    font-size: 18px;
+}
+
+.marketing .feature-text>p:not(.feature-number) {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 2;
+    margin: 14px 0 20px;
+}
+
+.marketing .feature-tag {
+    font-size: 10px;
+    color: #267e86;
+    background: #edf8f8;
+    border-radius: 4px;
+    padding: 6px 10px;
+}
+
+.marketing .mini-form,
+.marketing .mini-schedule {
+    width: 225px;
+    background: #fff;
+    border-radius: 8px;
+    padding: 14px;
+    box-shadow: 0 10px 20px #4b898f14;
+    transform: rotate(-5deg);
+    font-size: 7px;
+}
+
+.marketing .mini-heading {
+    font-size: 10px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.marketing .mini-form>div:not(:first-child) {
+    border-bottom: 1px solid #ecf1f1;
+    padding: 5px 0;
+    display: flex;
+    justify-content: space-between;
+}
+
+.marketing .mini-form b {
+    font-weight: 500;
+    background: #edf7f7;
+    padding: 1px 7px;
+}
+
+.marketing .mini-submit {
+    display: block;
+    margin-top: 8px;
+    padding: 5px;
+    background: var(--aqua);
+    color: white;
+    text-align: center;
+    border-radius: 4px;
+}
+
+.marketing .art-badge {
+    position: absolute;
+    right: 28px;
+    bottom: 21px;
+    border: 4px solid #dbf0f0;
+    background: #31b87a;
+    color: #fff;
+    border-radius: 50%;
+    height: 53px;
+    width: 53px;
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    font-size: 10px;
+}
+
+.marketing .art-schedule {
+    background: #e8edf6;
+}
+
+.marketing .mini-schedule {
+    transform: rotate(4deg);
+    padding: 17px;
+}
+
+.marketing .mini-heading>span {
+    float: right;
+    color: var(--aqua);
+}
+
+.marketing .mini-grid {
+    display: grid;
+    grid-template-columns: repeat(7,1fr);
+    gap: 4px;
+}
+
+.marketing .mini-cell {
+    height: 16px;
+    border-radius: 3px;
+    background: #d4ebe7;
+}
+
+.marketing .cell-1 {
+    background: #e3dff3;
+}
+
+.marketing .cell-2 {
+    background: #d7e8f5;
+}
+
+.marketing .cell-3 {
+    background: #f3f5f6;
+}
+
+.marketing .mini-complete {
+    font-size: 7px;
+    color: #408874;
+    margin-top: 12px;
+}
+
+.marketing .art-notify {
+    background: #f2ede4;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.marketing .mini-notification {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #fff;
+    border-radius: 9px;
+    padding: 17px 13px;
+    box-shadow: 0 8px 20px #685c4312;
+    transform: rotate(-5deg);
+    white-space: nowrap;
+}
+
+.marketing .notification-icon {
+    background: #3eb580;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+}
+
+.marketing .mini-notification strong {
+    font-size: 9px;
+}
+
+.marketing .mini-notification p {
+    font-size: 7px!important;
+    margin: 4px 0!important;
+}
+
+.marketing .mini-notification small {
+    font-size: 6px;
+    color: #99a09b;
+}
+
+.marketing .notification-caption {
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: #8c816c;
+}
+
+.marketing .section-note {
+    text-align: center;
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 25px;
+}
+
+.marketing .flow-list {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 55px;
+    margin: 0;
+}
+
+.marketing .flow-list li {
+    position: relative;
+    padding-top: 22px;
+    border-top: 2px solid #a5d9dd;
+}
+
+.marketing .flow-list li:not(:last-child):after {
+    content: '→';
+    position: absolute;
+    right: -35px;
+    top: 70px;
+    color: #81c3c9;
+}
+
+.marketing .flow-list li>span {
+    color: var(--aqua);
+    font-size: 10px;
+    letter-spacing: 1px;
+}
+
+.marketing .flow-list b {
+    font-size: 25px;
+    margin-left: 8px;
+    font-weight: 500;
+}
+
+.marketing .flow-list h3 {
+    font-size: 17px;
+    margin: 10px 0;
+}
+
+.marketing .flow-list p {
+    font-size: 12px;
+    line-height: 2;
+    color: var(--muted);
+}
+
+.marketing .faq-section {
+    background: #fafcfc;
+}
+
+.marketing .faq-layout {
+    display: grid;
+    grid-template-columns: 1fr 1.65fr;
+    gap: 50px;
+}
+
+.marketing .faq-layout .section-heading {
+    text-align: left;
+}
+
+.marketing .faq-layout .eyebrow {
+    justify-content: flex-start;
+}
+
+.marketing .faq-list details {
+    border-bottom: 1px solid #dce9e9;
+}
+
+.marketing .faq-list details:first-child {
+    border-top: 1px solid #dce9e9;
+}
+
+.marketing .faq-list summary {
+    padding: 21px 28px 21px 0;
+    font-size: 13px;
+    list-style: none;
+    cursor: pointer;
+    position: relative;
+    font-weight: 600;
+    display: flex;
+    align-items: baseline;
+    gap: 15px;
+}
+
+.marketing .faq-list summary::-webkit-details-marker {
+    display: none;
+}
+
+.marketing .faq-list summary:after {
+    content: '+';
+    position: absolute;
+    right: 0;
+    font-size: 20px;
+    color: var(--aqua);
+    font-weight: 400;
+    top: 16px;
+}
+
+.marketing .faq-list details[open] summary:after {
+    content: '−';
+}
+
+.marketing .faq-list summary>span {
+    color: var(--aqua);
+    font-size: 18px;
+}
+
+.marketing .faq-list details>p {
+    font-size: 12px;
+    line-height: 2;
+    color: var(--muted);
+    padding: 0 20px 23px 32px;
+}
+
+.marketing .closing {
+    text-align: center;
+    background: #009eaa;
+    color: white;
+    padding: 68px 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.marketing .closing:before,
+.marketing .closing:after {
+    content: '';
+    position: absolute;
+    border: 1px solid #ffffff25;
+    width: 500px;
+    height: 500px;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.marketing .closing:before {
+    left: -220px;
+    top: -260px;
+}
+
+.marketing .closing:after {
+    right: -210px;
+    bottom: -330px;
+}
+
+.marketing .closing .eyebrow {
+    color: #c5f2f4;
+    justify-content: center;
+    font-size: 10px;
+}
+
+.marketing .closing h2 {
+    font-size: 31px;
+    letter-spacing: 1.5px;
+    line-height: 1.7;
+    margin: 15px 0;
+}
+
+.marketing .closing p:not(.eyebrow) {
+    font-size: 12px;
+    margin-bottom: 25px;
+}
+
+.marketing .button-white {
+    background: white;
+    color: #008591;
+    border-color: white;
+    min-width: 265px;
+}
+
+.marketing .button-white:hover {
+    background: #dff6f7;
+}
+
+.marketing .closing small {
+    display: block;
+    font-size: 9px;
+    margin-top: 13px;
+    color: #d2f1f2;
+}
+
+.marketing .site-footer {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    min-height: 125px;
+}
+
+.marketing .site-footer .brand {
+    font-size: 25px;
+}
+
+.marketing .site-footer p {
+    font-size: 11px;
+    color: var(--muted);
+}
+
+.marketing .site-footer small {
+    margin-left: auto;
+    color: #91a2a3;
+    font-size: 10px;
+}
+
+.marketing .back-top {
+    display: grid;
+    place-items: center;
+    border: 1px solid #cce4e6;
+    border-radius: 50%;
+    height: 35px;
+    width: 35px;
+    color: var(--aqua)!important;
+}
+
+.marketing .mobile-break {
+    display: none;
+}
+
+@media(min-width:1450px) {
+    .marketing .hero-inner {
+        max-width: 1280px;
+        gap: 50px;
+    }
+
+    .marketing .hero-visual {
+        max-width: 560px;
+    }
+
+    .marketing .hero {
+        background: linear-gradient(110deg,#fff,#e2f5f6 55%,#77c9cf);
+    }
+
+}
+
+@media(max-width:1100px) {
+    .marketing .desktop-nav {
+        gap: 18px;
+        font-size: 11px;
+    }
+
+    .marketing .site-header {
+        gap: 20px;
+    }
+
+    .marketing .hero-inner {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .marketing .hero-actions {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .marketing .hero-actions .button {
+        min-width: 235px;
+    }
+
+    .marketing .hero-visual {
+        transform: scale(.83);
+        transform-origin: left center;
+    }
+
+    .marketing .hero-inner {
+        min-height: 650px;
+    }
+
+    .marketing .hero-copy {
+        padding-block: 40px;
+    }
+
+    .marketing .hero-description {
+        font-size: 13px!important;
+    }
+
+    .marketing .benefit-strip {
+        gap: 14px;
+    }
+
+    .marketing .benefit-strip>div {
+        font-size: 10px;
+        gap: 8px;
+    }
+
+    .marketing .feature-text {
+        padding: 20px;
+    }
+
+    .marketing .feature-text h3 {
+        font-size: 16px;
+    }
+
+    .marketing .feature-art {
+        padding: 20px 12px;
+    }
+
+    .marketing .mini-notification {
+        padding: 12px 9px;
+        gap: 6px;
+    }
+
+    .marketing .site-header .brand {
+        font-size: 25px;
+    }
+
+}
+
+@media(max-width:800px) {
+    .marketing .container {
+        padding-inline: 24px;
+    }
+
+    .marketing .site-header {
+        height: 76px;
+        padding-inline: 24px;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .marketing .desktop-nav {
+        display: none;
+    }
+
+    .marketing .site-header>.button {
+        margin-left: auto;
+    }
+
+    .marketing .mobile-nav {
+        display: block;
+        position: relative;
+        font-size: 11px;
+    }
+
+    .marketing .mobile-nav summary {
+        cursor: pointer;
+        list-style: none;
+    }
+
+    .marketing .mobile-nav summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .marketing .mobile-nav nav {
+        position: absolute;
+        right: 0;
+        top: 35px;
+        background: white;
+        box-shadow: 0 10px 30px #24454b20;
+        padding: 15px;
+        width: 210px;
+        border-radius: 10px;
+    }
+
+    .marketing .mobile-nav nav a {
+        display: block;
+        padding: 10px;
+    }
+
+    .marketing .hero-inner {
+        grid-template-columns: 1fr;
+        gap: 0;
+        min-height: unset;
+    }
+
+    .marketing .hero-copy {
+        text-align: center;
+        padding: 45px 0 12px;
+    }
+
+    .marketing .hero-copy .eyebrow {
+        justify-content: center;
+    }
+
+    .marketing h1 {
+        font-size: 45px;
+        line-height: 1.55;
+        margin: 20px 0;
+    }
+
+    .marketing .hero-actions {
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .marketing .hero-actions .button {
+        min-width: 0;
+    }
+
+    .marketing .hero-visual {
+        width: 550px;
+        height: 465px;
+        margin: 0 auto 35px;
+        transform: scale(.92);
+        transform-origin: center center;
+    }
+
+    .marketing .hero {
+        background: linear-gradient(170deg,#fff 10%,#edfafa 43%,#9cdbdf);
+    }
+
+    .marketing .hero-note {
+        margin-top: 15px!important;
+    }
+
+    .marketing .benefit-strip {
+        grid-template-columns: repeat(3,1fr);
+        gap: 15px;
+        padding-block: 26px;
+    }
+
+    .marketing .benefit-strip>p {
+        grid-column: 1/-1;
+        text-align: center;
+    }
+
+    .marketing .benefit-strip>p br {
+        display: none;
+    }
+
+    .marketing .benefit-strip>div {
+        flex-direction: column;
+        gap: 0;
+        text-align: center;
+        font-size: 11px;
+    }
+
+    .marketing .benefit-strip>div span {
+        font-size: 22px;
+    }
+
+    .marketing .section {
+        padding-block: 65px;
+    }
+
+    .marketing .section-heading {
+        margin-bottom: 32px;
+    }
+
+    .marketing .section-heading h2 {
+        font-size: 27px;
+    }
+
+    .marketing .about-grid {
+        gap: 20px;
+    }
+
+    .marketing .about-grid h3 {
+        font-size: 17px;
+    }
+
+    .marketing .about-grid p {
+        font-size: 11px;
+    }
+
+    .marketing .about-grid p br {
+        display: none;
+    }
+
+    .marketing .feature-grid {
+        grid-template-columns: 1fr;
+        gap: 22px;
+        max-width: 580px;
+        margin: auto;
+    }
+
+    .marketing .feature-card {
+        display: grid;
+        grid-template-columns: 42% 58%;
+    }
+
+    .marketing .feature-art {
+        height: 100%;
+        min-height: 220px;
+    }
+
+    .marketing .mini-form,
+    .marketing .mini-schedule {
+        width: 190px;
+    }
+
+    .marketing .mini-notification {
+        white-space: normal;
+    }
+
+    .marketing .feature-text h3 {
+        font-size: 17px;
+    }
+
+    .marketing .flow-list {
+        gap: 30px;
+    }
+
+    .marketing .flow-list li:not(:last-child):after {
+        right: -23px;
+    }
+
+    .marketing .flow-list h3 {
+        font-size: 15px;
+    }
+
+    .marketing .faq-layout {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .marketing .faq-layout .section-heading {
+        text-align: center;
+    }
+
+    .marketing .faq-layout .eyebrow {
+        justify-content: center;
+    }
+
+    .marketing .site-footer {
+        gap: 15px;
+        flex-wrap: wrap;
+        padding-block: 25px;
+    }
+
+    .marketing .site-footer p {
+        display: none;
+    }
+
+    .marketing section[id] {
+        scroll-margin-top: 85px;
+    }
+
+}
+
+@media(max-width:540px) {
+    .marketing .site-header {
+        padding-inline: 18px;
+        gap: 12px;
+        height: 72px;
+    }
+
+    .marketing .site-header .brand {
+        font-size: 23px;
+        gap: 8px;
+    }
+
+    .marketing .brand-symbol {
+        grid-template-columns: repeat(2,9px);
+        gap: 3px;
+    }
+
+    .marketing .brand-symbol i {
+        width: 9px;
+        height: 12px;
+    }
+
+    .marketing .brand small {
+        font-size: 8px;
+        letter-spacing: .5px;
+    }
+
+    .marketing .site-header .button-small {
+        font-size: 10px;
+        padding: 9px 12px;
+        gap: 8px;
+    }
+
+    .marketing .mobile-nav summary {
+        font-size: 0;
+    }
+
+    .marketing .mobile-nav summary span {
+        font-size: 18px;
+    }
+
+    .marketing .hero-copy {
+        padding-top: 37px;
+    }
+
+    .marketing .hero-copy .eyebrow {
+        font-size: 10px;
+        letter-spacing: 1px;
+    }
+
+    .marketing h1 {
+        font-size: 34px;
+        letter-spacing: 0;
+    }
+
+    .marketing .hero-description {
+        font-size: 12px!important;
+    }
+
+    .marketing .hero-actions {
+        flex-direction: column;
+        margin-top: 23px;
+    }
+
+    .marketing .hero-actions .button {
+        width: 250px;
+        padding-block: 13px;
+        font-size: 12px;
+    }
+
+    .marketing .hero-note {
+        font-size: 8px;
+        letter-spacing: 0;
+    }
+
+    .marketing .hero-note b {
+        margin: 0 3px;
+    }
+
+    .marketing .hero-visual {
+        width: 550px;
+        left: 50%;
+        margin-left: -275px;
+        transform: scale(.59);
+        height: 465px;
+        margin-top: -68px;
+        margin-bottom: -67px;
+    }
+
+    .marketing .benefit-strip {
+        gap: 6px;
+    }
+
+    .marketing .benefit-strip>div {
+        font-size: 9px;
+    }
+
+    .marketing .benefit-strip p {
+        font-size: 11px;
+    }
+
+    .marketing .benefit-strip strong {
+        font-size: 12px;
+    }
+
+    .marketing .section {
+        padding-block: 55px;
+    }
+
+    .marketing .section-heading h2 {
+        font-size: 23px;
+    }
+
+    .marketing .mobile-break {
+        display: block;
+    }
+
+    .marketing .section-heading>p:last-child:not(.eyebrow) {
+        font-size: 11px;
+    }
+
+    .marketing .about-grid {
+        grid-template-columns: 1fr;
+        gap: 25px;
+    }
+
+    .marketing .about-grid article {
+        display: grid;
+        grid-template-columns: 55px 1fr;
+        text-align: left;
+        column-gap: 15px;
+        padding-bottom: 22px;
+        border-bottom: 1px solid #e1eeee;
+    }
+
+    .marketing .about-grid article+article {
+        border-left: 0;
+    }
+
+    .marketing .line-icon {
+        grid-row: 1/3;
+    }
+
+    .marketing .about-grid p {
+        margin-top: 5px;
+    }
+
+    .marketing .about-grid p br {
+        display: block;
+    }
+
+    .marketing .feature-card {
+        display: block;
+    }
+
+    .marketing .feature-art {
+        height: 190px;
+        min-height: 0;
+    }
+
+    .marketing .mini-form,
+    .marketing .mini-schedule {
+        width: 225px;
+    }
+
+    .marketing .mini-notification {
+        white-space: nowrap;
+        padding: 17px;
+    }
+
+    .marketing .feature-text {
+        padding: 22px;
+    }
+
+    .marketing .feature-text>p:not(.feature-number) {
+        font-size: 12px;
+    }
+
+    .marketing .feature-number {
+        margin-bottom: 8px!important;
+    }
+
+    .marketing .feature-text h3 {
+        font-size: 19px;
+    }
+
+    .marketing .section-note {
+        font-size: 9px;
+        text-align: left;
+    }
+
+    .marketing .flow-list {
+        grid-template-columns: 1fr;
+        gap: 25px;
+    }
+
+    .marketing .flow-list li {
+        padding: 16px 0 0 65px;
+        min-height: 110px;
+    }
+
+    .marketing .flow-list li>span {
+        position: absolute;
+        left: 0;
+        top: 20px;
+        font-size: 8px;
+    }
+
+    .marketing .flow-list b {
+        display: block;
+        margin: 0;
+        font-size: 26px;
+    }
+
+    .marketing .flow-list h3 {
+        font-size: 17px;
+        margin-top: 2px;
+    }
+
+    .marketing .flow-list li:not(:last-child):after {
+        display: none;
+    }
+
+    .marketing .faq-list summary {
+        font-size: 12px;
+    }
+
+    .marketing .closing {
+        padding-block: 50px;
+    }
+
+    .marketing .closing h2 {
+        font-size: 24px;
+    }
+
+    .marketing .closing p:not(.eyebrow) {
+        font-size: 11px;
+    }
+
+    .marketing .site-footer .brand {
+        font-size: 22px;
+    }
+
+    .marketing .site-footer small {
+        font-size: 8px;
+    }
+
+    .marketing .back-top {
+        height: 28px;
+        width: 28px;
+    }
+
+}
+
+@media(prefers-reduced-motion:reduce) {
+    .marketing .button {
+        transition: none;
+    }
+
+}
+

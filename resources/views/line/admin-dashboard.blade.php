@@ -10,7 +10,7 @@
             @vite(['resources/css/app.css', 'resources/js/app.js'])
         @endif
     </head>
-    <body class="min-h-screen bg-slate-100 text-slate-900 antialiased">
+    <body class="hub-theme hub-line min-h-screen bg-slate-100 text-slate-900 antialiased">
         <main class="mx-auto min-h-screen w-full max-w-md px-4 py-4">
             <header class="sticky top-0 z-10 -mx-4 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur">
                 <div class="flex items-center justify-between gap-3">

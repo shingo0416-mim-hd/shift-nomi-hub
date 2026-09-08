@@ -13,12 +13,13 @@ return new class extends Migration
             $table->foreignId('tenant_id')->constrained()->cascadeOnDelete();
             $table->foreignId('shift_schedule_id')->constrained()->cascadeOnDelete();
             $table->foreignId('member_id')->constrained()->cascadeOnDelete();
+            $table->string('notification_type')->default('shift_confirmed');
             $table->string('status')->default('pending');
             $table->timestamp('sent_at')->nullable();
             $table->text('last_error')->nullable();
             $table->timestamps();
 
-            $table->unique(['shift_schedule_id', 'member_id']);
+            $table->unique(['shift_schedule_id', 'member_id', 'notification_type'], 'shift_notification_unique');
         });
     }
 

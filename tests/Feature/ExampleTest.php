@@ -10,10 +10,13 @@ class ExampleTest extends TestCase
     /**
      * A basic test example.
      */
-    public function test_the_application_redirects_to_login(): void
+    public function test_the_application_shows_the_service_home_page(): void
     {
         $response = $this->get('/');
 
-        $response->assertRedirect('/login');
+        $response->assertOk();
+        $response->assertSee('ShiftHub');
+        $response->assertSee('シフトづくりを、');
+        $response->assertSee(route('login'));
     }
 }

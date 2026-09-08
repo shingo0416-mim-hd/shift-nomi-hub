@@ -1,0 +1,188 @@
+/* Application palette is scoped to preserve status colors and the public page. */
+.hub-theme {
+    --color-teal-50: #effafa;
+    --color-teal-100: #dcf3f4;
+    --color-teal-200: #b6e1e5;
+    --color-teal-500: #00a3af;
+    --color-teal-600: #0095a1;
+    --color-teal-700: #00818c;
+    --color-teal-800: #006c77;
+    --color-teal-900: #245a60;
+    --color-slate-50: #f7fafa;
+    --color-slate-100: #eff5f5;
+    --color-slate-200: #dce8e9;
+    --color-slate-500: #64797b;
+    --color-slate-600: #526c70;
+    --color-slate-900: #28484b;
+    --color-slate-950: #203e42;
+    --color-gray-100: #f3f8f8;
+    --color-gray-200: #e1ecec;
+    --color-gray-300: #d0e0e1;
+    --color-gray-500: #64797b;
+    --color-gray-700: #466367;
+    --color-gray-900: #28484b;
+    color: #28484b;
+    font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
+    line-height: 1.7;
+}
+.hub-theme .hub-brand-mark {
+    display: grid;
+    flex-shrink: 0;
+    grid-template-columns: repeat(2, 12px);
+    gap: 4px;
+    margin: 4px;
+    transform: rotate(-8deg);
+}
+.hub-brand-mark i {
+    width: 12px;
+    height: 15px;
+    border-radius: 3px;
+    background: #00a3af;
+}
+.hub-brand-mark i:nth-child(2) { opacity: .45; }
+.hub-brand-mark i:nth-child(3) { opacity: .7; }
+.hub-theme .hub-wordmark {
+    color: #28484b;
+    font-size: 25px;
+    font-weight: 800;
+    letter-spacing: -.8px;
+    line-height: 1.2;
+}
+.hub-wordmark > span { color: #00a3af; }
+.hub-wordmark small {
+    display: block;
+    color: #64797b;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin-top: 7px;
+}
+.hub-theme :is(h1, h2, h3) { letter-spacing: .035em; }
+.hub-theme .font-black { font-weight: 700; }
+.hub-theme :is(a, button, input, select, textarea):focus-visible {
+    outline: 2px solid #00818c;
+    outline-offset: 3px;
+}
+.hub-theme :is(input, select, textarea):not([type=checkbox]):not([type=radio]):not([type=hidden]) {
+    border-radius: 10px;
+}
+.hub-theme :is(input[type=checkbox], input[type=radio]) { accent-color: #00818c; }
+.hub-theme :is(button, a).bg-teal-700,
+.hub-theme .btn-gradient-primary {
+    border-radius: 999px;
+    background: #00818c;
+    border-color: #00818c;
+    color: white;
+    box-shadow: 0 4px 12px #00818c12;
+    font-weight: 700;
+    transition: background .2s, box-shadow .2s;
+}
+.hub-theme :is(button, a).bg-teal-700:hover:not(:disabled),
+.hub-theme .btn-gradient-primary:hover:not(:disabled) {
+    background: #006c77;
+    box-shadow: 0 5px 16px #00818c20;
+}
+.hub-theme .hub-app-header {
+    border-color: #dcebec;
+    box-shadow: 0 2px 12px #2b777805;
+}
+.hub-theme [data-sidebar-expanded],
+.hub-theme [data-sidebar-collapsed] {
+    border-color: #dcebec;
+    box-shadow: none;
+}
+.hub-theme [data-sidebar-expanded] nav { padding-inline: 16px; }
+.hub-theme [data-sidebar-link] {
+    border: 1px solid transparent;
+    transition: background .2s, color .2s;
+}
+.hub-theme [data-sidebar-link][aria-current=page] {
+    background: #e6f6f7;
+    color: #007e88;
+    border-color: #cce8eb;
+}
+.hub-theme [data-sidebar-link]:hover { background: #f0f9f9; color: #007e88; }
+.hub-theme .hub-workspace { padding-top: 28px; padding-bottom: 48px; }
+.hub-theme .hub-overview-banner {
+    border: 1px solid #c9e8eb;
+    background: linear-gradient(110deg, #fff 0%, #e9f8f9 52%, #c7ecee 100%);
+    color: #28484b;
+}
+.hub-theme .hub-overview-banner > div { flex-wrap: wrap; }
+.hub-theme .hub-overview-banner h2 { font-size: 27px; }
+.hub-theme :is(section, article, aside).bg-white.border {
+    border-color: #dce8e9;
+    border-radius: 16px;
+    box-shadow: 0 4px 18px #254f5504;
+}
+.hub-theme thead { background: #f0f8f8; }
+.hub-theme th { font-weight: 600; }
+.hub-theme tbody tr { transition: background .15s; }
+.hub-theme tbody tr:hover { background: #f8fcfc; }
+.hub-theme [data-stat] { font-variant-numeric: tabular-nums; }
+.hub-auth {
+    min-height: 100vh;
+    background: linear-gradient(120deg, #fff 10%, #f2fbfb 44%, #c7e9ec 100%);
+}
+.hub-auth-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    max-width: 1360px;
+    margin: auto;
+    padding: 30px 48px;
+}
+.hub-home-link { color: #527b80; font-size: 12px; }
+.hub-home-link:hover { color: #00818c; }
+.hub-home-link span { margin-left: 15px; }
+.hub-auth-layout {
+    max-width: 1160px;
+    min-height: calc(100vh - 185px);
+    margin: auto;
+    padding: 32px 40px 55px;
+    display: grid;
+    grid-template-columns: 1fr 1.1fr;
+    align-items: center;
+    gap: 70px;
+}
+.hub-eyebrow { color: #00818c; font-size: 11px; font-weight: 700; letter-spacing: 2px; }
+.hub-auth-intro h1 {
+    font-size: clamp(30px, 3.2vw, 43px);
+    line-height: 1.65;
+    font-weight: 800;
+    margin: 20px 0;
+}
+.hub-auth-intro h1 span { color: #0095a1; }
+.hub-auth-description { font-size: 14px; line-height: 2.2; color: #64797b; }
+.hub-auth-steps { list-style: none; padding: 0; margin-top: 35px; }
+.hub-auth-steps li { display: flex; align-items: center; gap: 20px; font-size: 13px; margin-top: 15px; }
+.hub-auth-steps span { color: #6db8c0; font-size: 24px; font-weight: 500; }
+.hub-auth-card {
+    min-width: 0;
+    background: white;
+    border: 1px solid #d8ebed;
+    border-radius: 24px;
+    box-shadow: 0 20px 60px #2b747811;
+    overflow: hidden;
+}
+.hub-auth-footer { text-align: center; padding: 18px; font-size: 10px; color: #64797b; }
+.hub-line > main > header { border-color: #dce8e9; }
+@media (max-width: 1023px) {
+    .hub-auth-layout { gap: 35px; padding-inline: 28px; }
+    .hub-auth-intro h1 { font-size: 30px; }
+}
+@media (max-width: 767px) {
+    .hub-auth-header { padding: 22px 24px; }
+    .hub-auth-layout { grid-template-columns: 1fr; max-width: 580px; gap: 26px; padding: 15px 24px 30px; min-height: auto; }
+    .hub-auth-intro { text-align: center; }
+    .hub-auth-intro h1 { font-size: 28px; margin: 12px 0 0; }
+    .hub-auth-description, .hub-auth-steps { display: none; }
+    .hub-home-link { font-size: 10px; }
+    .hub-home-link span { margin-left: 5px; }
+    .hub-theme .hub-overview-banner h2 { font-size: 23px; }
+    .hub-theme .hub-workspace { padding-top: 20px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .hub-theme :is(a, button, tr) { transition: none !important; }
+}

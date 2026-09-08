@@ -168,7 +168,7 @@ class ShiftAutoScheduler
     private function score(AvailabilityRequest $request, ShiftScheduleDay $day, array $assignmentCounts): float
     {
         $profile = $request->member->schedulingProfile;
-        $newcomerBonus = $profile?->newcomer_priority_until?->endOfDay()->greaterThanOrEqualTo($day->scheduled_on) ? 25 : 0;
+        $newcomerBonus = $request->member->isNewcomerOn($day->scheduled_on) ? 25 : 0;
         $fairnessBonus = max(0, 20 - (($assignmentCounts[$request->member_id] ?? 0) * 2));
 
         return ($request->preference === 'preferred' ? 30 : 15)

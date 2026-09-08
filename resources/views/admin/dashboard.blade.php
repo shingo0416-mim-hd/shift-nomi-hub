@@ -72,15 +72,15 @@
             @vite(['resources/css/app.css', 'resources/js/app.js'])
         @endif
     </head>
-    <body class="min-h-screen bg-gray-100 text-gray-900 antialiased">
+    <body class="hub-theme hub-admin min-h-screen bg-gray-100 text-gray-900 antialiased">
         <div id="adminApp" class="min-h-screen bg-gray-100 pt-16">
-            <header class="fixed inset-x-0 top-0 z-40 border-b border-gray-300 bg-white shadow-sm">
+            <header class="hub-app-header fixed inset-x-0 top-0 z-40 border-b border-gray-300 bg-white shadow-sm">
                 <div class="mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
                     <div class="flex items-center">
                         <a href="{{ route('dashboard') }}" class="flex h-16 items-center gap-3">
-                            <span class="grid size-10 place-items-center rounded-lg bg-teal-700 text-sm font-black text-white">SH</span>
+                            <x-brand-mark />
                             <span>
-                                <span class="block text-base font-black leading-tight text-gray-900">ShiftHub</span>
+                                <span class="hub-wordmark block font-black leading-tight">Shift<span>Hub</span></span>
                                 <span class="block text-xs font-semibold text-gray-500" data-bind="tenantName">{{ Auth::user()->tenant?->name }}</span>
                             </span>
                         </a>
@@ -196,7 +196,7 @@
                 </aside>
 
                 <main class="min-w-0 flex-1">
-                    <div class="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
+                    <div class="hub-workspace mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
                         <div class="mb-5 hidden rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700" data-alert></div>
                         <div class="mb-5 hidden rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700" data-notice></div>
                         @if (session('notice'))
@@ -209,103 +209,82 @@
                         @endif
 
                         @if ($page === 'overview')
-                        <div class="mb-5">
-                            <h2 class="text-xl font-semibold leading-tight text-gray-900">ダッシュボード</h2>
+                        <section class="hub-overview-banner overflow-hidden rounded-2xl p-5 sm:p-7">
+                            <div class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                                <div>
+                                    <p class="text-xs font-black uppercase tracking-[0.2em] text-teal-700">Shift operations</p>
+                                    <h2 class="mt-2 text-2xl font-black">今月のシフト運用</h2>
+                                    <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-600">希望回収から自動編成、確認、LINEでの公開までを一つの画面で管理できます。</p>
+                                </div>
+                                <div class="flex flex-col gap-2 sm:flex-row">
+                                    <form class="flex gap-2" data-form="dashboard-filter">
+                                        <select aria-label="表示する店舗" class="min-w-44 rounded-lg border border-teal-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:ring-teal-500" data-filter="dashboardStore">
+                                            <option class="text-slate-900" value="">すべての店舗</option>
+                                        </select>
+                                        <button type="submit" class="rounded-full border border-teal-200 bg-white px-4 py-2 text-sm font-bold text-teal-700 hover:bg-teal-50">反映</button>
+                                    </form>
+                                    <a href="{{ route('admin.schedules.create') }}" class="inline-flex items-center justify-center rounded-full bg-teal-700 px-4 py-2 text-sm font-bold text-white transition hover:bg-teal-800">＋ 月間シフトを作成</a>
+                                </div>
+                            </div>
+                        </section>
+
+                        <div class="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                            <article class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                                <p class="text-xs font-bold text-slate-500">提出待ちメンバー</p>
+                                <div class="mt-2 flex items-end justify-between"><p class="text-3xl font-black text-slate-950" data-stat="unsubmitted">0</p><span class="rounded-full bg-amber-50 px-2 py-1 text-xs font-bold text-amber-700">要フォロー</span></div>
+                            </article>
+                            <article class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                                <p class="text-xs font-bold text-slate-500">人員不足</p>
+                                <div class="mt-2 flex items-end justify-between"><p class="text-3xl font-black text-slate-950"><span data-stat="shortage">0</span><span class="ml-1 text-sm">枠</span></p><span class="rounded-full bg-red-50 px-2 py-1 text-xs font-bold text-red-700">要調整</span></div>
+                            </article>
+                            <article class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                                <p class="text-xs font-bold text-slate-500">編成済み</p>
+                                <div class="mt-2 flex items-end justify-between"><p class="text-3xl font-black text-slate-950" data-stat="scheduled">0</p><span class="text-xs font-bold text-slate-400">月間シフト</span></div>
+                            </article>
+                            <article class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                                <p class="text-xs font-bold text-slate-500">LINE通知済み</p>
+                                <div class="mt-2 flex items-end justify-between"><p class="text-3xl font-black text-slate-950" data-stat="notified">0</p><span class="rounded-full bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-700">配信完了</span></div>
+                            </article>
                         </div>
 
-                        <div class="mb-4 grid gap-3 lg:grid-cols-[minmax(340px,0.72fr)_minmax(520px,1fr)] lg:items-stretch">
-                            <div class="grid overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm sm:grid-cols-4">
-                                <div class="flex flex-col justify-center border-b border-gray-200 px-3 py-3 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0">
-                                    <p class="text-[11px] font-medium leading-tight text-gray-500">店舗数</p>
-                                    <p class="mt-1 text-lg font-semibold leading-none text-gray-950" data-stat="stores">0</p>
-                                </div>
-                                <div class="flex flex-col justify-center border-b border-gray-200 px-3 py-3 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0">
-                                    <p class="text-[11px] font-medium leading-tight text-gray-500">キャスト数</p>
-                                    <p class="mt-1 text-lg font-semibold leading-none text-gray-950" data-stat="members">0</p>
-                                </div>
-                                <div class="flex flex-col justify-center border-b border-gray-200 px-3 py-3 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0">
-                                    <p class="text-[11px] font-medium leading-tight text-gray-500">提出対象者</p>
-                                    <p class="mt-1 text-lg font-semibold leading-none text-gray-950" data-stat="submitters">0</p>
-                                </div>
-                                <div class="flex flex-col justify-center px-3 py-3">
-                                    <p class="text-[11px] font-medium leading-tight text-gray-500">公開済みシフト</p>
-                                    <p class="mt-1 text-lg font-semibold leading-none text-gray-950" data-stat="published">0</p>
-                                </div>
+                        <section class="mt-5 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                <div><h3 class="font-black text-slate-950">運用フロー</h3><p class="mt-1 text-xs text-slate-500">各月のシフトがどこまで進んでいるかを確認できます。</p></div>
+                                <a href="{{ route('admin.schedules') }}" class="text-sm font-bold text-teal-700 hover:text-teal-900">すべてのシフトを見る →</a>
                             </div>
+                            <div class="mt-5 grid gap-3 md:grid-cols-4" data-dashboard-workflow></div>
+                        </section>
 
-                            <form class="grid rounded-lg border border-gray-200 bg-white p-3 shadow-sm gap-2 lg:grid-cols-[minmax(220px,1fr)_auto_auto] lg:items-center" data-form="dashboard-filter">
-                                <label class="flex min-w-0 items-center gap-2">
-                                    <span class="shrink-0 text-xs font-semibold text-gray-600">店舗</span>
-                                    <select class="min-w-0 flex-1 rounded-md border-gray-300 text-sm shadow-sm focus:border-green-500 focus:ring-green-500" data-filter="dashboardStore">
-                                        <option value="">すべて</option>
-                                    </select>
-                                </label>
-                                <button type="submit" class="inline-flex h-9 items-center justify-center rounded-md bg-gray-900 px-4 text-sm font-semibold text-white shadow-sm hover:bg-gray-800">
-                                    反映
-                                </button>
-                                <button type="button" class="inline-flex h-9 items-center justify-center rounded-md border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50" data-action="reset-dashboard-filter">
-                                    リセット
-                                </button>
-                            </form>
-                        </div>
-
-                        <div class="mt-5">
-                            <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-                                <div class="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                    <div>
-                                        <h3 class="text-sm font-semibold text-gray-900">シフト公開状況の推移</h3>
-                                        <p class="mt-1 text-xs text-gray-500" data-dashboard-chart-caption>全店舗の公開済み・下書きシフトを表示しています。</p>
-                                    </div>
-                                    <div class="flex items-center gap-4 text-xs text-gray-500">
-                                        <span class="inline-flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-green-500"></span>公開済み</span>
-                                        <span class="inline-flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-amber-500"></span>下書き</span>
-                                    </div>
-                                </div>
-                                <div class="relative h-64">
-                                    <svg class="h-full w-full" viewBox="0 0 760 220" preserveAspectRatio="none" aria-label="シフト公開状況の推移グラフ" data-dashboard-chart>
-                                        <g stroke="#e5e7eb" stroke-width="1">
-                                            <path d="M40 20H740M40 80H740M40 140H740M40 200H740"/>
-                                        </g>
-                                        <path d="M40 20V200H740" fill="none" stroke="#cbd5e1" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
-                                    </svg>
-                                </div>
-                                <div class="relative mt-1 h-4 border-t border-gray-100 pt-1 text-xs font-medium text-gray-500" data-dashboard-axis>
-                                    <span class="absolute left-1/2 top-1 -translate-x-1/2 whitespace-nowrap">データなし</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mt-5 rounded-lg border border-gray-200 bg-white shadow-sm">
-                            <div class="border-b border-gray-200 px-5 py-4">
-                                <h3 class="text-sm font-semibold text-gray-900">直近のシフト表</h3>
-                            </div>
-                            <div class="overflow-x-auto">
-                                <table class="min-w-full divide-y divide-gray-200 text-sm">
-                                    <thead class="bg-gray-50 text-xs font-semibold text-gray-500">
-                                        <tr>
-                                            <th class="px-5 py-3 text-left">店舗</th>
-                                            <th class="px-5 py-3 text-left">期間</th>
-                                            <th class="px-5 py-3 text-right">枠数</th>
-                                            <th class="px-5 py-3 text-right">状態</th>
-                                            <th class="px-5 py-3 text-right">操作</th>
-                                            <th class="px-5 py-3 text-right">アクション</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="divide-y divide-gray-100 bg-white" data-list="dashboardSchedules">
-                                        <tr><td colspan="5" class="px-5 py-8 text-center text-sm text-gray-500">データなし</td></tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                        <div class="mt-5 grid gap-5 xl:grid-cols-[1fr_360px]">
+                            <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                                <div class="border-b border-slate-200 px-5 py-4"><h3 class="font-black text-slate-950">月間シフト一覧</h3><p class="mt-1 text-xs text-slate-500">提出状況と人員充足率を優先して表示します。</p></div>
+                                <div class="overflow-x-auto"><table class="min-w-[760px] w-full text-sm"><thead class="bg-slate-50 text-left text-xs font-bold text-slate-500"><tr><th class="px-5 py-3">対象月・店舗</th><th class="px-5 py-3">希望提出</th><th class="px-5 py-3">人員充足</th><th class="px-5 py-3">工程</th><th class="px-5 py-3 text-right">操作</th></tr></thead><tbody class="divide-y divide-slate-100" data-list="dashboardSchedules"></tbody></table></div>
+                            </section>
+                            <aside class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                                <div class="flex items-center justify-between"><h3 class="font-black text-slate-950">対応が必要</h3><span class="rounded-full bg-red-50 px-2 py-1 text-xs font-black text-red-700" data-action-count>0件</span></div>
+                                <div class="mt-4 space-y-3" data-dashboard-actions></div>
+                            </aside>
                         </div>
                         @endif
 
                         @if ($page === 'schedules')
-                        <section class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+                        <div class="mb-5 rounded-xl border border-teal-200 bg-teal-50 p-4">
+                            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                <div><p class="text-xs font-black uppercase tracking-wider text-teal-700">Monthly planning</p><h2 class="mt-1 text-xl font-black text-slate-950">月間シフト管理</h2><p class="mt-1 text-sm text-slate-600">希望提出、必要人数、自動編成、公開状況を月単位で管理します。</p></div>
+                                <a href="{{ route('admin.schedules.create') }}" class="inline-flex items-center justify-center rounded-lg bg-teal-700 px-4 py-2.5 text-sm font-black text-white transition hover:bg-teal-800">＋ 月間シフトを作成</a>
+                            </div>
+                        </div>
+                        <div class="mb-5 grid gap-3 sm:grid-cols-3">
+                            <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><p class="text-xs font-bold text-slate-500">希望回収中</p><p class="mt-2 text-2xl font-black text-slate-950" data-schedule-stat="collecting">0</p></div>
+                            <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><p class="text-xs font-bold text-slate-500">人員不足</p><p class="mt-2 text-2xl font-black text-red-700"><span data-schedule-stat="shortage">0</span><span class="ml-1 text-xs">枠</span></p></div>
+                            <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><p class="text-xs font-bold text-slate-500">公開済み</p><p class="mt-2 text-2xl font-black text-emerald-700" data-schedule-stat="published">0</p></div>
+                        </div>
+                        <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
                                     <div class="border-b border-slate-200 px-4 py-3">
                                         <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                                             <div>
-                                                <p class="text-xs font-black text-teal-700">Schedule Control</p>
-                                                <h2 class="mt-1 text-lg font-bold text-slate-950">シフト管理</h2>
+                                                <h3 class="font-black text-slate-950">シフト一覧</h3>
+                                                <p class="mt-1 text-xs text-slate-500">不足があるシフトを優先して確認してください。</p>
                                             </div>
                                             <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
                                                 <label class="flex items-center gap-2 text-sm font-bold text-slate-600">
@@ -314,21 +293,18 @@
                                                         <option value="">すべて</option>
                                                     </select>
                                                 </label>
-                                                <a href="{{ route('admin.schedules.create') }}" class="inline-flex items-center justify-center rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-800">
-                                                    シフト表作成
-                                                </a>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="overflow-x-auto">
-                                        <table class="min-w-[700px] w-full divide-y divide-slate-200 text-sm">
+                                        <table class="min-w-[900px] w-full divide-y divide-slate-200 text-sm">
                                             <thead class="bg-slate-50 text-left text-xs font-black text-slate-500">
                                                 <tr>
-                                                    <th class="px-4 py-3">店舗</th>
-                                                    <th class="px-4 py-3">期間</th>
-                                                    <th class="px-4 py-3">状態</th>
+                                                    <th class="px-4 py-3">対象月・店舗</th>
+                                                    <th class="px-4 py-3">希望提出</th>
+                                                    <th class="px-4 py-3">人員充足</th>
                                                     <th class="px-4 py-3">担当メンバー</th>
-                                                    <th class="px-4 py-3">枠数</th>
+                                                    <th class="px-4 py-3">工程</th>
                                                     <th class="px-4 py-3 text-right">操作</th>
                                                 </tr>
                                             </thead>
@@ -342,12 +318,19 @@
                         <section class="w-full rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
                             <div class="mb-5 flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-center sm:justify-between">
                                 <div>
-                                    <p class="text-xs font-black text-teal-700">{{ $page === 'schedule-edit' ? 'Edit Schedule' : 'Create Schedule' }}</p>
-                                    <h2 class="mt-1 text-lg font-bold text-slate-950">{{ $page === 'schedule-edit' ? 'シフト表編集' : 'シフト表作成' }}</h2>
+                                    <p class="text-xs font-black uppercase tracking-wider text-teal-700">Monthly planning</p>
+                                    <h2 class="mt-1 text-xl font-black text-slate-950">{{ $page === 'schedule-edit' ? '月間シフトの確認・調整' : '月間シフトの作成' }}</h2>
                                 </div>
                                 <a href="{{ route('admin.schedules') }}" class="inline-flex items-center justify-center rounded-md border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50">
                                     一覧へ戻る
                                 </a>
+                            </div>
+                            <div class="mb-5 grid grid-cols-2 gap-2 md:grid-cols-4">
+                                @foreach ([['1', '基本設定'], ['2', '希望回収'], ['3', '自動編成・調整'], ['4', '公開・LINE通知']] as [$stepNumber, $stepLabel])
+                                    <div class="rounded-lg border px-3 py-2 {{ ($page === 'schedule-create' && $stepNumber === '1') || ($page === 'schedule-edit' && $stepNumber !== '1') ? 'border-teal-200 bg-teal-50' : 'border-slate-200 bg-slate-50' }}">
+                                        <p class="text-[10px] font-black text-teal-700">STEP {{ $stepNumber }}</p><p class="mt-0.5 text-xs font-bold text-slate-700">{{ $stepLabel }}</p>
+                                    </div>
+                                @endforeach
                             </div>
                             <form class="space-y-4" data-form="schedule" @if($page === 'schedule-edit') data-schedule-id="{{ $editingSchedule->id }}" @endif>
                                 <div>
@@ -387,7 +370,12 @@
                                         ));
                                     @endphp
                                     <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                                        <p class="text-xs font-black text-slate-600">現在の担当メンバー</p>
+                                        <div class="grid gap-3 border-b border-slate-200 pb-3 sm:grid-cols-3">
+                                            <div><p class="text-xs font-bold text-slate-500">希望提出</p><p class="mt-1 text-lg font-black text-slate-950">{{ data_get($editingSchedule, 'operations.completed_members', 0) }} / {{ data_get($editingSchedule, 'operations.eligible_members', 0) }}名</p></div>
+                                            <div><p class="text-xs font-bold text-slate-500">人員充足</p><p class="mt-1 text-lg font-black {{ data_get($editingSchedule, 'operations.shortage_headcount', 0) > 0 ? 'text-red-700' : 'text-emerald-700' }}">{{ data_get($editingSchedule, 'operations.assigned_headcount', 0) }} / {{ data_get($editingSchedule, 'operations.required_headcount', 0) }}枠</p></div>
+                                            <div><p class="text-xs font-bold text-slate-500">LINE通知</p><p class="mt-1 text-lg font-black {{ $editingSchedule->notification_sent_at ? 'text-emerald-700' : 'text-slate-500' }}">{{ $editingSchedule->notification_sent_at ? '通知済み' : '未通知' }}</p></div>
+                                        </div>
+                                        <p class="mt-3 text-xs font-black text-slate-600">現在の担当メンバー</p>
                                         <div class="mt-2 flex flex-wrap gap-2">
                                             @forelse ($assignedMembers as $assignedMember)
                                                 <span class="inline-flex rounded-full border border-teal-200 bg-teal-50 px-2.5 py-1 text-xs font-bold text-teal-700">{{ $assignedMember->displayName() }}</span>
@@ -566,6 +554,11 @@
                                         <option value="">未割り当て</option>
                                     </select>
                                 </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-slate-700">入店日</label>
+                                    <input name="joined_on" type="date" value="{{ old('joined_on', $editingMember->joined_on?->format('Y-m-d')) }}" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
+                                    <p class="mt-1 text-xs text-slate-500">入店日から3か月間は新人として自動編成で優先されます。</p>
+                                </div>
                                 <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                     <div>
                                         <label class="block text-sm font-bold text-slate-700">電話 <span class="text-xs font-semibold text-slate-400">任意</span></label>
@@ -633,8 +626,15 @@
                                             <input name="priority_points" type="number" min="-1000" max="1000" value="{{ old('priority_points', $editingMember->schedulingProfile?->priority_points ?? 0) }}" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500">
                                         </div>
                                         <div>
-                                            <label class="block text-sm font-bold text-slate-700">新人優先期限</label>
-                                            <input name="newcomer_priority_until" type="date" value="{{ old('newcomer_priority_until', $editingMember->schedulingProfile?->newcomer_priority_until?->format('Y-m-d')) }}" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500">
+                                            <label class="block text-sm font-bold text-slate-700">新人扱い期間</label>
+                                            <div class="mt-2 min-h-11 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
+                                                @if ($editingMember->newcomerUntil())
+                                                    {{ $editingMember->joined_on->format('Y/m/d') }}〜{{ $editingMember->newcomerUntil()->format('Y/m/d') }}
+                                                @else
+                                                    入店日を設定してください
+                                                @endif
+                                            </div>
+                                            <p class="mt-1 text-xs text-slate-500">入店日から3か月間で自動計算します。</p>
                                         </div>
                                     </div>
                                     <div class="mt-3">
@@ -1039,6 +1039,11 @@
                             <option value="manager">店長</option>
                             <option value="admin">管理者</option>
                         </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700">入店日</label>
+                        <input name="joined_on" type="date" value="{{ now()->format('Y-m-d') }}" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
+                        <p class="mt-1 text-xs text-slate-500">この日から3か月間、新人として自動編成で優先します。</p>
                     </div>
                     <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <div>
@@ -1842,6 +1847,31 @@
                     return `<div class="flex min-w-40 flex-wrap gap-1.5">${memberBadges.join('')}</div>`;
                 };
 
+                const scheduleOperations = (schedule) => schedule.operations || {
+                    stage: schedule.status === 'published' ? 'published' : 'setup',
+                    eligible_members: 0,
+                    completed_members: 0,
+                    partial_members: 0,
+                    unsubmitted_members: 0,
+                    submission_percent: 0,
+                    required_headcount: 0,
+                    assigned_headcount: 0,
+                    shortage_headcount: 0,
+                    coverage_percent: 0,
+                };
+                const stageMeta = (stage) => ({
+                    setup: { label: '基本設定', className: 'border-slate-200 bg-slate-50 text-slate-700', number: 1 },
+                    collecting: { label: '希望回収中', className: 'border-sky-200 bg-sky-50 text-sky-700', number: 2 },
+                    overdue: { label: '期限超過', className: 'border-red-200 bg-red-50 text-red-700', number: 2 },
+                    reviewing: { label: '編成・調整中', className: 'border-amber-200 bg-amber-50 text-amber-700', number: 3 },
+                    published: { label: '公開済み', className: 'border-emerald-200 bg-emerald-50 text-emerald-700', number: 4 },
+                }[stage] || { label: '基本設定', className: 'border-slate-200 bg-slate-50 text-slate-700', number: 1 });
+                const progressMeter = (value, color = 'bg-teal-500') => `<div class="mt-2 h-1.5 w-28 overflow-hidden rounded-full bg-slate-100"><div class="h-full rounded-full ${color}" style="width:${Math.max(0, Math.min(100, Number(value || 0)))}%"></div></div>`;
+                const scheduleMonthLabel = (schedule) => {
+                    const [year, month] = String(schedule.starts_on || '').split('-');
+                    return year && month ? `${year}年${Number(month)}月` : '-';
+                };
+
                 const renderSchedules = () => {
                     const list = $('[data-list="schedules"]');
                     const filter = $('[data-filter="scheduleStore"]');
@@ -1851,21 +1881,34 @@
 
                     const storeId = filter.value;
                     const schedules = storeId ? state.schedules.filter((schedule) => scheduleMatchesStore(schedule, storeId)) : state.schedules;
+                    $('[data-schedule-stat="collecting"]') && ($('[data-schedule-stat="collecting"]').textContent = schedules.filter((schedule) => scheduleOperations(schedule).stage === 'collecting').length);
+                    $('[data-schedule-stat="shortage"]') && ($('[data-schedule-stat="shortage"]').textContent = schedules
+                        .filter((schedule) => ['reviewing', 'published'].includes(scheduleOperations(schedule).stage))
+                        .reduce((total, schedule) => total + scheduleOperations(schedule).shortage_headcount, 0));
+                    $('[data-schedule-stat="published"]') && ($('[data-schedule-stat="published"]').textContent = schedules.filter((schedule) => scheduleOperations(schedule).stage === 'published').length);
                     list.innerHTML = schedules.length
-                        ? schedules.map((schedule) => `
+                        ? schedules.map((schedule) => {
+                            const operations = scheduleOperations(schedule);
+                            const stage = stageMeta(operations.stage);
+                            const hasAssignments = operations.assigned_headcount > 0 || (schedule.shift_slots || []).length > 0;
+                            return `
                             <tr class="transition hover:bg-slate-50">
                                 <td class="px-4 py-3">
-                                    <div class="font-black text-slate-950">${escapeHtml(schedule.store?.name || '-')}</div>
+                                    <div class="font-black text-slate-950">${escapeHtml(scheduleMonthLabel(schedule))}</div>
+                                    <div class="mt-1 text-xs font-bold text-teal-700">${escapeHtml(schedule.store?.name || '-')}</div>
                                     <div class="mt-1 max-w-md text-xs leading-5 text-slate-500">${scheduleStoreSummary(schedule)}</div>
                                 </td>
                                 <td class="px-4 py-3 text-slate-700">
-                                    <span class="block">${escapeHtml(schedule.starts_on)} - ${escapeHtml(schedule.ends_on)}</span>
-                                    ${schedule.submission_deadline_at ? `<span class="mt-1 block text-xs text-slate-500">提出期限 ${escapeHtml(toDateTimeLocal(schedule.submission_deadline_at).replace('T', ' '))}</span>` : ''}
-                                    ${schedule.auto_scheduled_at ? `<span class="mt-1 block text-xs font-bold ${schedule.notification_sent_at ? 'text-emerald-700' : 'text-amber-700'}">${schedule.notification_sent_at ? '自動編成・LINE通知済み' : '自動編成済み・LINE通知待ち'}</span>` : ''}
+                                    <span class="font-black text-slate-900">${operations.completed_members}/${operations.eligible_members}名</span>
+                                    <span class="ml-1 text-xs text-slate-500">${operations.submission_percent}%</span>
+                                    ${progressMeter(operations.submission_percent, 'bg-sky-500')}
+                                    ${schedule.submission_deadline_at ? `<span class="mt-1.5 block text-xs text-slate-500">期限 ${escapeHtml(toDateTimeLocal(schedule.submission_deadline_at).replace('T', ' '))}</span>` : '<span class="mt-1.5 block text-xs text-amber-700">期限未設定</span>'}
                                 </td>
-                                <td class="px-4 py-3">${badge(schedule.status)}</td>
+                                <td class="px-4 py-3 text-slate-700">
+                                    ${hasAssignments ? `<span class="font-black ${operations.shortage_headcount > 0 ? 'text-red-700' : 'text-emerald-700'}">${operations.assigned_headcount}/${operations.required_headcount}枠</span>${progressMeter(operations.coverage_percent, operations.shortage_headcount > 0 ? 'bg-red-500' : 'bg-emerald-500')}${operations.shortage_headcount > 0 ? `<span class="mt-1.5 block text-xs font-bold text-red-700">あと${operations.shortage_headcount}枠不足</span>` : '<span class="mt-1.5 block text-xs font-bold text-emerald-700">充足</span>'}` : '<span class="text-xs font-bold text-slate-500">自動編成前</span>'}
+                                </td>
                                 <td class="px-4 py-3">${scheduleMemberSummary(schedule)}</td>
-                                <td class="px-4 py-3 text-slate-700">${schedule.shift_slots?.length || 0}</td>
+                                <td class="px-4 py-3"><span class="inline-flex rounded-full border px-2.5 py-1 text-xs font-black ${stage.className}">${stage.label}</span>${schedule.notification_sent_at ? '<span class="mt-1.5 block text-xs font-bold text-emerald-700">LINE通知済み</span>' : ''}</td>
                                 <td class="px-4 py-3 text-right">
                                     <div class="flex justify-end gap-2">
                                         <a href="${routes.schedulesBase}/${schedule.id}/edit" class="rounded-xl border border-gray-200 px-3 py-1.5 text-xs font-black text-slate-700 transition hover:bg-slate-50">編集</a>
@@ -1875,18 +1918,17 @@
                                     </div>
                                 </td>
                             </tr>
-                        `).join('')
+                        `}).join('')
                         : '<tr><td colspan="6" class="px-4 py-8 text-center text-sm text-slate-500">シフト表がまだありません。</td></tr>';
                 };
 
                 const renderDashboard = () => {
                     const dashboardFilter = $('[data-filter="dashboardStore"]');
                     const dashboardTable = $('[data-list="dashboardSchedules"]');
-                    const chart = $('[data-dashboard-chart]');
-                    const axis = $('[data-dashboard-axis]');
-                    const caption = $('[data-dashboard-chart-caption]');
+                    const workflow = $('[data-dashboard-workflow]');
+                    const actions = $('[data-dashboard-actions]');
 
-                    if (!dashboardFilter || !dashboardTable || !chart || !axis) {
+                    if (!dashboardFilter || !dashboardTable || !workflow || !actions) {
                         return;
                     }
 
@@ -1894,76 +1936,48 @@
                     const schedules = storeId
                         ? state.schedules.filter((schedule) => scheduleMatchesStore(schedule, storeId))
                         : state.schedules;
-                    const members = storeId
-                        ? state.members.filter((member) => String(member.store_id || '') === storeId)
-                        : state.members;
-                    const selectedStore = storeId ? state.stores.find((store) => String(store.id) === storeId) : null;
+                    const unsubmitted = schedules.reduce((total, schedule) => total + scheduleOperations(schedule).unsubmitted_members, 0);
+                    const shortage = schedules.filter((schedule) => ['reviewing', 'published'].includes(scheduleOperations(schedule).stage)).reduce((total, schedule) => total + scheduleOperations(schedule).shortage_headcount, 0);
+                    $('[data-stat="unsubmitted"]') && ($('[data-stat="unsubmitted"]').textContent = unsubmitted);
+                    $('[data-stat="shortage"]') && ($('[data-stat="shortage"]').textContent = shortage);
+                    $('[data-stat="scheduled"]') && ($('[data-stat="scheduled"]').textContent = schedules.filter((schedule) => schedule.auto_scheduled_at || (schedule.shift_slots || []).length > 0).length);
+                    $('[data-stat="notified"]') && ($('[data-stat="notified"]').textContent = schedules.filter((schedule) => schedule.notification_sent_at).length);
 
-                    $('[data-stat="stores"]') && ($('[data-stat="stores"]').textContent = storeId ? 1 : state.stores.length);
-                    $('[data-stat="members"]') && ($('[data-stat="members"]').textContent = members.length);
-                    $('[data-stat="submitters"]') && ($('[data-stat="submitters"]').textContent = members.filter((member) => member.is_shift_submitter).length);
-                    $('[data-stat="published"]') && ($('[data-stat="published"]').textContent = schedules.filter((schedule) => schedule.status === 'published').length);
-                    if (caption) {
-                        caption.textContent = selectedStore
-                            ? `${selectedStore.name}の公開済み・下書きシフトを表示しています。`
-                            : '全店舗の公開済み・下書きシフトを表示しています。';
-                    }
+                    const flowSteps = [
+                        { number: 1, label: '基本設定', description: '対象月・店舗・必要人数', count: schedules.filter((schedule) => scheduleOperations(schedule).stage === 'setup').length },
+                        { number: 2, label: '希望回収', description: 'LINEで希望を収集中', count: schedules.filter((schedule) => ['collecting', 'overdue'].includes(scheduleOperations(schedule).stage)).length },
+                        { number: 3, label: '編成・調整', description: '自動案を管理者が確認', count: schedules.filter((schedule) => scheduleOperations(schedule).stage === 'reviewing').length },
+                        { number: 4, label: '公開・通知', description: '確定シフトをLINE配信', count: schedules.filter((schedule) => scheduleOperations(schedule).stage === 'published').length },
+                    ];
+                    workflow.innerHTML = flowSteps.map((step) => `<div class="relative rounded-lg border ${step.count ? 'border-teal-200 bg-teal-50' : 'border-slate-200 bg-slate-50'} p-3"><div class="flex items-center justify-between"><span class="grid size-7 place-items-center rounded-full ${step.count ? 'bg-teal-700 text-white' : 'bg-slate-200 text-slate-500'} text-xs font-black">${step.number}</span><span class="text-xl font-black text-slate-950">${step.count}</span></div><p class="mt-3 text-sm font-black text-slate-900">${step.label}</p><p class="mt-1 text-xs text-slate-500">${step.description}</p></div>`).join('');
 
-                    const buckets = new Map();
-                    schedules.forEach((schedule) => {
-                        const label = schedule.starts_on || '-';
-                        if (!buckets.has(label)) {
-                            buckets.set(label, { label, published: 0, draft: 0 });
-                        }
-                        const bucket = buckets.get(label);
-                        if (schedule.status === 'published') {
-                            bucket.published += 1;
-                        } else {
-                            bucket.draft += 1;
-                        }
-                    });
-                    const series = Array.from(buckets.values()).sort((a, b) => a.label.localeCompare(b.label)).slice(-8);
-                    const maxValue = Math.max(1, ...series.flatMap((item) => [item.published, item.draft]));
-                    const xFor = (index) => series.length <= 1 ? 390 : 50 + (index * (680 / (series.length - 1)));
-                    const yFor = (value) => 200 - (value / maxValue) * 170;
-                    const publishedPoints = series.map((item, index) => `${xFor(index)},${yFor(item.published)}`).join(' ');
-                    const draftPoints = series.map((item, index) => `${xFor(index)},${yFor(item.draft)}`).join(' ');
-                    const verticalLines = series.map((item, index) => `<line x1="${xFor(index)}" y1="20" x2="${xFor(index)}" y2="200"/>`).join('');
-                    const publishedDots = series.map((item, index) => `<circle cx="${xFor(index)}" cy="${yFor(item.published)}" r="4" fill="#ffffff" stroke="#16a34a" stroke-width="2"/>`).join('');
-                    const draftDots = series.map((item, index) => `<circle cx="${xFor(index)}" cy="${yFor(item.draft)}" r="3.5" fill="#ffffff" stroke="#f59e0b" stroke-width="2"/>`).join('');
-
-                    chart.innerHTML = `
-                        <g stroke="#e5e7eb" stroke-width="1">
-                            <path d="M50 30H730M50 86H730M50 143H730M50 200H730"/>
-                            ${verticalLines}
-                        </g>
-                        <path d="M50 20V200H730" fill="none" stroke="#cbd5e1" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
-                        ${series.length ? `<polyline fill="none" stroke="#16a34a" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" vector-effect="non-scaling-stroke" points="${publishedPoints}"/>` : ''}
-                        ${series.length ? `<polyline fill="none" stroke="#f59e0b" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" vector-effect="non-scaling-stroke" points="${draftPoints}"/>` : ''}
-                        ${publishedDots}
-                        ${draftDots}
-                    `;
-                    axis.innerHTML = series.length
-                        ? series.map((item, index) => `<span class="absolute top-1 -translate-x-1/2 whitespace-nowrap" style="left: ${((xFor(index) - 50) / 680) * 92 + 4}%;">${escapeHtml(item.label.slice(5))}</span>`).join('')
-                        : '<span class="absolute left-1/2 top-1 -translate-x-1/2 whitespace-nowrap">データなし</span>';
+                    const actionItems = schedules.flatMap((schedule) => {
+                        const operations = scheduleOperations(schedule);
+                        const items = [];
+                        if (['collecting', 'overdue'].includes(operations.stage) && operations.unsubmitted_members > 0) items.push({ tone: 'amber', title: `${scheduleMonthLabel(schedule)} 希望未提出`, detail: `${schedule.store?.name || '-'}・${operations.unsubmitted_members}名`, id: schedule.id });
+                        if (['reviewing', 'published'].includes(operations.stage) && operations.shortage_headcount > 0) items.push({ tone: 'red', title: `${scheduleMonthLabel(schedule)} 人員不足`, detail: `${schedule.store?.name || '-'}・あと${operations.shortage_headcount}枠`, id: schedule.id });
+                        if (operations.stage === 'overdue') items.push({ tone: 'red', title: '提出期限を超過', detail: `${schedule.store?.name || '-'}・自動編成を確認`, id: schedule.id });
+                        return items;
+                    }).slice(0, 8);
+                    $('[data-action-count]') && ($('[data-action-count]').textContent = `${actionItems.length}件`);
+                    actions.innerHTML = actionItems.length ? actionItems.map((item) => `<a href="${routes.schedulesBase}/${item.id}/edit" class="block rounded-lg border ${item.tone === 'red' ? 'border-red-200 bg-red-50' : 'border-amber-200 bg-amber-50'} p-3 transition hover:shadow-sm"><p class="text-sm font-black ${item.tone === 'red' ? 'text-red-800' : 'text-amber-800'}">${escapeHtml(item.title)}</p><p class="mt-1 text-xs text-slate-600">${escapeHtml(item.detail)}</p></a>`).join('') : '<div class="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm font-bold text-emerald-700">現在、対応が必要な項目はありません。</div>';
 
                     dashboardTable.innerHTML = schedules.length
-                        ? schedules.slice(0, 10).map((schedule) => `
+                        ? schedules.slice(0, 10).map((schedule) => {
+                            const operations = scheduleOperations(schedule);
+                            const stage = stageMeta(operations.stage);
+                            const hasAssignments = operations.assigned_headcount > 0 || (schedule.shift_slots || []).length > 0;
+                            return `
                             <tr class="hover:bg-gray-50">
-                                <td class="min-w-[180px] px-5 py-4 font-medium text-gray-900">${escapeHtml(schedule.store?.name || '-')}</td>
-                                <td class="whitespace-nowrap px-5 py-4 text-left text-gray-600">
-                                    <span class="block">${escapeHtml(schedule.starts_on || '-')}</span>
-                                    <span class="mt-1 block text-xs text-gray-400">- ${escapeHtml(schedule.ends_on || '-')}</span>
-                                </td>
-                                <td class="whitespace-nowrap px-5 py-4 text-right text-gray-600">${schedule.shift_slots?.length || 0}</td>
-                                <td class="whitespace-nowrap px-5 py-4 text-right">${badge(schedule.status)}</td>
+                                <td class="px-5 py-4"><span class="block font-black text-slate-950">${escapeHtml(scheduleMonthLabel(schedule))}</span><span class="mt-1 block text-xs font-bold text-teal-700">${escapeHtml(schedule.store?.name || '-')}</span></td>
+                                <td class="px-5 py-4"><span class="font-black text-slate-900">${operations.completed_members}/${operations.eligible_members}名</span><span class="ml-1 text-xs text-slate-500">${operations.submission_percent}%</span>${progressMeter(operations.submission_percent, 'bg-sky-500')}</td>
+                                <td class="px-5 py-4">${hasAssignments ? `<span class="font-black ${operations.shortage_headcount ? 'text-red-700' : 'text-emerald-700'}">${operations.assigned_headcount}/${operations.required_headcount}枠</span>${progressMeter(operations.coverage_percent, operations.shortage_headcount ? 'bg-red-500' : 'bg-emerald-500')}` : '<span class="text-xs font-bold text-slate-500">編成前</span>'}</td>
+                                <td class="px-5 py-4"><span class="inline-flex rounded-full border px-2.5 py-1 text-xs font-black ${stage.className}">${stage.label}</span></td>
                                 <td class="px-5 py-4 text-right">
-                                    ${schedule.status === 'published'
-                                        ? '<span class="text-xs font-semibold text-gray-500">公開済み</span>'
-                                        : `<button type="button" class="inline-flex rounded-md border border-gray-200 px-4 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50" data-publish="${schedule.id}">公開</button>`}
+                                    <a href="${routes.schedulesBase}/${schedule.id}/edit" class="inline-flex rounded-md border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50">確認・調整</a>
                                 </td>
                             </tr>
-                        `).join('')
+                        `}).join('')
                         : '<tr><td colspan="5" class="px-5 py-8 text-center text-sm text-gray-500">シフト表がありません。</td></tr>';
                 };
 

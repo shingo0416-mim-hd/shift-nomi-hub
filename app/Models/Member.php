@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -53,6 +55,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'ip_address',
     'registration_token',
     'registered_at',
+    'joined_on',
     'login_at',
     'created_by',
     'updated_by',
@@ -87,6 +90,7 @@ class Member extends Model
             'tags' => 'array',
             'login_at' => 'datetime',
             'registered_at' => 'datetime',
+            'joined_on' => 'date:Y-m-d',
         ];
     }
 
@@ -132,6 +136,30 @@ class Member extends Model
     public function displayName(): string
     {
         return $this->display_name ?: $this->name ?: $this->line_name ?: 'スタッフ';
+    }
+
+    public function newcomerUntil(): ?CarbonImmutable
+    {
+        if (! $this->joined_on) {
+            return null;
+        }
+
+        return CarbonImmutable::parse($this->getRawOriginal('joined_on'))
+            ->addMonthsNoOverflow(3)
+            ->subDay();
+    }
+
+    public function isNewcomerOn(CarbonInterface|string $date): bool
+    {
+        if (! $this->joined_on) {
+            return false;
+        }
+
+        $joinedOn = CarbonImmutable::parse($this->getRawOriginal('joined_on'))->startOfDay();
+        $targetDate = CarbonImmutable::parse($date)->startOfDay();
+
+        return $targetDate->greaterThanOrEqualTo($joinedOn)
+            && $targetDate->lessThan($joinedOn->addMonthsNoOverflow(3));
     }
 
     public function tenant(): BelongsTo
