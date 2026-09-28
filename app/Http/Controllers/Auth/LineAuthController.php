@@ -31,7 +31,7 @@ class LineAuthController extends Controller
             Session::put('line_registration_token', $request->string('registration_token')->toString());
         }
 
-        Session::put('line_intended_url', $request->query('redirect_to', url('/'.$request->attributes->get('tenantPath').'/line/login/complete')));
+        Session::put('line_intended_url', Session::get('line_intended_url', url('/' . $request->attributes->get('tenantPath') . '/line/login/complete')));
 
         return redirect()->away(
             $this->lineLoginService->authorizationUrl($tenant, (string) $request->attributes->get('tenantPath'))
@@ -59,7 +59,7 @@ class LineAuthController extends Controller
             Session::put('line_member_id', $member->id);
             Session::forget('line_registration_token');
 
-            return redirect(Session::pull('line_intended_url', url('/'.$tenantPath.'/line/login/complete')))
+            return redirect(Session::pull('line_intended_url', url('/' . $tenantPath . '/line/login/complete')))
                 ->with('line_login_status', 'LINEログインが完了しました。');
         } catch (Exception $exception) {
             Log::error('LINEログイン callback error', [
@@ -67,8 +67,8 @@ class LineAuthController extends Controller
                 'message' => $exception->getMessage(),
             ]);
 
-            return redirect(url('/'.$tenantPath.'/line/login/complete'))
-                ->withErrors(['line_login' => 'LINEログインに失敗しました。'.$exception->getMessage()]);
+            return redirect(url('/' . $tenantPath . '/line/login/complete'))
+                ->withErrors(['line_login' => 'LINEログインに失敗しました。' . $exception->getMessage()]);
         }
     }
 

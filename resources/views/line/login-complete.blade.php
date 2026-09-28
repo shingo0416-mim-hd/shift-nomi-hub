@@ -22,6 +22,7 @@
                 @else
                     <p class="mt-4 text-sm leading-6 text-slate-600">LINEログイン処理が完了しました。</p>
                 @endif
+                <a href="{{ route('line.availability', ['tenant' => request()->attributes->get('tenantPath')]) }}" class="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white">希望シフトを提出・確認する</a>
                 @if (($canOpenLineAdmin ?? false) && ($lineAdminUrl ?? null))
                     <a href="{{ $lineAdminUrl }}" class="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-800">
                         LINE管理画面へ

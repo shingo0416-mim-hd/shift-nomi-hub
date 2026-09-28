@@ -27,12 +27,12 @@ class ShiftScheduleOperations
             ->where('tenant_id', $tenantId)
             ->where('status', 'active')
             ->where('is_shift_submitter', true)
-            ->get(['id', 'store_id']);
+            ->get(['id', 'store_id', 'name', 'display_name', 'line_name']);
         $requests = AvailabilityRequest::query()
             ->where('tenant_id', $tenantId)
             ->whereDate('work_date', '>=', $rangeStart)
             ->whereDate('work_date', '<=', $rangeEnd)
-            ->get(['member_id', 'work_date']);
+            ->get(['member_id', 'work_date', 'preference', 'available_from', 'available_until', 'notes']);
 
         return $schedules->each(function (ShiftSchedule $schedule) use ($members, $requests): void {
             $storeIds = $schedule->days
@@ -42,18 +42,27 @@ class ShiftScheduleOperations
                 ->filter()
                 ->unique();
             $eligibleMembers = $members->whereIn('store_id', $storeIds);
-            $scheduleStart = $schedule->getRawOriginal('starts_on');
-            $scheduleEnd = $schedule->getRawOriginal('ends_on');
             $expectedDates = $schedule->days->map(fn ($day) => substr((string) $day->getRawOriginal('scheduled_on'), 0, 10))->unique();
             $scheduleRequests = $requests->filter(fn (AvailabilityRequest $request) => $eligibleMembers->contains('id', $request->member_id)
-                && substr((string) $request->getRawOriginal('work_date'), 0, 10) >= $scheduleStart
-                && substr((string) $request->getRawOriginal('work_date'), 0, 10) <= $scheduleEnd
-            );
+                && $expectedDates->contains(substr((string) $request->getRawOriginal('work_date'), 0, 10)));
             $submittedByMember = $scheduleRequests->groupBy('member_id')->map(fn (Collection $items) => $items->map(fn (AvailabilityRequest $request) => substr((string) $request->getRawOriginal('work_date'), 0, 10))->unique()->count());
             $completed = $expectedDates->isEmpty()
                 ? 0
                 : $eligibleMembers->filter(fn (Member $member) => ($submittedByMember[$member->id] ?? 0) >= $expectedDates->count())->count();
             $partial = $eligibleMembers->filter(fn (Member $member) => ($submittedByMember[$member->id] ?? 0) > 0 && ($submittedByMember[$member->id] ?? 0) < $expectedDates->count())->count();
+
+            $schedule->setAttribute('submission_members', $eligibleMembers->map(function (Member $member) use ($scheduleRequests, $expectedDates): array {
+                $entries = $scheduleRequests->where('member_id', $member->id)->sortBy('work_date')->values();
+                $count = $entries->count();
+
+                return [
+                    'name' => $member->displayName(),
+                    'status' => $count === 0 ? '未提出' : ($count >= $expectedDates->count() ? '提出完了' : '一部入力'),
+                    'submitted_days' => $count,
+                    'expected_days' => $expectedDates->count(),
+                    'entries' => $entries,
+                ];
+            })->values());
 
             $required = $schedule->days->where('is_day_off', false)->sum(fn ($day) => max(1, (int) $day->required_headcount));
             $assigned = $schedule->shiftSlots->sum(fn ($slot) => $slot->assignments

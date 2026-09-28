@@ -40,6 +40,11 @@ Route::prefix('{tenant}')
             ->middleware('auth.line')
             ->name('line.login.complete');
 
+        Route::get('/line/availability', [\App\Http\Controllers\LineAvailabilityController::class, 'index'])
+            ->middleware('auth.line')->name('line.availability');
+        Route::post('/line/availability/{shiftSchedule}', [\App\Http\Controllers\LineAvailabilityController::class, 'store'])
+            ->middleware('auth.line')->name('line.availability.store');
+
         Route::middleware(['auth.line', 'line.admin'])
             ->prefix('/line/admin')
             ->name('line.admin.')

@@ -377,6 +377,7 @@
                                 <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                     <div>
                                         <label class="block text-sm font-bold text-slate-700">シフト提出期限</label>
+                                        <p class="mt-1 text-xs text-slate-500">自動編成の有無にかかわらず、締切後はスタッフの提出・変更を受け付けません。</p>
                                         <input name="submission_deadline_at" type="datetime-local" value="{{ $page === 'schedule-edit' ? $editingSchedule->submission_deadline_at?->format('Y-m-d\TH:i') : '' }}" class="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white">
                                     </div>
                                     <label class="flex items-center gap-3 self-end rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
@@ -400,6 +401,7 @@
                                             $slot->required_headcount - $slot->assignments->filter(fn ($assignment) => $assignment->member && $assignment->status !== 'cancelled')->count(),
                                         ));
                                     @endphp
+                                    @include('admin.submission-members')
                                     <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
                                         <div class="grid gap-3 border-b border-slate-200 pb-3 sm:grid-cols-3">
                                             <div><p class="text-xs font-bold text-slate-500">希望提出</p><p class="mt-1 text-lg font-black text-slate-950">{{ data_get($editingSchedule, 'operations.completed_members', 0) }} / {{ data_get($editingSchedule, 'operations.eligible_members', 0) }}名</p></div>
