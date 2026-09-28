@@ -119,6 +119,66 @@ class AvailabilityCollectionTest extends TestCase
         $this->postJson('/api/liff/availability-requests', ['work_date' => '2026-10-01', 'preference' => 'unavailable'])->assertNotFound();
     }
 
+    private function prepareLineLogin(Member $member): void
+    {
+        $member->tenant->lineLoginSetting()->create(['channel_id' => 'test-channel', 'channel_secret' => 'test-secret', 'is_active' => true]);
+        \Illuminate\Support\Facades\Http::fake([
+            'https://api.line.me/oauth2/v2.1/token' => \Illuminate\Support\Facades\Http::response(['access_token' => 'test-access']),
+            'https://api.line.me/v2/profile' => \Illuminate\Support\Facades\Http::response(['userId' => 'line-collection', 'displayName' => 'キャスト']),
+        ]);
+        session()->flush();
+    }
+
+    public function test_cast_can_register_via_qr_login_and_submit_without_admin_permissions(): void
+    {
+        [$member, $schedule] = $this->fixture();
+        $member->update(['role' => Member::ROLE_CAST, 'line_id' => null, 'registration_token' => 'cast-registration-token']);
+        $this->prepareLineLogin($member);
+        $this->get('/liff/register/cast-registration-token')->assertRedirect('/collection-test/line/login?registration_token=cast-registration-token');
+        $this->get('/collection-test/line/login?registration_token=cast-registration-token')->assertRedirectContains('https://access.line.me/');
+        $this->get('/collection-test/line/login/callback?code=valid-code')->assertRedirect('/collection-test/line/login/complete');
+        $this->get('/collection-test/line/login/complete')->assertRedirect('/collection-test/line/availability');
+        $this->get('/collection-test/line/availability')->assertOk()->assertSee('希望シフトの提出・確認');
+        $this->submit($schedule)->assertSessionHasNoErrors()->assertRedirect('/collection-test/line/availability');
+        $this->assertSame(1, $member->availabilityRequests()->count());
+        $this->assertSame(Member::ROLE_CAST, $member->refresh()->role);
+        $this->get('/collection-test/line/admin')->assertForbidden();
+    }
+
+    public function test_returning_cast_is_not_sent_to_an_admin_destination(): void
+    {
+        [$member] = $this->fixture();
+        $member->update(['role' => Member::ROLE_CAST]);
+        $this->prepareLineLogin($member);
+        $this->get('/collection-test/line/admin')->assertRedirectContains('/collection-test/line/login');
+        $this->get('/collection-test/line/login')->assertRedirectContains('https://access.line.me/');
+        $this->get('/collection-test/line/login/callback?code=valid-code')->assertRedirect('/collection-test/line/login/complete');
+        $this->get('/collection-test/line/login/complete')->assertRedirect('/collection-test/line/availability');
+    }
+
+    public function test_failed_login_shows_retry_without_a_redirect_loop(): void
+    {
+        [$member] = $this->fixture();
+        $this->prepareLineLogin($member);
+        $this->get('/collection-test/line/login')->assertRedirectContains('https://access.line.me/');
+        $this->get('/collection-test/line/login/callback?error=access_denied')->assertRedirect('/collection-test/line/login/complete')->assertSessionMissing('line_member_id')->assertSessionHas('line_login_error');
+        $this->get('/collection-test/line/login/complete')->assertOk()->assertSee('LINEログインに失敗しました')->assertSee('LINEでログインする')->assertDontSee('希望シフトを提出・確認する');
+    }
+
+    public function test_unassigned_cast_sees_store_setup_guidance(): void
+    {
+        [$member] = $this->fixture();
+        $member->update(['store_id' => null, 'role' => Member::ROLE_CAST]);
+        $this->get('/collection-test/line/login/complete')->assertOk()->assertSee('所属店舗が未設定です')->assertDontSee('希望シフトを提出・確認する');
+    }
+
+    public function test_login_completion_does_not_use_a_different_tenants_member(): void
+    {
+        $this->fixture();
+        Tenant::factory()->create(['data' => ['path' => 'different-tenant']]);
+        $this->get('/different-tenant/line/login/complete')->assertOk()->assertSee('LINEでログインする')->assertDontSee('希望シフトを提出・確認する');
+    }
+
     public function test_progress_ignores_dates_outside_the_schedule_days(): void
     {
         [$member, $schedule] = $this->fixture();

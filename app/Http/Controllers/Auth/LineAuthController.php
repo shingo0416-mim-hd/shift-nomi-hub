@@ -55,33 +55,59 @@ class LineAuthController extends Controller
 
             $member = $this->linkMember($tenant, $profile);
 
+            $request->session()->regenerate();
             Session::put('line_id', $profile['userId']);
             Session::put('line_member_id', $member->id);
-            Session::forget('line_registration_token');
+            Session::forget(['line_registration_token', 'line_login_error']);
 
-            return redirect(Session::pull('line_intended_url', url('/' . $tenantPath . '/line/login/complete')))
+            $completeUrl = route('line.login.complete', ['tenant' => $tenantPath]);
+            $allowedDestinations = [$completeUrl, route('line.availability', ['tenant' => $tenantPath])];
+            if ($member->canManageShiftSchedules()) {
+                $allowedDestinations[] = route('line.admin.dashboard', ['tenant' => $tenantPath]);
+            }
+            $intended = Session::pull('line_intended_url');
+
+            return redirect(in_array($intended, $allowedDestinations, true) ? $intended : $completeUrl)
                 ->with('line_login_status', 'LINEログインが完了しました。');
         } catch (Exception $exception) {
+            Session::forget(['line_id', 'line_member_id', 'line_intended_url']);
             Log::error('LINEログイン callback error', [
                 'tenant_id' => $tenant->id,
                 'message' => $exception->getMessage(),
             ]);
 
-            return redirect(url('/' . $tenantPath . '/line/login/complete'))
-                ->withErrors(['line_login' => 'LINEログインに失敗しました。' . $exception->getMessage()]);
+            Session::put('line_login_error', 'LINEログインに失敗しました。登録用QRコードから再度ログインしてください。解決しない場合は管理者へ連絡してください。');
+
+            return redirect()->route('line.login.complete', ['tenant' => $tenantPath]);
         }
     }
 
-    public function complete(Request $request): \Illuminate\Contracts\View\View
+    public function complete(Request $request): \Illuminate\Contracts\View\View|RedirectResponse
     {
-        $member = Member::query()
-            ->with('user')
-            ->find(Session::get('line_member_id'));
         $tenantPath = $request->attributes->get('tenantPath');
+        $member = Session::has('line_id') && Session::has('line_member_id')
+            ? Member::query()->with('user')
+                ->where('tenant_id', $request->attributes->get('tenant')->id)
+                ->where('line_id', Session::get('line_id'))
+                ->find(Session::get('line_member_id'))
+            : null;
+        $canSubmit = $member && $member->status === 'active' && $member->is_shift_submitter && $member->store_id;
+        $canManage = $member && $member->status === 'active' && $member->canManageShiftSchedules() && $member->user;
+        if ($canSubmit && ! $canManage) {
+            return redirect()->route('line.availability', ['tenant' => $tenantPath]);
+        }
+        $message = ! $member ? 'LINEログインを行ってください。'
+            : ($member->status !== 'active' ? '現在このスタッフアカウントは利用できません。管理者へ確認してください。'
+                : (! $member->is_shift_submitter ? 'シフト提出対象に設定されていません。管理者へ確認してください。'
+                    : (! $member->store_id ? '所属店舗が未設定です。管理者へ店舗の設定を依頼してください。' : null)));
 
         return view('line.login-complete', [
-            'canOpenLineAdmin' => $member?->canManageShiftSchedules() === true && $member?->user !== null,
-            'lineAdminUrl' => is_string($tenantPath) ? route('line.admin.dashboard', ['tenant' => $tenantPath]) : null,
+            'canOpenLineAdmin' => $canManage,
+            'lineAdminUrl' => route('line.admin.dashboard', ['tenant' => $tenantPath]),
+            'canSubmit' => $canSubmit,
+            'loginMessage' => $message,
+            'loginError' => $request->session()->pull('line_login_error'),
+            'isLineLoggedIn' => $member !== null,
         ]);
     }
 
@@ -120,6 +146,12 @@ class LineAuthController extends Controller
             }
 
             $member = $registeredMember ?: $lineLinkedMember;
+            if ($member && $member->status !== 'active') {
+                throw ValidationException::withMessages(['member' => 'このスタッフアカウントは利用できません。']);
+            }
+            if ($registeredMember?->line_id && $registeredMember->line_id !== $profile['userId']) {
+                throw ValidationException::withMessages(['registration_token' => 'このスタッフは別のLINEアカウントに登録済みです。']);
+            }
             $displayName = $profile['displayName'] ?? 'LINE User';
             $pictureUrl = $profile['pictureUrl'] ?? null;
 

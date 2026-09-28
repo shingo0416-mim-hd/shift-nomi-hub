@@ -37,7 +37,6 @@ Route::prefix('{tenant}')
         Route::get('/line/login', [LineAuthController::class, 'login'])->name('line.login');
         Route::get('/line/login/callback', [LineAuthController::class, 'callback'])->name('line.callback');
         Route::get('/line/login/complete', [LineAuthController::class, 'complete'])
-            ->middleware('auth.line')
             ->name('line.login.complete');
 
         Route::get('/line/availability', [\App\Http\Controllers\LineAvailabilityController::class, 'index'])

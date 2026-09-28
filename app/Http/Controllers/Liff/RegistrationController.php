@@ -9,12 +9,17 @@ use Illuminate\View\View;
 
 class RegistrationController extends Controller
 {
-    public function show(string $registrationToken): View
+    public function show(string $registrationToken): View|\Illuminate\Http\RedirectResponse
     {
         $member = Member::query()
             ->with(Schema::hasTable('line_liff_settings') ? ['tenant.lineLiffSetting', 'store'] : ['tenant', 'store'])
             ->where('registration_token', $registrationToken)
             ->firstOrFail();
+
+        $tenantPath = app(\App\Services\TenantPathService::class)->pathFor($member->tenant);
+        if ($tenantPath) {
+            return redirect()->route('line.login', ['tenant' => $tenantPath, 'registration_token' => $registrationToken]);
+        }
 
         return view('liff.register', [
             'member' => $member,
