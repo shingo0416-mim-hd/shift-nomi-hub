@@ -18,6 +18,12 @@
                     'icon' => 'M8 7V3m8 4V3M5 11h14M6 5h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2z',
                 ],
                 [
+                    'label' => '運用機能',
+                    'href' => route('admin.workforce'),
+                    'active' => false,
+                    'icon' => 'M4 6h16M4 12h16M4 18h16',
+                ],
+                [
                     'label' => 'シフト分析',
                     'href' => route('admin.analytics'),
                     'active' => $page === 'analytics',

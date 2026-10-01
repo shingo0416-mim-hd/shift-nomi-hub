@@ -127,6 +127,13 @@ class ShiftScheduleController extends Controller
         ]);
         $memberIds = collect($validated['member_ids'])->map(fn ($memberId) => (int) $memberId)->values();
 
+        if (\Illuminate\Support\Facades\Schema::hasTable('workforce_policies')) {
+            foreach (\App\Models\Member::whereIn('id', $memberIds)->get() as $member) {
+                $warnings = app(\App\Services\WorkforceRules::class)->violations($member, $shiftSlot, $memberIds->all());
+                if ($warnings) throw \Illuminate\Validation\ValidationException::withMessages(['member_ids' => $member->displayName().'：'.implode(' / ', $warnings)]);
+            }
+        }
+
         DB::transaction(function () use ($shiftSlot, $memberIds): void {
             if ($memberIds->isEmpty()) {
                 $shiftSlot->assignments()->delete();

@@ -13,6 +13,8 @@
     </head>
     <body class="hub-theme hub-line min-h-screen bg-slate-100 text-slate-900 antialiased">
         <main class="mx-auto min-h-screen w-full max-w-md px-4 py-4">
+            <a href="{{ route('line.admin.workforce', ['tenant' => request()->attributes->get('tenantPath')]) }}" class="inline-flex min-h-11 items-center rounded-lg bg-teal-700 px-4 py-2 font-bold text-white">スキル・休憩・欠員募集・お知らせ</a>
+
             <header class="sticky top-0 z-10 -mx-4 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur">
                 <div class="flex items-center justify-between gap-3">
                     <div class="min-w-0">

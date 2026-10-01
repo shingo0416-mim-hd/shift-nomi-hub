@@ -10,6 +10,7 @@
 </head>
 <body class="min-h-screen bg-slate-100 text-slate-900">
 <main class="mx-auto max-w-2xl space-y-5 px-4 py-6">
+    <a class="font-bold text-teal-700 underline" href="{{ route('line.workforce', ['tenant' => request()->attributes->get('tenantPath')]) }}">確定シフト・欠員募集・お知らせ</a>
     <header><p class="text-sm font-bold text-teal-700">{{ $member->displayName() }} さん</p><h1 class="mt-1 text-2xl font-black">希望シフトの提出・確認</h1><p class="mt-2 text-sm text-slate-600">日付ごとに希望を保存してください。休み希望も含め、すべての日付を入力すると提出完了になります。締切前は何度でも修正できます。</p></header>
     @if(session('notice'))<p role="status" class="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">{{ session('notice') }}</p>@endif
     @if($errors->any())<div role="alert" class="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">@foreach($errors->all() as $error)<p>{{ $error }}</p>@endforeach</div>@endif

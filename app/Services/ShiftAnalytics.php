@@ -36,11 +36,20 @@ class ShiftAnalytics
                 $end = $end->addDay();
             }
             $slots = $schedule->shiftSlots->filter(fn ($slot) => $slot->starts_at->toDateString() === $date && $slot->ends_at->greaterThan($slot->starts_at));
-            $intervals = $slots->map(fn ($slot) => [
-                'start' => $slot->starts_at->timestamp,
-                'end' => $slot->ends_at->timestamp,
-                'members' => $slot->assignments->filter(fn ($assignment) => $assignment->status !== 'cancelled' && $assignment->member && (int) $assignment->member->tenant_id === $tenantId)->pluck('member_id')->unique()->all(),
-            ])->all();
+            $intervals = $slots->flatMap(function ($slot) use ($tenantId) {
+                return $slot->assignments->filter(fn ($assignment) => $assignment->status !== 'cancelled' && $assignment->member && (int) $assignment->member->tenant_id === $tenantId)->flatMap(function ($assignment) use ($slot) {
+                    $from = $slot->starts_at->timestamp;
+                    $to = $slot->ends_at->timestamp;
+                    if ($assignment->break_starts_at && $assignment->break_ends_at) {
+                        $breakStart = max($from, CarbonImmutable::parse($assignment->break_starts_at)->timestamp);
+                        $breakEnd = min($to, CarbonImmutable::parse($assignment->break_ends_at)->timestamp);
+                        if ($breakStart < $breakEnd) {
+                            return collect([[$from, $breakStart], [$breakEnd, $to]])->filter(fn ($range) => $range[0] < $range[1])->map(fn ($range) => ['start' => $range[0], 'end' => $range[1], 'members' => [$assignment->member_id]])->all();
+                        }
+                    }
+                    return [['start' => $from, 'end' => $to, 'members' => [$assignment->member_id]]];
+                });
+            })->values()->all();
             $metrics = $this->measure($start->timestamp, $end->timestamp, $day->is_day_off ? 0 : max(1, (int) $day->required_headcount), $intervals);
             $rows[] = $row + ['configured' => true] + $metrics;
         }

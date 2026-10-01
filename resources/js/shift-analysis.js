@@ -70,7 +70,7 @@ export function mountShiftAnalysis(root) {
         const month = event.target.closest('[data-analysis-month]');
         if (month) { selectedMonth = Number(month.dataset.analysisMonth); render(true); }
         if (event.target.closest('[data-analysis-export]')) {
-            const lines = [['日付','店舗','状態','必要人時','配置人時','不足人時','過剰人時','設定状態','備考'], ...filtered().map((row) => [row.date, storeNames.get(String(row.store_id)), row.status, ...['required','assigned','shortage','excess'].map((k) => row.configured ? Number(row[k].toFixed(4)) : ''), row.configured ? '設定済み' : '時間未設定', '予定・休憩控除前'])];
+            const lines = [['日付','店舗','状態','必要人時','配置人時','不足人時','過剰人時','設定状態','備考'], ...filtered().map((row) => [row.date, storeNames.get(String(row.store_id)), row.status, ...['required','assigned','shortage','excess'].map((k) => row.configured ? Number(row[k].toFixed(4)) : ''), row.configured ? '設定済み' : '時間未設定', '予定・登録済み休憩時間帯を除外'])];
             const blob = new Blob(['\ufeff'+lines.map((line) => line.map(csvCell).join(',')).join('\r\n')], {type:'text/csv;charset=utf-8;'});
             const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href=url; link.download=`shift-analysis-${data.year}.csv`; link.click(); setTimeout(()=>URL.revokeObjectURL(url),1000);
         }

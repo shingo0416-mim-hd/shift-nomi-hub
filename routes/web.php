@@ -39,6 +39,9 @@ Route::prefix('{tenant}')
         Route::get('/line/login/complete', [LineAuthController::class, 'complete'])
             ->name('line.login.complete');
 
+        Route::get('/line/workforce', [\App\Http\Controllers\LineWorkforceController::class, 'index'])->middleware('auth.line')->name('line.workforce');
+        Route::post('/line/workforce', [\App\Http\Controllers\LineWorkforceController::class, 'update'])->middleware('auth.line')->name('line.workforce.update');
+
         Route::get('/line/availability', [\App\Http\Controllers\LineAvailabilityController::class, 'index'])
             ->middleware('auth.line')->name('line.availability');
         Route::post('/line/availability/{shiftSchedule}', [\App\Http\Controllers\LineAvailabilityController::class, 'store'])
@@ -49,6 +52,10 @@ Route::prefix('{tenant}')
             ->name('line.admin.')
             ->group(function (): void {
                 Route::get('/', [LineAdminController::class, 'dashboard'])->name('dashboard');
+                Route::get('/workforce', [\App\Http\Controllers\WorkforceController::class, 'index'])->name('workforce');
+                Route::post('/workforce', [\App\Http\Controllers\WorkforceController::class, 'update'])->name('workforce.update');
+                Route::get('/workforce/export', [\App\Http\Controllers\WorkforceController::class, 'export'])->name('workforce.export');
+
                 Route::get('/api/stores', [AdminStoreController::class, 'index'])->name('api.stores.index');
                 Route::get('/api/members', [AdminMemberController::class, 'index'])->name('api.members.index');
                 Route::post('/api/members', [AdminMemberController::class, 'store'])->name('api.members.store');
@@ -62,6 +69,10 @@ Route::prefix('{tenant}')
     });
 
 Route::middleware('auth')->group(function (): void {
+    Route::get('/dashboard/workforce', [\App\Http\Controllers\WorkforceController::class, 'index'])->name('admin.workforce');
+    Route::post('/dashboard/workforce', [\App\Http\Controllers\WorkforceController::class, 'update'])->name('admin.workforce.update');
+    Route::get('/dashboard/workforce/export', [\App\Http\Controllers\WorkforceController::class, 'export'])->name('admin.workforce.export');
+
     Route::get('/two-factor-settings', fn () => view('auth.two-factor-settings'))->name('two-factor.settings');
 
     $adminPage = function (string $page) {

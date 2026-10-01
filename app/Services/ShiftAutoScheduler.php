@@ -13,7 +13,9 @@ use Illuminate\Support\Facades\DB;
 
 class ShiftAutoScheduler
 {
-    public function __construct(private readonly LineShiftNotificationService $notifications) {}
+    public function __construct(private readonly LineShiftNotificationService $notifications)
+    {
+    }
 
     public function processDueSchedules(): int
     {
@@ -55,7 +57,16 @@ class ShiftAutoScheduler
 
                 $slot = $this->createSlot($schedule, $day);
                 $candidates = $this->candidates($schedule, $day, $slot, $assignmentCounts);
-                $selectedMembers = $candidates->take($day->required_headcount ?: 1);
+                $selectedMembers = collect();
+                foreach ($candidates as $candidate) {
+                    if (app(WorkforceRules::class)->violations($candidate, $slot, $selectedMembers->pluck('id')->all())) {
+                        continue;
+                    }
+                    $selectedMembers->push($candidate);
+                    if ($selectedMembers->count() >= ($day->required_headcount ?: 1)) {
+                        break;
+                    }
+                }
 
                 $slot->assignments()->delete();
                 foreach ($selectedMembers as $member) {
@@ -63,6 +74,7 @@ class ShiftAutoScheduler
                     $assignmentCounts[$member->id] = ($assignmentCounts[$member->id] ?? 0) + 1;
                 }
 
+                app(WorkforceRules::class)->applyBreaks($slot);
                 $slot->update([
                     'status' => $selectedMembers->count() >= $slot->required_headcount ? 'filled' : 'understaffed',
                 ]);
@@ -94,6 +106,8 @@ class ShiftAutoScheduler
             ->where('shift_schedules.tenant_id', $schedule->tenant_id)
             ->whereBetween('shift_slots.starts_at', [$schedule->starts_on->startOfDay(), $schedule->ends_on->endOfDay()])
             ->where('shift_schedules.id', '!=', $schedule->id)
+            ->where('shift_assignments.status', '!=', 'cancelled')
+            ->where('shift_schedules.status', '!=', 'archived')
             ->select('shift_assignments.member_id', DB::raw('count(*) as assignment_count'))
             ->groupBy('shift_assignments.member_id')
             ->pluck('assignment_count', 'shift_assignments.member_id')
@@ -125,6 +139,7 @@ class ShiftAutoScheduler
      */
     private function candidates(ShiftSchedule $schedule, ShiftScheduleDay $day, ShiftSlot $slot, array $assignmentCounts): Collection
     {
+        $help = app(WorkforceRules::class)->policy($day->store_id)['help_member_ids'] ?? [];
         $requests = AvailabilityRequest::query()
             ->with(['member.schedulingProfile'])
             ->where('tenant_id', $schedule->tenant_id)
@@ -133,7 +148,7 @@ class ShiftAutoScheduler
             ->whereHas('member', fn ($query) => $query
                 ->where('status', 'active')
                 ->where('is_shift_submitter', true)
-                ->where('store_id', $day->store_id))
+                ->where(fn ($stores) => $stores->where('store_id', $day->store_id)->orWhereIn('id', $help)))
             ->get()
             ->filter(fn (AvailabilityRequest $request) => $this->coversShift($request, $day))
             ->reject(fn (AvailabilityRequest $request) => $this->hasOverlap($request->member_id, $slot));
@@ -150,7 +165,14 @@ class ShiftAutoScheduler
             return true;
         }
 
-        return $request->available_from <= $day->starts_at && $request->available_until >= $day->ends_at;
+        $date = $day->scheduled_on->toDateString();
+        $availableStart = CarbonImmutable::parse($date . ' ' . $request->available_from);
+        $availableEnd = CarbonImmutable::parse($date . ' ' . $request->available_until);
+        if ($availableEnd->lte($availableStart)) {
+            $availableEnd = $availableEnd->addDay();
+        }
+        return $availableStart->lte($slotStart = CarbonImmutable::parse($date . ' ' . $day->starts_at))
+            && $availableEnd->gte(($slotEnd = CarbonImmutable::parse($date . ' ' . $day->ends_at))->lte($slotStart) ? $slotEnd->addDay() : $slotEnd);
     }
 
     private function hasOverlap(int $memberId, ShiftSlot $slot): bool
@@ -158,6 +180,7 @@ class ShiftAutoScheduler
         return DB::table('shift_assignments')
             ->join('shift_slots', 'shift_slots.id', '=', 'shift_assignments.shift_slot_id')
             ->where('shift_assignments.member_id', $memberId)
+            ->where('shift_assignments.status', '!=', 'cancelled')
             ->where('shift_slots.id', '!=', $slot->id)
             ->where('shift_slots.starts_at', '<', $slot->ends_at)
             ->where('shift_slots.ends_at', '>', $slot->starts_at)

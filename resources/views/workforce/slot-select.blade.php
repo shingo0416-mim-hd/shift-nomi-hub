@@ -1,0 +1,1 @@
+<label>対象シフト<select name="slot_id" required><option value="">選択してください</option>@foreach($slots as $slot)<option value="{{ $slot->id }}">#{{ $slot->id }} {{ $slot->starts_at->format('Y/m/d H:i') }}〜{{ $slot->ends_at->format('H:i') }} {{ $slot->notes }}</option>@endforeach</select></label>

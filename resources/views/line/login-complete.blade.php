@@ -24,6 +24,9 @@
                 @unless($isLineLoggedIn)
                     <a href="{{ route('line.login', ['tenant' => request()->attributes->get('tenantPath')]) }}" class="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white">LINEでログインする</a>
                 @endunless
+                @if($isLineLoggedIn)
+                    <a href="{{ route('line.workforce', ['tenant' => request()->attributes->get('tenantPath')]) }}" class="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white">確定シフト・お知らせを確認する</a>
+                @endif
                 @if($canSubmit)
                 <a href="{{ route('line.availability', ['tenant' => request()->attributes->get('tenantPath')]) }}" class="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white">希望シフトを提出・確認する</a>
                 @endif
